@@ -4,7 +4,7 @@ This project aims to convert the mmdetection model to tensorrt model end2end.
 
 ## Requirement
 
-- mmdet
+- mmdet>=2.3.0
 - https://github.com/grimoire/torch2trt_dynamic
 - https://github.com/grimoire/amirstan_plugin
 
