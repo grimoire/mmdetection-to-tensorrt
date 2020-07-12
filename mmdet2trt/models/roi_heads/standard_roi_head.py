@@ -13,6 +13,10 @@ class StandardRoIHeadWarper(nn.Module):
 
         self.bbox_roi_extractor = module.bbox_roi_extractor
         self.bbox_head = module.bbox_head
+        if module.with_shared_head:
+            self.shared_head = module.shared_head
+        else:
+            self.shared_head = None
 
         self.test_cfg = module.test_cfg
         self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr, module.test_cfg.nms.iou_threshold, backgroundLabelId = self.bbox_head.num_classes)
@@ -23,6 +27,8 @@ class StandardRoIHeadWarper(nn.Module):
 
         roi_feats = self.bbox_roi_extractor(
             feat[:len(self.bbox_roi_extractor.featmap_strides)], rois)
+        if self.shared_head is not None:
+            roi_feats = self.shared_head(roi_feats)
         # rcnn
         cls_score, bbox_pred = self.bbox_head(roi_feats)
 

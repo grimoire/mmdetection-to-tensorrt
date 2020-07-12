@@ -1,3 +1,4 @@
 /mmdet2trt.egg-info
-*/__pycache__
-
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
