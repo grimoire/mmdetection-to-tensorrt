@@ -19,7 +19,7 @@ python setup.py develop
 
 ## Usage
 
-how to create a tensorrt model from mmdet model
+how to create a tensorrt model from mmdet model (converting might take few minutes）
 
 ```python
 trt_model = mmdet2trt(cfg_path, weight_path,fp16_mode=True)
