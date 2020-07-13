@@ -37,5 +37,6 @@ read demo/inference.py for more detail
 
 ## Support Model/Module
 
-For now, only faster-rcnn are supported.
-Other model/module will be supported soon.
+- [x] Faster R-CNN
+- [x] Cascade R-CNN
+- [x] Double-Head R-CNN
