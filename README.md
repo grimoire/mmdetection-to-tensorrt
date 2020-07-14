@@ -40,3 +40,5 @@ read demo/inference.py for more detail
 - [x] Faster R-CNN
 - [x] Cascade R-CNN
 - [x] Double-Head R-CNN
+- [x] Group Normalization
+- [x] Weight Standardization
