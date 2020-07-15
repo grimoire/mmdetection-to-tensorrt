@@ -11,7 +11,9 @@ class StandardRoIHeadWarper(nn.Module):
         super(StandardRoIHeadWarper, self).__init__()
         self.module = module
 
-        self.bbox_roi_extractor = module.bbox_roi_extractor
+        # self.bbox_roi_extractor = module.bbox_roi_extractor
+        self.bbox_roi_extractor = build_warper(module.bbox_roi_extractor)
+        
         self.bbox_head = module.bbox_head
         if module.with_shared_head:
             self.shared_head = module.shared_head

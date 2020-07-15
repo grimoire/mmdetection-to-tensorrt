@@ -1,0 +1,21 @@
+from mmdet2trt.models.builder import register_warper, build_warper
+import torch
+from torch import nn
+import torch.nn.functional as F
+from mmdet2trt.models.roi_heads.roi_extractors.pooling_layers import build_roi_extractor
+
+
+@register_warper("mmdet.models.roi_heads.roi_extractors.single_level_roi_extractor.SingleRoIExtractor")
+class SingleRoIExtractorWarper(nn.Module):
+    def __init__(self, module):
+        super(SingleRoIExtractorWarper, self).__init__()
+        self.module = module
+        
+        pooling_name = type(self.module.roi_layers[0]).__name__
+        self.roi_extractor = build_roi_extractor(pooling_name, module)
+        self.featmap_strides = self.module.featmap_strides
+        self.num_inputs = self.module.num_inputs
+
+    def forward(self, feats, rois, roi_scale_factor=None):
+        return self.roi_extractor(feats, rois, roi_scale_factor)
+

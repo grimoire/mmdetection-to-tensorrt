@@ -4,7 +4,8 @@ from .plugins import *
 import mmdet
 
 
-@tensorrt_converter('mmdet.models.roi_heads.roi_extractors.SingleRoIExtractor.forward')
+# @tensorrt_converter('mmdet.models.roi_heads.roi_extractors.SingleRoIExtractor.forward')
+@tensorrt_converter('mmdet2trt.models.roi_heads.roi_extractors.pooling_layers.roi_align_extractor.RoiAlignExtractor.forward')
 def convert_roiextractor(ctx):
     module = ctx.method_args[0]
     feats = get_arg(ctx, 'feats', pos=1, default=None)
