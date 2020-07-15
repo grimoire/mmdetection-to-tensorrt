@@ -42,3 +42,4 @@ read demo/inference.py for more detail
 - [x] Double-Head R-CNN
 - [x] Group Normalization
 - [x] Weight Standardization
+- [x] DCN(v1 and v2, without pooling)
