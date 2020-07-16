@@ -1,6 +1,7 @@
 import logging
 import mmdet
 from mmdet import models
+import mmcv.ops
 
 WARPER_DICT = {}
 
