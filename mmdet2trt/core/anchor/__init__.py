@@ -1,1 +1,1 @@
-from .anchor_generator import AnchorGeneratorWarper
+from .anchor_generator import AnchorGeneratorWarper, SSDAnchorGeneratorWarper

@@ -14,11 +14,10 @@ def delta2bbox_custom_func(cls_scores, bbox_preds, anchors,
     # rpn_cls_score = rpn_cls_score.permute(0, 2, 3, 1)
     rpn_cls_score = rpn_cls_score.permute(1, 2, 0)
     if use_sigmoid_cls:
-        rpn_cls_score = rpn_cls_score.reshape(rpn_cls_score.shape[0], -1)
         # rpn_cls_score = rpn_cls_score.reshape(-1)
         scores = rpn_cls_score.sigmoid()
     else:
-        rpn_cls_score = rpn_cls_score.reshape(-1, 2)
+        rpn_cls_score = rpn_cls_score.reshape(-1, num_classes)
         scores = rpn_cls_score.softmax(dim=1)
 
     rpn_bbox_pred = rpn_bbox_pred.permute(1, 2, 0).reshape(-1, 4)
@@ -31,7 +30,7 @@ def delta2bbox_custom_func(cls_scores, bbox_preds, anchors,
     proposals = delta2bbox(anchors, rpn_bbox_pred, target_mean,
                             target_std, img_meta)
 
-    scores = scores.view(1,-1, 1)
+    scores = scores.view(1,-1, num_classes)
     proposals = proposals.view(1, -1, 4)
 
     if scores.shape[1]<min_num_bboxes:

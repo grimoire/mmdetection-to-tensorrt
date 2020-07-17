@@ -22,7 +22,16 @@ python setup.py develop
 how to create a tensorrt model from mmdet model (converting might take few minutes）
 
 ```python
-trt_model = mmdet2trt(cfg_path, weight_path,fp16_mode=True)
+
+opt_shape_param=[
+    [
+        [1,3,800,800],      # min shape
+        [1,3,800,1344],     # optimize shape
+        [1,3,1344,1344],    # max shape
+    ]
+]
+max_workspace_size=1<<30
+trt_model = mmdet2trt(cfg_path, weight_path, opt_shape_param=opt_shape_param, fp16_mode=True, max_workspace_size=max_workspace_size)
 torch.save(trt_model.state_dict(), save_path)
 ```
 
@@ -43,3 +52,4 @@ read demo/inference.py for more detail
 - [x] Group Normalization
 - [x] Weight Standardization
 - [x] DCN
+- [x] SSD

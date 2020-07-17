@@ -46,3 +46,24 @@ class AnchorGeneratorWarper(nn.Module):
             anchors = self.ag_single_list[index](x, stride=self.generator.strides[index], device=device)
             multi_level_anchors.append(anchors)
         return multi_level_anchors
+
+
+
+@register_warper("mmdet.core.anchor.anchor_generator.SSDAnchorGenerator")
+class SSDAnchorGeneratorWarper(nn.Module):
+    def __init__(self, module):
+        super(SSDAnchorGeneratorWarper, self).__init__()
+        self.generator = module
+        self.mlvl_anchors = None
+
+
+    def forward(self, feat_list, device = "cuda"):
+        if self.mlvl_anchors is None:
+            num_levels = len(feat_list)
+            featmap_sizes = [feat_list[i].shape[-2:] for i in range(num_levels)]
+
+            mlvl_anchors = self.generator.grid_anchors(
+                featmap_sizes, device=device)
+            self.mlvl_anchors = mlvl_anchors
+            
+        return self.mlvl_anchors
