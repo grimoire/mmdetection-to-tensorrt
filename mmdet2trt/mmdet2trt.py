@@ -15,7 +15,8 @@ def mmdet2trt(  config,
                 fp16_mode=False,
                 max_workspace_size=1<<25,
                 opt_shape_param=None,
-                log_level = logging.WARN):
+                log_level = logging.WARN,
+                return_warp_model = False):
     
     device = torch.device(device)
 
@@ -65,4 +66,6 @@ def mmdet2trt(  config,
 
     result = trt_model(dummy_input)
 
+    if return_warp_model:
+        return trt_model, warp_model
     return trt_model

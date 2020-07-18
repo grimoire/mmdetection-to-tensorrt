@@ -6,6 +6,7 @@ from torch import nn
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 
 
+@register_warper("mmdet.models.RetinaHead")
 @register_warper("mmdet.models.SSDHead")
 @register_warper("mmdet.models.AnchorHead")
 class AnchorHeadWarper(nn.Module):
@@ -41,11 +42,11 @@ class AnchorHeadWarper(nn.Module):
                                                 rpn_bbox_pred, 
                                                 anchors, 
                                                 min_num_bboxes = nms_pre, 
-                                                num_classes = self.num_classes+1,
+                                                num_classes = rpn_cls_score.shape[1]*4//rpn_bbox_pred.shape[1],
                                                 use_sigmoid_cls = self.use_sigmoid_cls, 
                                                 input_x = x
                                                 )
-                         
+                             
             if nms_pre>0:
                 if self.use_sigmoid_cls:
                     max_scores, _ = scores.max(dim=2)
@@ -53,13 +54,14 @@ class AnchorHeadWarper(nn.Module):
                     max_scores, _ = scores[:, :, :-1].max(dim=2)
 
                 _, topk_inds = max_scores.topk(nms_pre, dim=1)
-                topk_inds = topk_inds.view(-1)
-                proposals = proposals[:, topk_inds, ...]
-                scores = scores[:, topk_inds, :]
-                
+                proposal_topk_inds = topk_inds.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, proposals.shape[2], proposals.shape[3])
+                proposals = proposals.gather(1, proposal_topk_inds)
+                score_topk_inds = topk_inds.unsqueeze(-1).repeat(1, 1, scores.shape[2])
+                scores = scores.gather(1, score_topk_inds)
+
             mlvl_scores.append(scores)
             mlvl_proposals.append(proposals)
-
+            
         mlvl_scores = torch.cat(mlvl_scores, dim=1)
         mlvl_proposals = torch.cat(mlvl_proposals, dim=1)
 
@@ -67,14 +69,16 @@ class AnchorHeadWarper(nn.Module):
             max_scores, _ = mlvl_scores.max(dim=2)
         else:
             max_scores, _ = mlvl_scores[:, :, :mlvl_scores.shape[2]-1].max(dim=2)
-        _, topk_inds = max_scores.topk(min(1000, mlvl_scores.shape[1]), dim=1)
-        topk_inds = topk_inds.view(-1)
-        mlvl_proposals = mlvl_proposals[:, topk_inds, ...]
-        mlvl_scores = mlvl_scores[:, topk_inds, :]
+        topk_pre = max(1000, nms_pre)
+        _, topk_inds = max_scores.topk(min(topk_pre, mlvl_scores.shape[1]), dim=1)
+        proposal_topk_inds = topk_inds.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, mlvl_proposals.shape[2], mlvl_proposals.shape[3])
+        mlvl_proposals = mlvl_proposals.gather(1, proposal_topk_inds)
+        score_topk_inds = topk_inds.unsqueeze(-1).repeat(1, 1, mlvl_scores.shape[2])
+        mlvl_scores = mlvl_scores.gather(1, score_topk_inds)
 
         if self.use_sigmoid_cls:
-            padding = mlvl_scores.new_zeros(mlvl_scores.shape[0], 1)
-            mlvl_scores = torch.cat([mlvl_scores, padding], dim=1)
+            padding = mlvl_scores.new_zeros(mlvl_scores.shape[0], mlvl_scores.shape[1], 1)
+            mlvl_scores = torch.cat([mlvl_scores, padding], dim=2)
         mlvl_proposals = mlvl_proposals.repeat(1,1,self.num_classes+1, 1)
         
         num_bboxes = mlvl_proposals.shape[1]

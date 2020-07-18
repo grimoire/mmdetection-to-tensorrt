@@ -53,3 +53,4 @@ read demo/inference.py for more detail
 - [x] Weight Standardization
 - [x] DCN
 - [x] SSD
+- [x] RetinaNet
