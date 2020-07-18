@@ -21,7 +21,7 @@ def main():
 
     cfg_path = args.config
 
-    trt_model = mmdet2trt(cfg_path, args.checkpoint, fp16_mode=False, device=args.device)
+    trt_model = mmdet2trt(cfg_path, args.checkpoint, fp16_mode=args.fp16, device=args.device)
     torch.save(trt_model.state_dict(), args.save_path)
 
     trt_model = init_detector(args.save_path)

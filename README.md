@@ -1,6 +1,7 @@
 # MMDet to tensorrt
 
 This project aims to convert the mmdetection model to tensorrt model end2end. 
+Focus on object detection for now, instance segmentation will be added in future.
 
 ## Requirement
 
@@ -30,7 +31,7 @@ opt_shape_param=[
         [1,3,1344,1344],    # max shape
     ]
 ]
-max_workspace_size=1<<30
+max_workspace_size=1<<30    # some module need large workspace, add workspace size when OOM.
 trt_model = mmdet2trt(cfg_path, weight_path, opt_shape_param=opt_shape_param, fp16_mode=True, max_workspace_size=max_workspace_size)
 torch.save(trt_model.state_dict(), save_path)
 ```

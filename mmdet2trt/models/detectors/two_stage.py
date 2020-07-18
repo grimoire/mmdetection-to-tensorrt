@@ -5,6 +5,7 @@ from mmdet2trt.models.roi_heads import StandardRoIHeadWarper
 import torch
 from torch import nn
 
+@register_warper("mmdet.models.CascadeRCNN")
 @register_warper("mmdet.models.FasterRCNN")
 @register_warper("mmdet.models.TwoStageDetector")
 class TwoStageDetectorWarper(nn.Module):
