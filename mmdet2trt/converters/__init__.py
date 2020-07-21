@@ -5,3 +5,5 @@ from .RoiExtractor import convert_roiextractor
 from .ConvWS2d import convert_ConvWS2d
 from .DeformConv import convert_DeformConv, convert_ModulatedDeformConv
 from .DeformPool import convert_DeformPool
+from .mmdet2trtOps import convert_adaptive_max_pool2d_by_input
+from .bfp_forward import convert_BFP

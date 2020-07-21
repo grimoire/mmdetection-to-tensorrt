@@ -55,3 +55,4 @@ read demo/inference.py for more detail
 - [x] DCN
 - [x] SSD
 - [x] RetinaNet
+- [x] Libra R-CNN
