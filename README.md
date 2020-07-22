@@ -56,3 +56,4 @@ read demo/inference.py for more detail
 - [x] SSD
 - [x] RetinaNet
 - [x] Libra R-CNN
+- [x] FCOS
