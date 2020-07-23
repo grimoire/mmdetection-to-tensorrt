@@ -4,6 +4,8 @@ from mmdet2trt.models.dense_heads import RPNHeadWarper
 import torch
 from torch import nn
 
+
+@register_warper("mmdet.models.FOVEA")
 @register_warper("mmdet.models.FCOS")
 @register_warper("mmdet.models.RetinaNet")
 @register_warper("mmdet.models.SingleStageDetector")

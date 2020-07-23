@@ -31,7 +31,7 @@ def build_warper(module, default_warper=None):
         logging.debug("find module type:{}".format(str(model_type)))
         warp_model = WARPER_DICT[model_type](module)
     else:
-        logging.debug("can't find module type:{}, use {} instead.".format(str(model_type), default_warper))
+        logging.warning("can't find warp module for type:{}, use {} instead.".format(str(model_type), default_warper))
         if default_warper is not None:
             warp_model = default_warper(module)
 

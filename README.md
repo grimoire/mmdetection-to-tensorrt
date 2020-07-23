@@ -43,6 +43,14 @@ trt_model = init_detector(save_path)
 num_detections, trt_bbox, trt_score, trt_cls = inference_detector(trt_model, image_path, cfg_path, "cuda:0")
 ```
 
+how to save the tensorrt engine
+
+```python
+with open(engine_path, mode='wb') as f:
+    f.write(model_trt.state_dict()['engine'])
+```
+
+
 read demo/inference.py for more detail
 
 ## Support Model/Module
@@ -57,3 +65,4 @@ read demo/inference.py for more detail
 - [x] RetinaNet
 - [x] Libra R-CNN
 - [x] FCOS
+- [x] Fovea

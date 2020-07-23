@@ -16,7 +16,7 @@ class AnchorFreeHeadWarper(nn.Module):
         
         self.test_cfg = module.test_cfg
         self.num_classes = self.module.num_classes
-        self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr, module.test_cfg.nms.iou_threshold, backgroundLabelId = self.num_classes)
+        self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr, module.test_cfg.nms.iou_threshold, backgroundLabelId = -1)
 
 
     def forward(self, feat, x):
@@ -34,5 +34,5 @@ class AnchorFreeHeadWarper(nn.Module):
         
         mlvl_points = []
         for i, feat in enumerate(features):
-            mlvl_points.append(self._get_points_single(feat, self.module.strides[i]))
+            mlvl_points.append(self._get_points_single(feat, self.module.strides[i], flatten=flatten))
         return mlvl_points
