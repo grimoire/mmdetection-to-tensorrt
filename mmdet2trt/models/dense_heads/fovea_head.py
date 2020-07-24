@@ -38,24 +38,18 @@ class FoveaHeadWarper(AnchorFreeHeadWarper):
             nms_pre = cfg.get('nms_pre', -1)
             if nms_pre > 0:
                 # concate zero to enable topk, dirty way, will find a better way in future
-                score_pad = (scores[:,0:1,...]*0.).repeat(1,nms_pre,1)
-                scores = torch.cat([scores, score_pad], dim=1)
-                bbox_pred_pad = bbox_pred[:,0:1, ...].repeat(1,nms_pre,1)
-                bbox_pred = torch.cat([bbox_pred, bbox_pred_pad], dim=1)
-                y_pad = y[:, 0:1].repeat(1, nms_pre)
-                y = torch.cat([y, y_pad], dim=1)
-                x_pad = x[:, 0:1].repeat(1, nms_pre)
-                x = torch.cat([x, x_pad], dim=1)
+                scores=mm2trt_util.pad_with_value(scores, 1, nms_pre, 0.)
+                bbox_pred=mm2trt_util.pad_with_value(bbox_pred, 1, nms_pre)
+                y=mm2trt_util.pad_with_value(y, 1, nms_pre)
+                x=mm2trt_util.pad_with_value(x, 1, nms_pre)
 
                 # do topk
                 max_scores, _ = (scores).max(dim=2)
-                _, topk_inds = max_scores.topk(nms_pre)
-                bbox_pred_gather = topk_inds.unsqueeze(-1).repeat(1,1,bbox_pred.shape[2])
-                bbox_pred = bbox_pred.gather(1, bbox_pred_gather)
-                scores_gather = topk_inds.unsqueeze(-1).repeat(1,1,scores.shape[2])
-                scores = scores.gather(1, scores_gather)
-                x = x.gather(1, topk_inds)
-                y = y.gather(1, topk_inds)
+                _, topk_inds = max_scores.topk(nms_pre, dim=1)
+                bbox_pred = mm2trt_util.gather_topk(bbox_pred, 1, topk_inds)
+                scores = mm2trt_util.gather_topk(scores, 1, topk_inds)
+                y = mm2trt_util.gather_topk(y, 1, topk_inds)
+                x = mm2trt_util.gather_topk(x, 1, topk_inds)
             
 
             x1 = (stride * x - base_len * bbox_pred[:, :, 0]).\
@@ -79,12 +73,9 @@ class FoveaHeadWarper(AnchorFreeHeadWarper):
         max_scores, _ = mlvl_scores.max(dim=2)
         topk_pre = max(1000, nms_pre)
         _, topk_inds = max_scores.topk(min(topk_pre, mlvl_scores.shape[1]), dim=1)
-        proposal_topk_inds = topk_inds.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, mlvl_proposals.shape[2], mlvl_proposals.shape[3])
-        mlvl_proposals = mlvl_proposals.gather(1, proposal_topk_inds)
-        score_topk_inds = topk_inds.unsqueeze(-1).repeat(1, 1, mlvl_scores.shape[2])
-        mlvl_scores = mlvl_scores.gather(1, score_topk_inds)
+        mlvl_proposals = mm2trt_util.gather_topk(mlvl_proposals, 1, topk_inds)
+        mlvl_scores = mm2trt_util.gather_topk(mlvl_scores, 1, topk_inds)
 
-        mlvl_proposals = mlvl_proposals.repeat(1,1,mlvl_scores.shape[2],1)
         num_bboxes = mlvl_proposals.shape[1]
         num_detected, proposals, scores, cls_id = self.rcnn_nms(mlvl_scores, mlvl_proposals, num_bboxes, self.test_cfg.max_per_img)
 

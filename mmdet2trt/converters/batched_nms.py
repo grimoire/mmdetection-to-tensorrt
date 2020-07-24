@@ -17,6 +17,7 @@ def convert_batchednms(ctx):
     iouThreshold = module.iouThreshold
     backgroundLabelId = module.backgroundLabelId
     numClasses = scores.shape[2]
+    shareLocation = (bboxes.shape[2]==1)
 
     scores_trt = trt_(ctx.network, scores)
     bboxes_trt = trt_(ctx.network, bboxes)
@@ -29,7 +30,7 @@ def convert_batchednms(ctx):
                                       keepTopK,
                                       numClasses,
                                       backgroundLabelId,
-                                      shareLocation=False,
+                                      shareLocation=shareLocation,
                                       isNormalized=False,
                                       clipBoxes=False)
 

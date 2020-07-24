@@ -33,7 +33,11 @@ class BatchedNMS(nn.Module):
                 if cls_idx == self.backgroundLabelId:
                     continue
                 
-                bbox = bboxes[batch_idx, :, cls_idx, :]
+                # bbox = bboxes[batch_idx, :, cls_idx, :]
+                if bboxes.shape[2]!=1:
+                    bbox = bboxes[batch_idx, :, cls_idx, :]
+                else:
+                    bbox = bboxes[batch_idx, :, 0, :]
                 score = scores[batch_idx, :, cls_idx]
 
                 if self.scoreThreshold>0.:
