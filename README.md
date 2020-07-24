@@ -66,3 +66,5 @@ read demo/inference.py for more detail
 - [x] Libra R-CNN
 - [x] FCOS
 - [x] Fovea
+- [x] CARAFE
+
