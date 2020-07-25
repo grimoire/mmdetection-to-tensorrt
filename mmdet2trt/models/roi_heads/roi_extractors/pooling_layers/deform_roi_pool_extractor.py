@@ -66,11 +66,7 @@ class DeformRoiPoolExtractor(nn.Module):
         return t1/(t1+t2 + 1e-15)
 
     def _get_between_mask(self,x, min_value, max_value=None):
-        # return self._get_layer_mask(x, min_value)-self._get_layer_mask(x,max_value)
-        if max_value is None:
-            return self._get_layer_mask(x, min_value)
-        else:
-            return self._get_layer_mask(x, min_value)-self._get_layer_mask(x,max_value)
+        return ((x>=min_value)&(x<max_value)).float()
     
     def map_roi_levels(self, rois, num_levels):
         scale = torch.sqrt(
