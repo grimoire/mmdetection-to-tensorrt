@@ -20,13 +20,13 @@ python setup.py develop
 
 ## Usage
 
-how to create a tensorrt model from mmdet model (converting might take few minutes）
+how to create a tensorrt model from mmdet model (converting might take few minutes)(Might have some warning when converting.)
 
 ```python
 
 opt_shape_param=[
     [
-        [1,3,800,800],      # min shape
+        [1,3,320,320],      # min shape
         [1,3,800,1344],     # optimize shape
         [1,3,1344,1344],    # max shape
     ]
@@ -50,6 +50,7 @@ with open(engine_path, mode='wb') as f:
     f.write(model_trt.state_dict()['engine'])
 ```
 
+note that the bbox inference result did not divided by scale factor, divided by you self if needed.
 
 read demo/inference.py for more detail
 
@@ -67,4 +68,5 @@ read demo/inference.py for more detail
 - [x] FCOS
 - [x] Fovea
 - [x] CARAFE
+- [x] FreeAnchor
 
