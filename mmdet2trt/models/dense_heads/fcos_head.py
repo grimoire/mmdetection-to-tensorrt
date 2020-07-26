@@ -64,6 +64,7 @@ class FCOSHeadWarper(AnchorFreeHeadWarper):
 
         mlvl_bboxes = torch.cat(mlvl_bboxes, dim=1)
         mlvl_scores = torch.cat(mlvl_scores, dim=1)
+        mlvl_centerness = torch.cat(mlvl_centerness, dim=1)
 
         mlvl_proposals = mlvl_bboxes.unsqueeze(2)
 
@@ -72,8 +73,10 @@ class FCOSHeadWarper(AnchorFreeHeadWarper):
         _, topk_inds = max_scores.topk(min(topk_pre, mlvl_scores.shape[1]), dim=1)
         mlvl_proposals = mm2trt_util.gather_topk(mlvl_proposals, 1, topk_inds)
         mlvl_scores = mm2trt_util.gather_topk(mlvl_scores, 1, topk_inds)
+        mlvl_centerness = mm2trt_util.gather_topk(mlvl_centerness, 1, topk_inds)
 
         num_bboxes = mlvl_proposals.shape[1]
+        mlvl_scores = mlvl_scores*mlvl_centerness[:,:,None]
         num_detected, proposals, scores, cls_id = self.rcnn_nms(mlvl_scores, mlvl_proposals, num_bboxes, self.test_cfg.max_per_img)
 
         return num_detected, proposals, scores, cls_id
