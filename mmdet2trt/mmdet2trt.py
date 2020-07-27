@@ -63,9 +63,6 @@ def mmdet2trt(  config,
     duration = time.time()-start
     logging.info("convert take time {} s".format(duration))
 
-
-    result = trt_model(dummy_input)
-
     if return_warp_model:
         return trt_model, warp_model
     return trt_model

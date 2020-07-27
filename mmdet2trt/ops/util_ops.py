@@ -12,8 +12,10 @@ def adaptive_max_pool2d_by_input(x, shape_warper):
 def arange_gridmesh(x, starts=[0,0], strides=[1,1]):
     h, w = x.shape[2:]
     dtype = x.dtype
-    x_range = torch.arange(w, dtype=dtype, device=x.device)
-    y_range = torch.arange(h, dtype=dtype, device=x.device)
+    x_range = torch.arange(w, dtype=dtype, device=x.device)*strides[0]
+    y_range = torch.arange(h, dtype=dtype, device=x.device)*strides[1]
+    x_range += starts[0]
+    y_range += starts[1]
     y, x = torch.meshgrid(y_range, x_range)
 
     return y, x

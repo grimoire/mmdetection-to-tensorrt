@@ -5,6 +5,7 @@ import torch
 from torch import nn
 
 
+@register_warper("mmdet.models.RepPointsDetector")
 @register_warper("mmdet.models.FOVEA")
 @register_warper("mmdet.models.FCOS")
 @register_warper("mmdet.models.RetinaNet")

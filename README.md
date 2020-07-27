@@ -69,4 +69,5 @@ read demo/inference.py for more detail
 - [x] Fovea
 - [x] CARAFE
 - [x] FreeAnchor
+- [x] RepPoints
 

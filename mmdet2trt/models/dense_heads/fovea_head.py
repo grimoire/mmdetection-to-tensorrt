@@ -1,6 +1,5 @@
 import torch
 from mmdet2trt.models.builder import register_warper, build_warper
-import torch
 from torch import nn
 
 import mmdet2trt.ops.util_ops as mm2trt_util
