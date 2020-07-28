@@ -1,12 +1,12 @@
 import torch
-from mmdet2trt.models.builder import register_warper, build_warper
-import torch
 from torch import nn
+from mmdet2trt.models.builder import register_warper, build_warper
 import mmdet2trt.ops.util_ops as mm2trt_util
 
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 
 
+@register_warper("mmdet.models.RetinaSepBNHead")
 @register_warper("mmdet.models.FreeAnchorRetinaHead")
 @register_warper("mmdet.models.RetinaHead")
 @register_warper("mmdet.models.SSDHead")

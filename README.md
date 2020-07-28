@@ -70,4 +70,7 @@ read demo/inference.py for more detail
 - [x] CARAFE
 - [x] FreeAnchor
 - [x] RepPoints
+- [x] NAS-FPN
+- [x] ATSS
+
 
