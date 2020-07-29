@@ -72,5 +72,8 @@ read demo/inference.py for more detail
 - [x] RepPoints
 - [x] NAS-FPN
 - [x] ATSS
+- [x] PAFPN
+- [x] FSAF
+
 
 

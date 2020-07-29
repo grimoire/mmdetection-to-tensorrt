@@ -6,6 +6,7 @@ import mmdet2trt.ops.util_ops as mm2trt_util
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 
 
+@register_warper("mmdet.models.dense_heads.FSAFHead")
 @register_warper("mmdet.models.RetinaSepBNHead")
 @register_warper("mmdet.models.FreeAnchorRetinaHead")
 @register_warper("mmdet.models.RetinaHead")
