@@ -74,6 +74,5 @@ read demo/inference.py for more detail
 - [x] ATSS
 - [x] PAFPN
 - [x] FSAF
-
-
+- [x] GCNet
 
