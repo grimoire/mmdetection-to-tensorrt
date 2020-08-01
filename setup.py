@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 from setuptools.command.install import install
 from setuptools.command.develop import develop
 from distutils.cmd import Command
-from build import build
+# from build import build
 
 package_data = {}
 
@@ -26,21 +26,21 @@ def initialize_plugins_options(cmd_obj):
     cmd_obj.trt_lib_dir = None
 
 
-def run_plugins_compilation(cmd_obj):
-    if cmd_obj.plugins:
-        build_args = {}
-        if cmd_obj.cuda_dir:
-            build_args['cuda_dir'] = cmd_obj.cuda_dir
-        if cmd_obj.torch_dir:
-            build_args['torch_dir'] = cmd_obj.torch_dir
-        if cmd_obj.trt_inc_dir:
-            build_args['trt_inc_dir'] = cmd_obj.trt_inc_dir
-        if cmd_obj.trt_lib_dir:
-            build_args['trt_lib_dir'] = cmd_obj.trt_lib_dir
+# def run_plugins_compilation(cmd_obj):
+#     if cmd_obj.plugins:
+#         build_args = {}
+#         if cmd_obj.cuda_dir:
+#             build_args['cuda_dir'] = cmd_obj.cuda_dir
+#         if cmd_obj.torch_dir:
+#             build_args['torch_dir'] = cmd_obj.torch_dir
+#         if cmd_obj.trt_inc_dir:
+#             build_args['trt_inc_dir'] = cmd_obj.trt_inc_dir
+#         if cmd_obj.trt_lib_dir:
+#             build_args['trt_lib_dir'] = cmd_obj.trt_lib_dir
 
-        print('Building in plugin support')
-        build(**build_args)
-        package_data['torch2trt'] = ['libtorch2trt.so']
+#         print('Building in plugin support')
+#         build(**build_args)
+#         package_data['torch2trt'] = ['libtorch2trt.so']
 
 
 class DevelopCommand(develop):
@@ -55,7 +55,7 @@ class DevelopCommand(develop):
         develop.finalize_options(self)
 
     def run(self):
-        run_plugins_compilation(self)
+        # run_plugins_compilation(self)
         develop.run(self)
 
 
@@ -71,7 +71,7 @@ class InstallCommand(install):
         install.finalize_options(self)
 
     def run(self):
-        run_plugins_compilation(self)
+        # run_plugins_compilation(self)
         install.run(self)
 
 
