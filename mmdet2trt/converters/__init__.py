@@ -8,3 +8,4 @@ from .DeformPool import convert_DeformPool
 from .mmdet2trtOps import convert_adaptive_max_pool2d_by_input, convert_arange_gridmesh
 from .bfp_forward import convert_BFP
 from .carafe import convert_carafe_feature_reassemble, convert_carafe_kernel_normalizer, convert_carafe_tensor_add
+from .MaskedConv import convert_MaskedConv
