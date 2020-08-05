@@ -75,5 +75,5 @@ read demo/inference.py for more detail
 - [x] PAFPN
 - [x] FSAF
 - [x] GCNet
-- [] Guided Anchoring(WIP)
+- [x] Guided Anchoring
 

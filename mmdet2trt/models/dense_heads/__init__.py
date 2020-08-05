@@ -5,4 +5,5 @@ from .fcos_head import FCOSHeadWarper
 from .fovea_head import FoveaHeadWarper
 from .reppoints_head import RepPointsHeadWarper
 from .atss_head import ATSSHeadWarper
+from .guided_anchor_head import GuidedAnchorHeadWarper
 from .ga_rpn_head import GARPNHeadWarper
