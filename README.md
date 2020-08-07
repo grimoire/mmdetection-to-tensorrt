@@ -3,12 +3,20 @@
 This project aims to convert the mmdetection model to tensorrt model end2end. 
 Focus on object detection for now, instance segmentation will be added in future.
 
+Any advice, bug report and star are welcome.
+
 ## Requirement
 
 - mmdet>=2.3.0
 - https://github.com/grimoire/torch2trt_dynamic
 - https://github.com/grimoire/amirstan_plugin
 
+### Important!
+set the envoirment variable(in ~/.bashrc):
+
+```shell
+export AMIRSTAN_LIBRARY_PATH=<amirstan_plugin_root>/build/lib
+```
 
 ## Installation
 
@@ -76,4 +84,6 @@ read demo/inference.py for more detail
 - [x] FSAF
 - [x] GCNet
 - [x] Guided Anchoring
+- [x] Guided Anchoring
+- [x] Generalized Attention(need more test)
 
