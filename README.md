@@ -5,6 +5,15 @@ Focus on object detection for now, instance segmentation will be added in future
 
 Any advice, bug report and star are welcome.
 
+Tested on:
+torch=1.4.0
+tensorrt=7.0.0.11
+mmdetection=2.3.0(master)
+cuda=10.0
+cudnn=7
+
+If you find any error, please report in the issue.
+
 ## Requirement
 
 - mmdet>=2.3.0
