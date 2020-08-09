@@ -3,15 +3,14 @@
 This project aims to convert the mmdetection model to tensorrt model end2end. 
 Focus on object detection for now, instance segmentation will be added in future.
 
-Any advice, bug report and star are welcome.
-
 Tested on:
-torch=1.4.0
-tensorrt=7.0.0.11
-mmdetection=2.3.0(master)
-cuda=10.0
-cudnn=7
+- torch=1.6.0
+- tensorrt=7.1.3.4
+- mmdetection=2.3.0(master)
+- cuda=10.2
+- cudnn=8.0.2.39
 
+Any advice, bug report and star are welcome.
 If you find any error, please report in the issue.
 
 ## Requirement

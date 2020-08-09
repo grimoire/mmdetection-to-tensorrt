@@ -25,10 +25,10 @@ def batched_blr2bboxes(priors,
     ymin = prior_centers[:, :, 1:2] - top
     ymax = prior_centers[:, :, 1:2] + bottom
     if max_shape is not None:
-        xmin = xmin.clamp(min=0, max=max_shape[1])
-        ymin = ymin.clamp(min=0, max=max_shape[0])
-        xmax = xmax.clamp(min=0, max=max_shape[1])
-        ymax = ymax.clamp(min=0, max=max_shape[0])
+        xmin = xmin.clamp(min=0, max=max_shape[1]-1)
+        ymin = ymin.clamp(min=0, max=max_shape[0]-1)
+        xmax = xmax.clamp(min=0, max=max_shape[1]-1)
+        ymax = ymax.clamp(min=0, max=max_shape[0]-1)
     boxes = torch.cat((xmin, ymin, xmax, ymax), dim=2)
     return boxes
 
@@ -51,7 +51,8 @@ class TBLRBBoxCoderWarper(nn.Module):
         bbox_preds = bbox_preds.permute(0, 2, 3, 1).reshape(bbox_preds.shape[0], -1, 4)
         anchors = anchors.unsqueeze(0)
 
-        proposals = batched_blr2bboxes(anchors, bbox_preds, normalizer=self.normalizer, max_shape=input_x.shape[2:])
+        max_shape = None if input_x is None else input_x.shape[2:]
+        proposals = batched_blr2bboxes(anchors, bbox_preds, normalizer=self.normalizer, max_shape=max_shape)
         if min_num_bboxes>0:
             scores = util_ops.pad_with_value(scores, 1, min_num_bboxes, 0)
             proposals = util_ops.pad_with_value(proposals, 1, min_num_bboxes)

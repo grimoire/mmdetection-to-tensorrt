@@ -49,7 +49,7 @@ class AnchorHeadWarper(nn.Module):
                                                 use_sigmoid_cls = self.use_sigmoid_cls, 
                                                 input_x = x
                                                 )
-                             
+                      
             if nms_pre>0:
                 if self.use_sigmoid_cls:
                     max_scores, _ = scores.max(dim=2)
