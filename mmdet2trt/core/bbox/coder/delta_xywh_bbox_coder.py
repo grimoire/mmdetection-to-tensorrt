@@ -31,7 +31,7 @@ def delta2bbox_custom_func(cls_scores, bbox_preds, anchors,
     proposals = delta2bbox(anchors, rpn_bbox_pred, target_mean,
                             target_std, img_meta)
 
-    scores = scores.view(1,-1, num_classes)
+    scores = scores.contiguous().view(1,-1, num_classes)
     proposals = proposals.view(1, -1, 4)
 
     if scores.shape[1]<min_num_bboxes:
@@ -80,10 +80,10 @@ def delta2bbox_batched(rois,
     x2 = gx + gw * 0.5
     y2 = gy + gh * 0.5
     if max_shape is not None:
-        x1 = x1.clamp(min=0, max=max_shape[1])
-        y1 = y1.clamp(min=0, max=max_shape[0])
-        x2 = x2.clamp(min=0, max=max_shape[1])
-        y2 = y2.clamp(min=0, max=max_shape[0])
+        x1 = x1.clamp(min=0, max=max_shape[1]-1)
+        y1 = y1.clamp(min=0, max=max_shape[0]-1)
+        x2 = x2.clamp(min=0, max=max_shape[1]-1)
+        y2 = y2.clamp(min=0, max=max_shape[0]-1)
     bboxes = torch.stack([x1, y1, x2, y2], dim=-1).view_as(deltas)
     return bboxes
 
