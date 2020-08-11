@@ -6,7 +6,7 @@ Focus on object detection for now, instance segmentation will be added in future
 Tested on:
 - torch=1.6.0
 - tensorrt=7.1.3.4
-- mmdetection=2.3.0(master)
+- mmdetection=2.3.0
 - cuda=10.2
 - cudnn=8.0.2.39
 
@@ -91,7 +91,6 @@ read demo/inference.py for more detail
 - [x] PAFPN
 - [x] FSAF
 - [x] GCNet
-- [x] Guided Anchoring
 - [x] Guided Anchoring
 - [x] Generalized Attention(need more test)
 
