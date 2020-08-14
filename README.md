@@ -92,5 +92,6 @@ read demo/inference.py for more detail
 - [x] FSAF
 - [x] GCNet
 - [x] Guided Anchoring
-- [x] Generalized Attention(need more test)
+- [x] Generalized Attention
+- [x] Dynamic R-CNN
 
