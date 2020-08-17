@@ -3,6 +3,7 @@ from .delta2bbox_custom import convert_delta2bbox
 from .batched_nms import convert_batchednms
 from .RoiExtractor import convert_roiextractor
 from .ConvWS2d import convert_ConvWS2d
+from .ConvAWS2d import convert_ConvAWS2d
 from .DeformConv import convert_DeformConv, convert_ModulatedDeformConv
 from .DeformPool import convert_DeformPool
 from .mmdet2trtOps import convert_adaptive_max_pool2d_by_input, convert_arange_gridmesh
@@ -10,3 +11,4 @@ from .bfp_forward import convert_BFP
 from .carafe import convert_carafe_feature_reassemble, convert_carafe_kernel_normalizer, convert_carafe_tensor_add
 from .MaskedConv import convert_MaskedConv
 from .generalized_attention import convert_GeneralizeAttention
+from .SAConv2d import convert_SAConv2d
