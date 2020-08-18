@@ -60,7 +60,7 @@ def mmdet2trt(  config,
                               max_workspace_size=max_workspace_size,
                               keep_network=False,
                               strict_type_constraints=True,
-                              outpout_names=output_names)
+                              output_names=output_names)
 
     duration = time.time()-start
     logging.info("convert take time {} s".format(duration))
