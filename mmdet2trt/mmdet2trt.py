@@ -16,7 +16,8 @@ def mmdet2trt(  config,
                 max_workspace_size=1<<25,
                 opt_shape_param=None,
                 log_level = logging.WARN,
-                return_warp_model = False):
+                return_warp_model = False,
+                output_names=["num_detections", "boxes", "scores", "classes"]):
     
     device = torch.device(device)
 
@@ -58,7 +59,8 @@ def mmdet2trt(  config,
                               opt_shape_param=opt_shape_param,
                               max_workspace_size=max_workspace_size,
                               keep_network=False,
-                              strict_type_constraints=True)
+                              strict_type_constraints=True,
+                              output_names=output_names)
 
     duration = time.time()-start
     logging.info("convert take time {} s".format(duration))
