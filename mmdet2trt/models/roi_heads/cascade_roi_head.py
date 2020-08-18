@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 
+@register_warper("mmdet.models.roi_heads.HybridTaskCascadeRoIHead")
 @register_warper("mmdet.models.roi_heads.CascadeRoIHead")
 class CascadeRoIHeadWarper(nn.Module):
     def __init__(self, module):

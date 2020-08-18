@@ -94,4 +94,4 @@ read demo/inference.py for more detail
 - [x] Guided Anchoring
 - [x] Generalized Attention
 - [x] Dynamic R-CNN
-
+- [x] Hybrid Task Cascade (object detection only)
