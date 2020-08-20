@@ -95,3 +95,4 @@ read demo/inference.py for more detail
 - [x] Generalized Attention
 - [x] Dynamic R-CNN
 - [x] Hybrid Task Cascade (object detection only)
+- [x] DetectoRS
