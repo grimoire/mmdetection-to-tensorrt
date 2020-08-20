@@ -38,8 +38,18 @@ python setup.py develop
 
 how to create a tensorrt model from mmdet model (converting might take few minutes)(Might have some warning when converting.)
 
-```python
+### CLI
 
+```bash
+# Run mmdet2trt -h for help
+mmdet2trt \
+--config ${CONFIG_PATH} \
+--checkpoint ${CHECKPOINT_PATH} \
+--output ${OUTPUT_PATH}
+```
+### Python
+
+```python
 opt_shape_param=[
     [
         [1,3,320,320],      # min shape
