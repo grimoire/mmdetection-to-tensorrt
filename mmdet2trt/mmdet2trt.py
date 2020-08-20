@@ -72,9 +72,9 @@ def mmdet2trt(  config,
 
 def main():                                                                                                                                                                                                                                      
     parser = ArgumentParser()                                                                                                                                                                                                                    
-    parser.add_argument('config', help='Path to a mmdet Config file')
-    parser.add_argument('checkpoint', help='Path to a mmdet Checkpoint file')
-    parser.add_argument('output', help='Path where tensorrt model will be saved')
+    parser.add_argument('--config', help='Path to a mmdet Config file')
+    parser.add_argument('--checkpoint', help='Path to a mmdet Checkpoint file')
+    parser.add_argument('--output', help='Path where tensorrt model will be saved')
     parser.add_argument("--fp16", type=bool, default=True, help="Enable fp16 inference")
     parser.add_argument("--save-engine", type=bool, default=True, help="Enable saving TensorRT engine in a separate file.")
     args = parser.parse_args()
