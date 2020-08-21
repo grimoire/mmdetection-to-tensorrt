@@ -169,9 +169,11 @@ def main():
         output_names=args.output_names,
     )
 
+    logger.info("Saving TRT model to: {}".format(args.output))
     torch.save(trt_model.state_dict(), args.output)
 
     if args.save_engine:
+        logger.info("Saving TRT model engine to: {}".format(Path(args.output).with_suffix(".engine"))
         with open(Path(args.output).with_suffix(".engine"), "wb") as f:
             f.write(trt_model.state_dict()["engine"])
 
