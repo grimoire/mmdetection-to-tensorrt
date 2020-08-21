@@ -9,6 +9,10 @@ import logging
 import torch
 import time
 
+from pathlib import Path
+from argparse 
+
+
 def mmdet2trt(  config, 
                 checkpoint,
                 device="cuda:0",
@@ -75,10 +79,15 @@ def main():
     parser.add_argument('--config', help='Path to a mmdet Config file')
     parser.add_argument('--checkpoint', help='Path to a mmdet Checkpoint file')
     parser.add_argument('--output', help='Path where tensorrt model will be saved')
-    parser.add_argument("--fp16", type=bool, default=True, help="Enable fp16 inference")
-    parser.add_argument("--save-engine", type=bool, default=True, help="Enable saving TensorRT engine in a separate file.")
+    parser.add_argument(
+        "--fp16", type=bool, default=True, help="Enable fp16 inference")
+    parser.add_argument(
+        "--save-engine", type=bool, default=True, help="Enable saving TensorRT engine in a separate file.")
+    parser.add_argument(
+        '--device', default='cuda:0', help='Device used for inference') 
+   
     args = parser.parse_args()
-    trt_model = mmdet2trt(args.config, args.checkpoint, fp16_mode=args.fp16)
+    trt_model = mmdet2trt(args.config, args.checkpoint, device=args.device, fp16_mode=args.fp16)
     torch.save(trt_model.state_dict(), args.save_path)
     if args.save_engine:
         with open(Path(args.save_path).with_suffix(".engine"), "wb") as f:
