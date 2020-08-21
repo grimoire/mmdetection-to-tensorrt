@@ -96,7 +96,7 @@ def main():
         "--device", type=str, default="cuda:0", help="Device used for conversion."
     )
     parser.add_argument(
-        "--max-workspace-size",
+        "--max-workspace-gb",
         type=int,
         default=0.5,
         help="The maximum `device` (GPU) temporary memory in GB (gigabytes) which TensorRT can use at execution time.",
@@ -162,7 +162,7 @@ def main():
         args.checkpoint,
         device=args.device,
         fp16_mode=args.fp16,
-        max_workspace_size=args.max_workspace_size * 1e9,
+        max_workspace_size=args.max_workspace_gb * 1e9,
         opt_shape_param=opt_shape_param,
         trt_log_level=args.trt_log_level,
         return_warp_model=args.return_warp_model,
