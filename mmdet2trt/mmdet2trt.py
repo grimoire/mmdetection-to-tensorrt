@@ -21,7 +21,7 @@ def mmdet2trt(
     checkpoint,
     device="cuda:0",
     fp16_mode=False,
-    max_workspace_size=1 << 25,
+    max_workspace_size=0.5e9,
     opt_shape_param=None,
     trt_log_level="INFO",
     return_warp_model=False,
@@ -98,8 +98,8 @@ def main():
     parser.add_argument(
         "--max-workspace-size",
         type=int,
-        default=1 << 25,
-        help="The maximum GPU temporary memory which the TensorRT Builder can use at execution time.",
+        default=0.5,
+        help="The maximum `device` (GPU) temporary memory in GB (gigabytes) which TensorRT can use at execution time.",
     )
     parser.add_argument(
         "--min-scale",
@@ -162,7 +162,7 @@ def main():
         args.checkpoint,
         device=args.device,
         fp16_mode=args.fp16,
-        max_workspace_size=args.max_workspace_size,
+        max_workspace_size=args.max_workspace_size * 1e9,
         opt_shape_param=opt_shape_param,
         trt_log_level=args.trt_log_level,
         return_warp_model=args.return_warp_model,
