@@ -41,12 +41,11 @@ how to create a tensorrt model from mmdet model (converting might take few minut
 ### CLI
 
 ```bash
-# Run mmdet2trt -h for help
-mmdet2trt \
---config ${CONFIG_PATH} \
---checkpoint ${CHECKPOINT_PATH} \
---output ${OUTPUT_PATH}
+mmdet2trt ${CONFIG_PATH} ${CHECKPOINT_PATH} ${OUTPUT_PATH}
 ```
+
+Run mmdet2trt -h for help on optional arguments.
+
 ### Python
 
 ```python
