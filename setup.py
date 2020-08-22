@@ -5,16 +5,21 @@ from setuptools import setup, find_packages
 from setuptools.command.install import install
 from setuptools.command.develop import develop
 from distutils.cmd import Command
+
 # from build import build
 
 package_data = {}
 
 plugins_user_options = [
-    ('plugins', None, 'Build plugins'),
-    ('cuda-dir=', None, 'Location of CUDA (if not default location)'),
-    ('torch-dir=', None, 'Location of PyTorch (if not default location)'),
-    ('trt-inc-dir=', None, 'Location of TensorRT include files (if not default location)'),
-    ('trt-lib-dir=', None, 'Location of TensorRT libraries (if not default location)'),
+    ("plugins", None, "Build plugins"),
+    ("cuda-dir=", None, "Location of CUDA (if not default location)"),
+    ("torch-dir=", None, "Location of PyTorch (if not default location)"),
+    (
+        "trt-inc-dir=",
+        None,
+        "Location of TensorRT include files (if not default location)",
+    ),
+    ("trt-lib-dir=", None, "Location of TensorRT libraries (if not default location)"),
 ]
 
 
@@ -77,7 +82,15 @@ class InstallCommand(install):
 
 class CleanCommand(Command):
     """Custom clean command to tidy up the project root."""
-    PY_CLEAN_FILES = ['./build', './dist', './__pycache__', './*.pyc', './*.tgz', './*.egg-info']
+
+    PY_CLEAN_FILES = [
+        "./build",
+        "./dist",
+        "./__pycache__",
+        "./*.pyc",
+        "./*.tgz",
+        "./*.egg-info",
+    ]
     description = "Command to tidy up the project root"
     user_options = []
 
@@ -96,7 +109,7 @@ class CleanCommand(Command):
                 if not path.startswith(root_dir):
                     # Die if path in CLEAN_FILES is absolute + outside this directory
                     raise ValueError("%s is not a path inside %s" % (path, root_dir))
-                print('Removing %s' % os.path.relpath(path))
+                print("Removing %s" % os.path.relpath(path))
                 shutil.rmtree(path)
 
         cmd_list = {
@@ -114,14 +127,19 @@ class CleanCommand(Command):
 
 
 setup(
-    name='mmdet2trt',
-    version='0.0.1',
-    description='mmdetection to tensorrt converter',
+    name="mmdet2trt",
+    version="0.0.1",
+    description="mmdetection to tensorrt converter",
     cmdclass={
-        'install': InstallCommand,
-        'clean': CleanCommand,
-        'develop': DevelopCommand,
+        "install": InstallCommand,
+        "clean": CleanCommand,
+        "develop": DevelopCommand,
     },
     packages=find_packages(),
-    package_data=package_data
+    package_data=package_data,
+    entry_points={
+        "console_scripts": [
+            "mmdet2trt = mmdet2trt.mmdet2trt:main",
+            ],
+    },
 )
