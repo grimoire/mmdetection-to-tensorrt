@@ -21,7 +21,6 @@ class GuidedAnchorHeadWarper(nn.Module):
         self.test_cfg = module.test_cfg
         self.num_classes = self.module.num_classes
         self.use_sigmoid_cls = self.module.use_sigmoid_cls
-        print(module.test_cfg)
         if "score_thr" in module.test_cfg and "nms" in module.test_cfg and "iou_threshold" in module.test_cfg.nms:
             self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr, module.test_cfg.nms.iou_threshold, backgroundLabelId = self.num_classes)
 

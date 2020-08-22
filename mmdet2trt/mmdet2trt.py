@@ -40,7 +40,7 @@ def mmdet2trt(
     if opt_shape_param is None:
         img_scale = cfg.test_pipeline[1]["img_scale"]
         min_scale = min(img_scale)
-        max_scale = max(img_scale)
+        max_scale = max(img_scale)+32
         opt_shape_param = [
             [
                 [1, 3, min_scale, min_scale],
@@ -135,11 +135,6 @@ def main():
         help="TensorRT logging level.",
     )
     parser.add_argument(
-        "--return-warp-model",
-        action="store_true",
-        help="Whether to return the created TRTModule instance or not.",
-    )
-    parser.add_argument(
         "--output-names",
         nargs=4,
         type=str,
@@ -165,7 +160,6 @@ def main():
         max_workspace_size=int(args.max_workspace_gb * 1e9),
         opt_shape_param=opt_shape_param,
         trt_log_level=args.trt_log_level,
-        return_warp_model=args.return_warp_model,
         output_names=args.output_names,
     )
 
