@@ -4,6 +4,7 @@ from torch import nn
 import torch.nn.functional as F
 from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+import mmdet2trt.ops.util_ops as mm2trt_util
 from .standard_roi_head import StandardRoIHeadWarper
 
 @register_warper("mmdet.models.roi_heads.double_roi_head.DoubleHeadRoIHead")
@@ -15,8 +16,12 @@ class DoubleHeadRoIHeadWarper(StandardRoIHeadWarper):
         
 
     def forward(self, feat ,proposals):
-        zeros = proposals.new_zeros([proposals.shape[0], 1])
-        rois = torch.cat([zeros, proposals], dim=1)
+        batch_size = proposals.shape[0]
+        num_proposals = proposals.shape[1]
+        rois_pad = mm2trt_util.arange_by_input(proposals, 0).unsqueeze(1)
+        rois_pad = rois_pad.repeat(1, num_proposals).view(-1, 1)
+        proposals = proposals.view(-1, 4)
+        rois = torch.cat([rois_pad, proposals], dim=1)
 
         bbox_cls_feats = self.bbox_roi_extractor(
             feat[:self.bbox_roi_extractor.num_inputs], rois)
@@ -37,9 +42,9 @@ class DoubleHeadRoIHeadWarper(StandardRoIHeadWarper):
                     self.bbox_head.bbox_coder.stds)
 
         num_bboxes = bboxes.shape[0]
-        scores = scores.unsqueeze(0)
-        bboxes = bboxes.view(1, num_bboxes, -1, 4)
-        bboxes_ext = bboxes.new_zeros((1,num_bboxes, 1, 4))
+        scores = scores.view(batch_size, num_proposals, -1)
+        bboxes = bboxes.view(batch_size, num_proposals, -1, 4)
+        bboxes_ext = bboxes[:,:,0:1,:]*0
         bboxes = torch.cat([bboxes, bboxes_ext], 2)
         num_detections, det_boxes, det_scores, det_classes = self.rcnn_nms(scores, bboxes, num_bboxes, self.test_cfg.max_per_img)
 

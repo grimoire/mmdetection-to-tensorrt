@@ -4,6 +4,7 @@ from torch import nn
 import torch.nn.functional as F
 from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+import mmdet2trt.ops.util_ops as mm2trt_util
 
 @register_warper("mmdet.models.roi_heads.HybridTaskCascadeRoIHead")
 @register_warper("mmdet.models.roi_heads.CascadeRoIHead")
@@ -62,9 +63,15 @@ class CascadeRoIHeadWarper(nn.Module):
 
     def forward(self, feat ,proposals): 
         ms_scores = []
+        batch_size = proposals.shape[0]
+        num_proposals = proposals.shape[1]
+        rois_pad = mm2trt_util.arange_by_input(proposals, 0).unsqueeze(1)
+        rois_pad = rois_pad.repeat(1, num_proposals).view(-1, 1)
+        proposals = proposals.view(-1, 4)
         rois = proposals
+
         for i in range(self.num_stages):
-            bbox_results = self._bbox_forward(i, feat, rois)
+            bbox_results = self._bbox_forward(i, feat, torch.cat([rois_pad,rois], dim=1))
             ms_scores.append(bbox_results['cls_score'])
             bbox_pred = bbox_results['bbox_pred']
 
@@ -83,10 +90,10 @@ class CascadeRoIHeadWarper(nn.Module):
                     bbox_head.bbox_coder.stds)
         
         num_bboxes = bboxes.shape[0]
-        scores = scores.unsqueeze(0)
-        bboxes = bboxes.view(1, num_bboxes, -1, 4)
+        scores = scores.view(batch_size, num_proposals, -1)
+        bboxes = bboxes.view(batch_size, num_proposals, -1, 4)
         bboxes = bboxes.repeat(1, 1, bbox_head.num_classes, 1)
-        bboxes_ext = bboxes.new_zeros((1,num_bboxes, 1, 4))
+        bboxes_ext = bboxes[:,:,0:1,:]*0
         bboxes = torch.cat([bboxes, bboxes_ext], 2)
         num_detections, det_boxes, det_scores, det_classes = self.rcnn_nms(scores, bboxes, num_bboxes, self.test_cfg.max_per_img)
 
