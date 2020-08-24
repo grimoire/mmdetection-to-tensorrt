@@ -65,7 +65,7 @@ def mmdet2trt(
             log_level=getattr(trt.Logger, trt_log_level),
             fp16_mode=fp16_mode,
             opt_shape_param=opt_shape_param,
-            max_workspace_size=max_workspace_size,
+            max_workspace_size=int(max_workspace_size),
             keep_network=False,
             strict_type_constraints=True,
             output_names=output_names,
