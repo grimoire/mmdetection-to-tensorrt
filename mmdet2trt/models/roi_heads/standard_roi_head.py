@@ -46,9 +46,9 @@ class StandardRoIHeadWarper(nn.Module):
         bboxes = delta2bbox(proposals, bbox_pred, self.bbox_head.bbox_coder.means,
                     self.bbox_head.bbox_coder.stds)
 
-        num_bboxes = bboxes.shape[0]
         scores = scores.view(batch_size, num_proposals, -1)
         bboxes = bboxes.view(batch_size, num_proposals, -1, 4)
+        num_bboxes = bboxes.shape[1]
         bboxes_ext = bboxes[:,:,0:1,:]*0
         bboxes = torch.cat([bboxes, bboxes_ext], 2)
         num_detections, det_boxes, det_scores, det_classes = self.rcnn_nms(scores, bboxes, num_bboxes, self.test_cfg.max_per_img)

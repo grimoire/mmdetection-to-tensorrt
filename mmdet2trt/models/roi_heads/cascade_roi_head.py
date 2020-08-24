@@ -89,12 +89,12 @@ class CascadeRoIHeadWarper(nn.Module):
         bboxes = delta2bbox(rois, bbox_pred, bbox_head.bbox_coder.means,
                     bbox_head.bbox_coder.stds)
         
-        num_bboxes = bboxes.shape[0]
         scores = scores.view(batch_size, num_proposals, -1)
         bboxes = bboxes.view(batch_size, num_proposals, -1, 4)
         bboxes = bboxes.repeat(1, 1, bbox_head.num_classes, 1)
         bboxes_ext = bboxes[:,:,0:1,:]*0
         bboxes = torch.cat([bboxes, bboxes_ext], 2)
+        num_bboxes = bboxes.shape[1]
         num_detections, det_boxes, det_scores, det_classes = self.rcnn_nms(scores, bboxes, num_bboxes, self.test_cfg.max_per_img)
 
         return num_detections, det_boxes, det_scores, det_classes
