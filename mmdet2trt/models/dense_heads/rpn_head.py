@@ -4,6 +4,7 @@ import torch
 from torch import nn
 
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+import mmdet2trt.ops.util_ops as mm2trt_util
 
 @register_warper("mmdet.models.RPNHead")
 class RPNHeadWarper(nn.Module):
@@ -43,14 +44,13 @@ class RPNHeadWarper(nn.Module):
 
             _, proposals, scores, _ = self.rpn_nms(scores, proposals, self.test_cfg.nms_pre, self.test_cfg.nms_post)
             
-            mlvl_scores.append(scores.squeeze(0))
-            mlvl_proposals.append(proposals.squeeze(0))
-
+            mlvl_scores.append(scores)
+            mlvl_proposals.append(proposals)
             
-        scores = torch.cat(mlvl_scores, dim=0)
-        proposals = torch.cat(mlvl_proposals, dim=0)
+        scores = torch.cat(mlvl_scores, dim=1)
+        proposals = torch.cat(mlvl_proposals, dim=1)
         
-        _, topk_inds = scores.topk(self.test_cfg.max_num)
-        proposals = proposals[topk_inds, :]
+        _, topk_inds = scores.topk(self.test_cfg.max_num, dim=1)
+        proposals = mm2trt_util.gather_topk(proposals, 1, topk_inds)
         
         return proposals
