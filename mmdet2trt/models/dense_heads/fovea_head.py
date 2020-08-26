@@ -34,6 +34,8 @@ class FoveaHeadWarper(AnchorFreeHeadWarper):
             bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(bbox_pred.shape[0], -1, 4).exp()
             x = x.unsqueeze(0)+0.5
             y = y.unsqueeze(0)+0.5
+            x = x.expand_as(bbox_pred[:,:,0])
+            y = y.expand_as(bbox_pred[:,:,0])
             nms_pre = cfg.get('nms_pre', -1)
             if nms_pre > 0:
                 # concate zero to enable topk, dirty way, will find a better way in future
