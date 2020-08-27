@@ -48,7 +48,7 @@ class RepPointsHeadWarper(AnchorFreeHeadWarper):
             else:
                 scores = scores.softmax(-1)[:,:,:-1]
             bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(bbox_pred.shape[0], -1, 4)
-            points = points[:, :2].unsqueeze(0)
+            points = points[:, :2].unsqueeze(0).expand_as(bbox_pred[:,:,:2])
 
             nms_pre = cfg.get('nms_pre', -1)
             if nms_pre > 0:

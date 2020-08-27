@@ -77,7 +77,7 @@ class AnchorHeadWarper(nn.Module):
         mlvl_scores = mm2trt_util.gather_topk(mlvl_scores, 1, topk_inds)
 
         if self.use_sigmoid_cls:
-            padding = mlvl_scores.new_zeros(mlvl_scores.shape[0], mlvl_scores.shape[1], 1)
+            padding = mlvl_scores[:,:,:1]*0
             mlvl_scores = torch.cat([mlvl_scores, padding], dim=2)
         
         num_bboxes = mlvl_proposals.shape[1]
