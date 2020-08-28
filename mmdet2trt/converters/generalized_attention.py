@@ -85,14 +85,12 @@ def convert_GeneralizeAttention(ctx):
         # (n, num_heads, w, w_kv, dim)
         position_feat_x = self.appr_geom_fc_x(position_embed_x).\
             view(1, w, w_kv, num_heads, self.qk_embed_dim).\
-            permute(0, 3, 1, 2, 4).\
-            repeat(n, 1, 1, 1, 1)
+            permute(0, 3, 1, 2, 4)
 
         # (n, num_heads, h, h_kv, dim)
         position_feat_y = self.appr_geom_fc_y(position_embed_y).\
             view(1, h, h_kv, num_heads, self.qk_embed_dim).\
-            permute(0, 3, 1, 2, 4).\
-            repeat(n, 1, 1, 1, 1)
+            permute(0, 3, 1, 2, 4)
 
         position_feat_x /= math.sqrt(2)
         position_feat_y /= math.sqrt(2)
@@ -101,8 +99,7 @@ def convert_GeneralizeAttention(ctx):
         # accelerate for saliency only
     if (np.sum(self.attention_type) == 1) and self.attention_type[2]:
         appr_bias = self.appr_bias.\
-            view(1, num_heads, 1, self.qk_embed_dim).\
-            repeat(n, 1, 1, 1)
+            view(1, num_heads, 1, self.qk_embed_dim)
 
         energy = torch.matmul(appr_bias, proj_key).\
             view(n, num_heads, 1, h_kv * w_kv)
@@ -132,8 +129,7 @@ def convert_GeneralizeAttention(ctx):
 
             elif self.attention_type[2]:
                 appr_bias = self.appr_bias.\
-                    view(1, num_heads, 1, self.qk_embed_dim).\
-                    repeat(n, 1, 1, 1)
+                    view(1, num_heads, 1, self.qk_embed_dim)
 
                 energy += torch.matmul(appr_bias, proj_key).\
                     view(n, num_heads, 1, 1, h_kv, w_kv)
@@ -181,8 +177,7 @@ def convert_GeneralizeAttention(ctx):
 
             elif self.attention_type[3]:
                 geom_bias = self.geom_bias.\
-                    view(1, num_heads, self.qk_embed_dim, 1).\
-                    repeat(n, 1, 1, 1)
+                    view(1, num_heads, self.qk_embed_dim, 1)
 
                 position_feat_x_reshape = position_feat_x.\
                     view(n, num_heads, w*w_kv, self.qk_embed_dim)
