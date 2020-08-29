@@ -63,7 +63,7 @@ class GuidedAnchorHeadWarper(nn.Module):
         squares = squares.unsqueeze(0)
         anchor_deltas = shape_pred.permute(0, 2, 3, 1).contiguous().view(
             shape_pred.shape[0], -1, 2)
-        zeros = squares[:, :, :2]*0.
+        zeros = anchor_deltas[:, :, :2]*0.
         bbox_deltas = torch.cat([zeros, anchor_deltas], dim=2)
         guided_anchors = self.anchor_coder.decode(
             squares, bbox_deltas, wh_ratio_clip=1e-6)
