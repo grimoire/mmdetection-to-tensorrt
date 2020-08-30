@@ -21,12 +21,31 @@ def mmdet2trt(
     checkpoint,
     device="cuda:0",
     fp16_mode=False,
+    int8_mode=False,
+    int8_calib_dataset=None,
+    int8_calib_alg="entropy",
     max_workspace_size=0.5e9,
     opt_shape_param=None,
     trt_log_level="INFO",
     return_warp_model=False,
     output_names=["num_detections", "boxes", "scores", "classes"],
 ):
+    r"""
+    create tensorrt model from mmdetection.
+    Args:
+        config (str): config file path of mmdetection model
+        checkpoint (str): checkpoint file path of mmdetection model
+        device (str): convert gpu device
+        fp16_mode (bool): create fp16 mode engine.
+        int8_mode (bool): create int8 mode engine.
+        int8_calib_dataset (object): dataset object used to do data calibrate
+        int8_calib_alg (str): how to calibrate int8, ["minmax", "entropy"]
+        max_workspace_size (int): tensorrt workspace size. some tactic might need large workspace.
+        opt_shape_param (list[list[list[int]]]): the min/optimize/max shape of input tensor
+        trt_log_level (str): tensorrt log level, ["VERBOSE", "INFO", "WARNING", "ERROR"]
+        return_warp_model (bool): return pytorch warp model, used for debug
+        output_names (str): the output names of tensorrt engine
+    """
 
     device = torch.device(device)
 
@@ -51,6 +70,8 @@ def mmdet2trt(
 
     dummy_shape = opt_shape_param[0][1]
     dummy_input = torch.rand(dummy_shape).to(device)
+    dummy_input = (dummy_input-0.45)/0.27
+    dummy_input = dummy_input.contiguous()
 
     logger.info("Model warmup")
     with torch.no_grad():
@@ -59,6 +80,11 @@ def mmdet2trt(
     logger.info("Converting model")
     start = time.time()
     with torch.cuda.device(device), torch.no_grad():
+        int8_calib_algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
+        if int8_calib_alg=="minmax":
+            int8_calib_algorithm = trt.CalibrationAlgoType.MINMAX_CALIBRATION
+        elif int8_calib_alg=="entropy":
+            int8_calib_algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
         trt_model = torch2trt(
             warp_model,
             [dummy_input],
@@ -69,6 +95,9 @@ def mmdet2trt(
             keep_network=False,
             strict_type_constraints=True,
             output_names=output_names,
+            int8_mode=int8_mode,
+            int8_calib_dataset=int8_calib_dataset,
+            int8_calib_algorithm=int8_calib_algorithm
         )
 
     duration = time.time() - start

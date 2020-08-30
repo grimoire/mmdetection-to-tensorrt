@@ -1,7 +1,7 @@
 # MMDet to tensorrt
 
-This project aims to convert the mmdetection model to tensorrt model end2end. 
-Focus on object detection for now, instance segmentation will be added in future.
+This project aims to convert the mmdetection model to tensorrt model end2end. Support fp16, int8(experiment), batch input, dynamic input shape.  
+Focus on object detection for now, instance segmentation will be added in future.  
 
 Tested on:
 - torch=1.6.0
@@ -10,7 +10,7 @@ Tested on:
 - cuda=10.2
 - cudnn=8.0.2.39
 
-Any advice, bug report and star are welcome.
+Any advices, bug reports and stars are welcome.
 If you find any error, please report in the issue.
 
 ## Requirement
