@@ -1,6 +1,9 @@
 import tensorrt as trt
 from torch2trt import torch2trt
 from mmdet.apis import init_detector
+from mmdet.apis.inference import LoadImage
+from mmdet.datasets.pipelines import Compose
+import mmcv
 
 from mmdet2trt.models.builder import build_warper
 from mmdet2trt.models.detectors import TwoStageDetectorWarper
@@ -14,6 +17,45 @@ from pathlib import Path
 
 
 logger = logging.getLogger("mmdet2trt")
+
+
+class Int8CalibDataset():
+    r"""
+    datas used to calibrate int8 model
+    feed to int8_calib_dataset
+    """
+    def __init__(self, image_paths, config, opt_shape_param):
+        r"""
+        datas used to calibrate int8 model
+        feed to int8_calib_dataset
+        Args:
+            image_paths (list[str]): image paths to calib
+            config (str|dict): config of mmdetection model
+            opt_shape_param: same as mmdet2trt
+        """
+        if isinstance(config, str):
+            config = mmcv.Config.fromfile(config)
+        
+        self.cfg = config
+        self.image_paths = image_paths
+        self.opt_shape = opt_shape_param[0][1]
+
+        test_pipeline = [LoadImage()] + config.data.test.pipeline[1:]
+        self.test_pipeline = Compose(test_pipeline)
+    
+    def __len__(self):
+        return len(self.image_paths)
+    
+    def __getitem__(self, index):
+        image_path = self.image_paths[index]
+
+        data = dict(img=image_path)
+        data = self.test_pipeline(data)
+
+        tensor = data['img'][0].unsqueeze(0)
+        tensor = torch.nn.functional.interpolate(tensor, self.opt_shape[-2:]).squeeze(0)
+
+        return [tensor]
 
 
 def mmdet2trt(

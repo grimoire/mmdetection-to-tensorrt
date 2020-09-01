@@ -1,4 +1,4 @@
-from .mmdet2trt import mmdet2trt
+from .mmdet2trt import mmdet2trt, Int8CalibDataset
 from .ops import *
 from .core import *
 from .models import *

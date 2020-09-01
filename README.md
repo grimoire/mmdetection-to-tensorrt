@@ -8,6 +8,8 @@ support:
 - int8(experiment)
 - batched input
 - dynamic input shape
+- combination of different modules
+- deepstream support
 
 Any advices, bug reports and stars are welcome.
 
@@ -54,7 +56,7 @@ opt_shape_param=[
         [1,3,1344,1344],    # max shape
     ]
 ]
-max_workspace_size=1<<30    # some module need large workspace, add workspace size when OOM.
+max_workspace_size=1<<30    # some module and tactic need large workspace.
 trt_model = mmdet2trt(cfg_path, weight_path, opt_shape_param=opt_shape_param, fp16_mode=True, max_workspace_size=max_workspace_size)
 torch.save(trt_model.state_dict(), save_path)
 ```
@@ -76,6 +78,10 @@ with open(engine_path, mode='wb') as f:
 note that the bbox inference result did not divided by scale factor, divided by you self if needed.
 
 read demo/inference.py for more detail
+
+## How does it works?
+Most other project use pytorch=>ONNX=>tensorRT route, This repo convert pytorch=>tensorRT directly, avoid unnecessary ONNX IR.
+read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
 
 ## Support Model/Module
 
