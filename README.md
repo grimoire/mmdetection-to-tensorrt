@@ -77,7 +77,9 @@ with open(engine_path, mode='wb') as f:
 
 note that the bbox inference result did not divided by scale factor, divided by you self if needed.
 
-read demo/inference.py for more detail
+play demo in demo/inference.py  
+
+[getting_started.md](./docs/getting_started.md) for more detail
 
 ## How does it works?
 Most other project use pytorch=>ONNX=>tensorRT route, This repo convert pytorch=>tensorRT directly, avoid unnecessary ONNX IR.
