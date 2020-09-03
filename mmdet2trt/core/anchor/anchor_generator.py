@@ -10,12 +10,15 @@ class AnchorGeneratorSingle(nn.Module):
 
         self.index = index
         self.base_size = module.base_sizes[index]
-        self.scales = module.scales
-        self.ratios = module.ratios
-        self.scale_major = module.scale_major
-        self.ctr = None
-        if module.centers is not None:
-            self.ctr = module.centers[index]
+        if hasattr(module, 'base_anchors'):
+            self.base_anchor = module.base_anchors[index]
+        else:
+            self.scales = module.scales
+            self.ratios = module.ratios
+            self.scale_major = module.scale_major
+            self.ctr = None
+            if module.centers is not None:
+                self.ctr = module.centers[index]
         
     def forward(self, x, stride=None, device = "cuda"):
         if stride is None:
@@ -33,10 +36,13 @@ class AnchorGeneratorWarper(nn.Module):
         self.generator = module
 
         self.base_sizes = module.base_sizes
-        self.scales = module.scales
-        self.ratios = module.ratios
-        self.scale_major = module.scale_major
-        self.centers = module.centers
+        if hasattr(module, 'base_anchors'):
+            self.base_anchors = module.base_anchors
+        else:
+            self.scales = module.scales
+            self.ratios = module.ratios
+            self.scale_major = module.scale_major
+            self.centers = module.centers
 
         self.ag_single_list = [AnchorGeneratorSingle(module, index) for index in range(len(self.base_sizes))]
 

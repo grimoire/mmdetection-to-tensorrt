@@ -128,7 +128,7 @@ class CleanCommand(Command):
 
 setup(
     name="mmdet2trt",
-    version="0.0.1",
+    version="0.1.0",
     description="mmdetection to tensorrt converter",
     cmdclass={
         "install": InstallCommand,
