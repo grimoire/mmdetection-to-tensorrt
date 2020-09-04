@@ -1,4 +1,4 @@
-from torch2trt import tensorrt_converter, trt_
+from torch2trt import tensorrt_converter, trt_, get_arg
 import torch
 from torch import nn
 import numpy as np
@@ -16,10 +16,7 @@ def convert_AnchorGeneratorDynamic(ctx):
     ag = module
     index = ag.index
     base_size = ag.base_size
-    if len(ctx.method_args)>2:
-        stride = ctx.method_args[2]
-    else:
-        stride = base_size
+    stride = get_arg(ctx, 'stride', pos=2, default=base_size)
     if hasattr(ag.generator, 'base_anchors'):
         base_anchors = ag.generator.base_anchors[index]
         base_anchors = base_anchors.view(-1).cpu().numpy()

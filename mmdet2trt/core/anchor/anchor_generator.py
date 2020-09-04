@@ -11,7 +11,7 @@ class AnchorGeneratorSingle(nn.Module):
         self.index = index
         self.base_size = module.base_sizes[index]
         if hasattr(module, 'base_anchors'):
-            self.base_anchor = module.base_anchors[index]
+            self.base_anchor = module.base_anchors[index].contiguous()
         else:
             self.scales = module.scales
             self.ratios = module.ratios
@@ -29,6 +29,7 @@ class AnchorGeneratorSingle(nn.Module):
                                                         stride=stride,
                                                         device=device)
 
+@register_warper("mmdet.core.anchor.anchor_generator.YOLOAnchorGenerator")
 @register_warper("mmdet.core.AnchorGenerator")
 class AnchorGeneratorWarper(nn.Module):
     def __init__(self, module):
@@ -37,7 +38,7 @@ class AnchorGeneratorWarper(nn.Module):
 
         self.base_sizes = module.base_sizes
         if hasattr(module, 'base_anchors'):
-            self.base_anchors = module.base_anchors
+            self.base_anchors = [anchor.contiguous() for anchor in module.base_anchors]
         else:
             self.scales = module.scales
             self.ratios = module.ratios

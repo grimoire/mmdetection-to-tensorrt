@@ -36,7 +36,8 @@ python setup.py develop
 
 ## Usage
 
-how to create a tensorrt model from mmdet model (converting might take few minutes)(Might have some warning when converting.)
+how to create a tensorrt model from mmdet model (converting might take few minutes)(Might have some warning when converting.)  
+detail can be found in [getting_started.md](./docs/getting_started.md)
 
 ### CLI
 
@@ -111,6 +112,7 @@ read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
 - [x] Dynamic R-CNN
 - [x] Hybrid Task Cascade (object detection only)
 - [x] DetectoRS
+- [x] YOLOv3
 
 
 

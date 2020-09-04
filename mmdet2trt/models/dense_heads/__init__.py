@@ -7,3 +7,4 @@ from .reppoints_head import RepPointsHeadWarper
 from .atss_head import ATSSHeadWarper
 from .guided_anchor_head import GuidedAnchorHeadWarper
 from .ga_rpn_head import GARPNHeadWarper
+from .yolo_head import YOLOV3HeadWarper
