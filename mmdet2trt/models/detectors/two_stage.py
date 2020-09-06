@@ -29,6 +29,6 @@ class TwoStageDetectorWarper(nn.Module):
         feat = model.extract_feat(x)
         rois = rpn_head(feat, x)
 
-        result = self.roi_head_warper(feat, rois)
+        result = self.roi_head_warper(feat, rois, x.shape[2:])
         return result
 

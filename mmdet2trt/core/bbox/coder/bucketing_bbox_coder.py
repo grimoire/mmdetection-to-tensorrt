@@ -45,10 +45,10 @@ def bucket2bbox_batched(proposals,
 
     offsets = offset_preds.view(batch_size, -1, 4, side_num)
 
-    l_offsets = util_ops.gather_topk(offsets[:, :, 0, :], score_inds_l)
-    r_offsets = util_ops.gather_topk(offsets[:, :, 1, :], score_inds_r)
-    t_offsets = util_ops.gather_topk(offsets[:, :, 2, :], score_inds_t)
-    d_offsets = util_ops.gather_topk(offsets[:, :, 3, :], score_inds_d)
+    l_offsets = offsets[:,:,0,:].gather(2, score_inds_l.unsqueeze(2)).squeeze(2)
+    r_offsets = offsets[:,:,1,:].gather(2, score_inds_r.unsqueeze(2)).squeeze(2)
+    t_offsets = offsets[:,:,2,:].gather(2, score_inds_t.unsqueeze(2)).squeeze(2)
+    d_offsets = offsets[:,:,3,:].gather(2, score_inds_d.unsqueeze(2)).squeeze(2)
 
     x1 = l_buckets - l_offsets * bucket_w
     x2 = r_buckets - r_offsets * bucket_w
@@ -65,7 +65,7 @@ def bucket2bbox_batched(proposals,
 
 
     loc_confidence = score_topk[:, :, 0]
-    top2_neighbor_inds = (score_label[:, :, 0] - score_label[:, :, 1]).abs() == 1
+    top2_neighbor_inds = (score_label[:, :, 0] - score_label[:, :, 1]).float().abs() - 1
     loc_confidence += score_topk[:, :, 1] * top2_neighbor_inds.float()
     loc_confidence = loc_confidence.view(batch_size, -1, 4).mean(dim=2)
 

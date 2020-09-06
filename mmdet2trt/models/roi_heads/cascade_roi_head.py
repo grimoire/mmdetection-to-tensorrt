@@ -14,7 +14,7 @@ class CascadeRoIHeadWarper(nn.Module):
         self.module = module
 
         self.bbox_roi_extractor = [build_warper(extractor) for extractor in module.bbox_roi_extractor]
-        self.bbox_head = module.bbox_head
+        self.bbox_head = [build_warper(bb_head, test_cfg=module.test_cfg) for bb_head in module.bbox_head]
         if module.with_shared_head:
             self.shared_head = module.shared_head
         else:
@@ -23,7 +23,6 @@ class CascadeRoIHeadWarper(nn.Module):
         self.test_cfg = module.test_cfg
 
         self.num_stages = module.num_stages
-        self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr, module.test_cfg.nms.iou_threshold, backgroundLabelId = self.bbox_head[-1].num_classes)
 
 
     def _bbox_forward(self, stage, x, rois):
@@ -61,7 +60,7 @@ class CascadeRoIHeadWarper(nn.Module):
 
 
 
-    def forward(self, feat ,proposals): 
+    def forward(self, feat ,proposals, img_shape): 
         ms_scores = []
         batch_size = proposals.shape[0]
         num_proposals = proposals.shape[1]
@@ -71,30 +70,26 @@ class CascadeRoIHeadWarper(nn.Module):
         rois = proposals
 
         for i in range(self.num_stages):
-            bbox_results = self._bbox_forward(i, feat, torch.cat([rois_pad,rois], dim=1))
+            bbox_results = self._bbox_forward(i, feat, torch.cat([rois_pad, rois], dim=1))
             ms_scores.append(bbox_results['cls_score'])
             bbox_pred = bbox_results['bbox_pred']
 
             if i < self.num_stages - 1:
                 bbox_label = bbox_results['cls_score'].argmax(dim=1)
-                rois = self.regress_by_class(i, rois, bbox_label, bbox_pred)
-
-        ### bbox_head.get_boxes
-        cls_score = sum(ms_scores) / self.num_stages
-
-        if isinstance(cls_score, list):
-            cls_score = sum(cls_score) / float(len(cls_score))
-        scores = F.softmax(cls_score, dim=1)
-        bbox_head = self.bbox_head[-1]
-        bboxes = delta2bbox(rois, bbox_pred, bbox_head.bbox_coder.means,
-                    bbox_head.bbox_coder.stds)
+                rois = self.bbox_head[i].regress_by_class(rois, bbox_label, bbox_pred, img_shape)
+                
+        rois = torch.cat([rois_pad, rois], dim=1)
         
-        scores = scores.view(batch_size, num_proposals, -1)
-        bboxes = bboxes.view(batch_size, num_proposals, -1, 4)
-        bboxes = bboxes.repeat(1, 1, bbox_head.num_classes, 1)
-        bboxes_ext = bboxes[:,:,0:1,:]*0
-        bboxes = torch.cat([bboxes, bboxes_ext], 2)
-        num_bboxes = bboxes.shape[1]
-        num_detections, det_boxes, det_scores, det_classes = self.rcnn_nms(scores, bboxes, num_bboxes, self.test_cfg.max_per_img)
-
+        ### bbox_head.get_boxes
+        cls_score = bbox_results['cls_score']
+        bbox_pred = bbox_results['bbox_pred']
+        num_detections, det_boxes, det_scores, det_classes = self.bbox_head[-1].get_bboxes(
+            rois,
+            cls_score,
+            bbox_pred,
+            img_shape,
+            batch_size,
+            num_proposals,
+            self.test_cfg
+        )
         return num_detections, det_boxes, det_scores, det_classes

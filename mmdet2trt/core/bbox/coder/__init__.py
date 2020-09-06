@@ -1,3 +1,4 @@
 from .delta_xywh_bbox_coder import DeltaXYWHBBoxCoderWarper
 from .tblr_bbox_coder import TBLRBBoxCoderWarper
 from .yolo_bbox_coder import YOLOBBoxCoderWarper
+from .bucketing_bbox_coder import BucketingBBoxCoderWarper

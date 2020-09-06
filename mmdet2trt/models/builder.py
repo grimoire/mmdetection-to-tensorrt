@@ -23,13 +23,13 @@ def register_warper(module_name):
         return register_func
 
 
-def build_warper(module, default_warper=None):
+def build_warper(module, default_warper=None, **kwargs):
     model_type = module.__class__
 
     warp_model = None
     if model_type in WARPER_DICT:
         logging.debug("find module type:{}".format(str(model_type)))
-        warp_model = WARPER_DICT[model_type](module)
+        warp_model = WARPER_DICT[model_type](module, **kwargs)
     else:
         logging.warning("can't find warp module for type:{}, use {} instead.".format(str(model_type), default_warper))
         if default_warper is not None:
