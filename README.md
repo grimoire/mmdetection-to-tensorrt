@@ -112,7 +112,7 @@ read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
 - [x] Dynamic R-CNN
 - [x] Hybrid Task Cascade (object detection only)
 - [x] DetectoRS
-- [ ] Side-Aware Boundary Localization (Faster RCNN only, WIP)
+- [ ] Side-Aware Boundary Localization (Faster RCNN/retinanet finish, WIP)
 - [x] YOLOv3
 
 
