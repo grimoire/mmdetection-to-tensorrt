@@ -114,6 +114,7 @@ read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
 - [x] DetectoRS
 - [x] Side-Aware Boundary Localization
 - [x] YOLOv3
+- [x] PAA
 
 
 
