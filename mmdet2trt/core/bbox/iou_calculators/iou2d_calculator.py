@@ -34,11 +34,12 @@ def bbox_overlaps_batched(bboxes1, bboxes2, mode='iou', is_aligned=False, eps=1e
         if mode == 'iou':
             area2 = (bboxes2[:, :, 2] - bboxes2[:, :, 0]) * (
                 bboxes2[:, :, 3] - bboxes2[:, :, 1])
-            union = area1[:, :, None] + area2[:,None,:] - overlap
+            union = area1.unsqueeze(-1) + area2.unsqueeze(1) - overlap
         else:
-            union = area1[:, :, None]
+            union = area1.unsqueeze(-1)
 
-    eps = union.new_tensor([eps])
+    if not isinstance(eps, torch.Tensor):
+        eps = union.new_tensor([eps])
     union = torch.max(union, eps)
     ious = overlap / union
     

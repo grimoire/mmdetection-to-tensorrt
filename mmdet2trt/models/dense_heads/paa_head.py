@@ -79,40 +79,30 @@ class PPAHeadWarper(AnchorHeadWarper):
         module = self.module
         batch_size = num_detected.size(0)
         mlvl_bboxes = mlvl_bboxes.view(batch_size,-1,4)
-
-        proposals_voted = []
-        scores_voted = []
-        cls_id_voted = []
-        for cls in range(module.cls_out_channels):
-            candidate_cls_scores = mlvl_nms_scores[:, :, cls]
-            candidate_cls_bboxes = mlvl_bboxes
-            det_cls_mask = (cls_id == cls).float()
-            det_cls_bboxes = proposals * det_cls_mask[..., None]
-            det_cls_scores = scores * det_cls_mask
-
-            det_candidate_ious = bbox_overlaps_batched(det_cls_bboxes,
-                                                        candidate_cls_bboxes)
-            pos_ious = det_candidate_ious
-            pis = (torch.exp(-(1 - pos_ious)**2 / 0.025) *
-                       candidate_cls_scores[:,None,:])[:, :, :, None]
-            voted_bbox = torch.sum(
-                pis * candidate_cls_bboxes[:, None, :, :], dim=2) / torch.sum(
-                    pis, dim=2)
-            proposals_voted.append(voted_bbox)
-            scores_voted.append(det_cls_scores)
-            cls_id_voted.append((det_cls_scores*0).int()+cls + 1)
+        eps = mlvl_nms_scores.new_tensor([1e-6])
         
-        proposals_voted = torch.cat(proposals_voted, dim=1)
-        scores_voted = torch.cat(scores_voted, dim=1)
-        cls_id_voted = torch.cat(cls_id_voted, dim=1)
+        cls_id_valid = (cls_id>=0).float()
+        cls_id_new = cls_id*cls_id_valid + (1-cls_id_valid)*module.cls_out_channels
+        cls_id_new = cls_id_new.long()
 
-        k = proposals.size(1)
-        _, topk_inds = scores_voted.topk(k, dim=1)
-        scores_voted = mm2trt_util.gather_topk(scores_voted, 1, topk_inds)
-        proposals_voted = mm2trt_util.gather_topk(proposals_voted, 1, topk_inds)
-        cls_id_voted = mm2trt_util.gather_topk(cls_id_voted, 1, topk_inds)
+        candidate_cls_bboxes = mlvl_bboxes
+        det_cls_bboxes = proposals
+        
+        det_candidate_ious = bbox_overlaps_batched(det_cls_bboxes,
+                                                    candidate_cls_bboxes, eps=eps)
+        pos_ious = det_candidate_ious
 
-        scores_mask = (scores_voted>score_thr).int()
-        cls_id_voted = cls_id_voted*scores_mask + (cls_id_voted*(1-scores_mask)-1)
+        cls_id_new = cls_id_new.unsqueeze(-1).expand_as(pos_ious).permute(0, 2, 1)
+        candidate_cls_scores = mm2trt_util.gather_topk(mlvl_nms_scores, 2, cls_id_new)
+        candidate_cls_scores = candidate_cls_scores.permute(0, 2, 1)
+        
+        pis = (torch.exp(-(1 - pos_ious)**2 / 0.025) *
+                    candidate_cls_scores).unsqueeze(-1)
+        voted_bbox = torch.sum(
+            pis * candidate_cls_bboxes.unsqueeze(1), dim=2) / (torch.sum(
+                pis, dim=2)+1e-10)
+        proposals_voted = voted_bbox
+        scores_voted = scores
+        cls_id_voted = cls_id
 
         return  num_detected, proposals_voted, scores_voted, cls_id_voted
