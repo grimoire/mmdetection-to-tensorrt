@@ -14,7 +14,8 @@ def create_roiextractor_plugin(layer_name,
                             sample_num,
                             featmap_strides,
                             roi_scale_factor,
-                            finest_scale):
+                            finest_scale,
+                            aligned):
 
     creator = trt.get_plugin_registry().get_plugin_creator(
         'RoiExtractorPluginDynamic', '1', '')
@@ -30,7 +31,7 @@ def create_roiextractor_plugin(layer_name,
     pfc.append(pf_sample_num)
 
     pf_featmap_strides = trt.PluginField("featmap_strides", np.array(
-        featmap_strides, dtype=np.int32), trt.PluginFieldType.INT32)
+        featmap_strides, dtype=np.float32), trt.PluginFieldType.FLOAT32)
     pfc.append(pf_featmap_strides)
 
     pf_roi_scale_factor = trt.PluginField("roi_scale_factor", np.array(
@@ -40,5 +41,9 @@ def create_roiextractor_plugin(layer_name,
     pf_finest_scale = trt.PluginField("finest_scale", np.array(
         [finest_scale], dtype=np.int32), trt.PluginFieldType.INT32)
     pfc.append(pf_finest_scale)
+
+    pf_aligned = trt.PluginField("aligned", np.array(
+        [aligned], dtype=np.int32), trt.PluginFieldType.INT32)
+    pfc.append(pf_aligned)
 
     return creator.create_plugin(layer_name, pfc)

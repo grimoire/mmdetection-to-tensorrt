@@ -26,7 +26,8 @@ def convert_roiextractor(ctx):
                                        sample_num,
                                        featmap_strides,
                                        roi_scale_factor,
-                                       finest_scale)
+                                       finest_scale,
+                                       aligned=1)
                                        
     custom_layer = ctx.network.add_plugin_v2(
         inputs=[rois_trt] + feats_trt, plugin=plugin)
