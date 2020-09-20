@@ -20,10 +20,20 @@ def inference_detector(model, img, cfg, device):
     
     device = torch.device(device)
     
-    test_pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
+    if isinstance(img, np.ndarray):
+        # directly add img
+        data = dict(img=img)
+        cfg = cfg.copy()
+        # set loading pipeline type
+        cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
+    else:
+        # add information into dict
+        data = dict(img_info=dict(filename=img), img_prefix=None)
+
+    test_pipeline = cfg.data.test.pipeline
     test_pipeline = Compose(test_pipeline)
+
     # prepare data
-    data = dict(img=img)
     data = test_pipeline(data)
 
     tensor = data['img'][0].unsqueeze(0).to(device)

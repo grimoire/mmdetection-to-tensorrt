@@ -10,3 +10,4 @@ from .ga_rpn_head import GARPNHeadWarper
 from .yolo_head import YOLOV3HeadWarper
 from .sabl_retina_head import SABLRetinaHeadWarper
 from .paa_head import PPAHeadWarper
+from .corner_head import CornerHeadWarper

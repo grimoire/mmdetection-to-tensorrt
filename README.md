@@ -115,13 +115,13 @@ read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
 - [x] Side-Aware Boundary Localization
 - [x] YOLOv3
 - [x] PAA
-
+- [ ] CornerNet(Can not save model)
 
 
 Tested on:
 - torch=1.6.0
 - tensorrt=7.1.3.4
-- mmdetection=2.3.0
+- mmdetection=2.4.0
 - cuda=10.2
 - cudnn=8.0.2.39
 

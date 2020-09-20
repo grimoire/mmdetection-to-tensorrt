@@ -5,6 +5,7 @@ import torch
 from torch import nn
 
 
+@register_warper("mmdet.models.CornerNet")
 @register_warper("mmdet.models.PAA")
 @register_warper("mmdet.models.YOLOV3")
 @register_warper("mmdet.models.FSAF")
