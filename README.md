@@ -126,3 +126,10 @@ Tested on:
 - cudnn=8.0.2.39
 
 If you find any error, please report in the issue.
+
+## Contact
+
+This repo is maintained by [@grimoire](https://github.com/grimoire)  
+
+Discuss group: QQ:1107959378
+
