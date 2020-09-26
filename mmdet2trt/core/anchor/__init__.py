@@ -1,2 +1,2 @@
-from .anchor_generator import AnchorGeneratorWarper, SSDAnchorGeneratorWarper
-from .point_generator import PointGeneratorWarper
+from .anchor_generator import AnchorGeneratorWraper, SSDAnchorGeneratorWraper
+from .point_generator import PointGeneratorWraper

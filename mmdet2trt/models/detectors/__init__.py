@@ -1,2 +1,2 @@
-from .two_stage import TwoStageDetectorWarper
-from .single_stage import SingleStageDetectorWarper
+from .two_stage import TwoStageDetectorWraper
+from .single_stage import SingleStageDetectorWraper

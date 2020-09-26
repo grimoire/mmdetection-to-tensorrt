@@ -1,21 +1,21 @@
 import torch
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 from torch import nn
 
 import mmdet2trt.ops.util_ops as mm2trt_util
-from mmdet2trt.models.dense_heads.anchor_free_head import AnchorFreeHeadWarper
+from mmdet2trt.models.dense_heads.anchor_free_head import AnchorFreeHeadWraper
 
 import mmdet2trt.core.post_processing.batched_nms as batched_nms
 import mmdet2trt
 
 
-@register_warper("mmdet.models.RepPointsHead")
-class RepPointsHeadWarper(AnchorFreeHeadWarper):
+@register_wraper("mmdet.models.RepPointsHead")
+class RepPointsHeadWraper(AnchorFreeHeadWraper):
 
     def __init__(self, module):
-        super(RepPointsHeadWarper, self).__init__(module)
+        super(RepPointsHeadWraper, self).__init__(module)
 
-        self.point_generators = [build_warper(generator) for generator in self.module.point_generators]
+        self.point_generators = [build_wraper(generator) for generator in self.module.point_generators]
         # self.rcnn_nms = batched_nms.BatchedNMS(module.test_cfg.score_thr, module.test_cfg.nms.iou_threshold, backgroundLabelId = module.num_classes)
 
     def forward(self, feat, x):

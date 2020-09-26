@@ -1,14 +1,14 @@
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
 from torch import nn
 import torch.nn.functional as F
-from .bbox_head import BBoxHeadWarper
+from .bbox_head import BBoxHeadWraper
 
 
-@register_warper("mmdet.models.roi_heads.bbox_heads.sabl_head.SABLHead")
-class SABLHeadWarper(BBoxHeadWarper):
+@register_wraper("mmdet.models.roi_heads.bbox_heads.sabl_head.SABLHead")
+class SABLHeadWraper(BBoxHeadWraper):
     def __init__(self, module, test_cfg):
-        super(SABLHeadWarper, self).__init__(module, test_cfg)
+        super(SABLHeadWraper, self).__init__(module, test_cfg)
     
     
     def regress_by_class(self, rois, label, bbox_pred, img_shape):

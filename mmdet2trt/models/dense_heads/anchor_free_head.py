@@ -1,5 +1,5 @@
 import torch
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
 from torch import nn
 
@@ -8,10 +8,10 @@ import mmdet2trt.ops as mm2trt_ops
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 
 
-class AnchorFreeHeadWarper(nn.Module):
+class AnchorFreeHeadWraper(nn.Module):
 
     def __init__(self, module):
-        super(AnchorFreeHeadWarper, self).__init__()
+        super(AnchorFreeHeadWraper, self).__init__()
         self.module = module
         
         self.test_cfg = module.test_cfg

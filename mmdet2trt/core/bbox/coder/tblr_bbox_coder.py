@@ -1,4 +1,4 @@
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 from mmdet2trt.ops import util_ops
 import torch
 from torch import nn
@@ -33,10 +33,10 @@ def batched_blr2bboxes(priors,
     return boxes
 
 
-@register_warper("mmdet.core.bbox.coder.TBLRBBoxCoder")
-class TBLRBBoxCoderWarper(nn.Module):
+@register_wraper("mmdet.core.bbox.coder.TBLRBBoxCoder")
+class TBLRBBoxCoderWraper(nn.Module):
     def __init__(self, module):
-        super(TBLRBBoxCoderWarper, self).__init__()
+        super(TBLRBBoxCoderWraper, self).__init__()
         self.normalizer = module.normalizer
 
     def forward(self, cls_scores, bbox_preds, anchors,

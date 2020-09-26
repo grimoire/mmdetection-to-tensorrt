@@ -3,37 +3,37 @@ import mmdet
 from mmdet import models
 import mmcv.ops
 
-WARPER_DICT = {}
+WRAPER_DICT = {}
 
-def register_warper(module_name):
+def register_wraper(module_name):
     try:
         mmdet_module = eval(module_name)
-        def register_func(warp_cls):
-            if mmdet_module in WARPER_DICT:
-                logging.warning("{} is already registed. new warper {} will cover current warper {}.".format(mmdet_module, warp_cls, WARPER_DICT[mmdet_module]))
-            WARPER_DICT[mmdet_module] = warp_cls
-            return warp_cls
+        def register_func(wrap_cls):
+            if mmdet_module in WRAPER_DICT:
+                logging.warning("{} is already registed. new wraper {} will cover current wraper {}.".format(mmdet_module, wrap_cls, WRAPER_DICT[mmdet_module]))
+            WRAPER_DICT[mmdet_module] = wrap_cls
+            return wrap_cls
         return register_func
 
     except:
         logging.warn("module {} not exist.".format(module_name))
-        def register_func(warp_cls):
-            return warp_cls
+        def register_func(wrap_cls):
+            return wrap_cls
         
         return register_func
 
 
-def build_warper(module, default_warper=None, **kwargs):
+def build_wraper(module, default_wraper=None, **kwargs):
     model_type = module.__class__
 
-    warp_model = None
-    if model_type in WARPER_DICT:
+    wrap_model = None
+    if model_type in WRAPER_DICT:
         logging.debug("find module type:{}".format(str(model_type)))
-        warp_model = WARPER_DICT[model_type](module, **kwargs)
+        wrap_model = WRAPER_DICT[model_type](module, **kwargs)
     else:
-        logging.warning("can't find warp module for type:{}, use {} instead.".format(str(model_type), default_warper))
-        if default_warper is not None:
-            warp_model = default_warper(module)
+        logging.warning("can't find wrap module for type:{}, use {} instead.".format(str(model_type), default_wraper))
+        if default_wraper is not None:
+            wrap_model = default_wraper(module)
 
-    return warp_model
+    return wrap_model
     

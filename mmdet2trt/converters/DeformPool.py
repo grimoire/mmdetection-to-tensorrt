@@ -2,7 +2,7 @@ from torch2trt.torch2trt import *
 from .plugins import *
 import mmcv.ops
 
-@tensorrt_converter('mmdet2trt.models.roi_heads.roi_extractors.pooling_layers.deform_roi_pool_extractor.deformable_roi_pool_warp')
+@tensorrt_converter('mmdet2trt.models.roi_heads.roi_extractors.pooling_layers.deform_roi_pool_extractor.deformable_roi_pool_wrap')
 # @tensorrt_converter('mmcv.ops.deform_roi_pool')
 def convert_DeformPool(ctx):
     input = get_arg(ctx, 'input', pos=0, default=None)

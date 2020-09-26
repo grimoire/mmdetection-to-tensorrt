@@ -1,4 +1,4 @@
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -6,15 +6,15 @@ from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 
 
 
-@register_warper("mmdet.models.roi_heads.bbox_heads.convfc_bbox_head.ConvFCBBoxHead")
-@register_warper("mmdet.models.roi_heads.bbox_heads.convfc_bbox_head.Shared2FCBBoxHead")
-@register_warper("mmdet.models.roi_heads.bbox_heads.convfc_bbox_head.Shared4Conv1FCBBoxHead")
-class BBoxHeadWarper(nn.Module):
+@register_wraper("mmdet.models.roi_heads.bbox_heads.convfc_bbox_head.ConvFCBBoxHead")
+@register_wraper("mmdet.models.roi_heads.bbox_heads.convfc_bbox_head.Shared2FCBBoxHead")
+@register_wraper("mmdet.models.roi_heads.bbox_heads.convfc_bbox_head.Shared4Conv1FCBBoxHead")
+class BBoxHeadWraper(nn.Module):
     def __init__(self, module, test_cfg):
-        super(BBoxHeadWarper, self).__init__()
+        super(BBoxHeadWraper, self).__init__()
 
         self.module = module
-        self.bbox_coder = build_warper(self.module.bbox_coder)
+        self.bbox_coder = build_wraper(self.module.bbox_coder)
         self.test_cfg = test_cfg
         self.num_classes = module.num_classes
         self.rcnn_nms = BatchedNMS(test_cfg.score_thr, test_cfg.nms.iou_threshold, backgroundLabelId = module.num_classes)

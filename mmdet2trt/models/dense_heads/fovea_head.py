@@ -1,20 +1,20 @@
 import torch
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 from torch import nn
 
 import mmdet2trt.ops.util_ops as mm2trt_util
-from mmdet2trt.models.dense_heads.anchor_free_head import AnchorFreeHeadWarper
+from mmdet2trt.models.dense_heads.anchor_free_head import AnchorFreeHeadWraper
 from mmdet2trt.core.bbox import batched_distance2bbox
 
 import mmdet2trt.core.post_processing.batched_nms as batched_nms
 import mmdet2trt
 
 
-@register_warper("mmdet.models.FoveaHead")
-class FoveaHeadWarper(AnchorFreeHeadWarper):
+@register_wraper("mmdet.models.FoveaHead")
+class FoveaHeadWraper(AnchorFreeHeadWraper):
 
     def __init__(self, module):
-        super(FoveaHeadWarper, self).__init__(module)
+        super(FoveaHeadWraper, self).__init__(module)
 
 
     def forward(self, feat, x):

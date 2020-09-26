@@ -1,34 +1,34 @@
 import torch
-from mmdet2trt.models.builder import register_warper, build_warper
-from mmdet2trt.models.dense_heads import RPNHeadWarper
-from mmdet2trt.models.roi_heads import StandardRoIHeadWarper
+from mmdet2trt.models.builder import register_wraper, build_wraper
+from mmdet2trt.models.dense_heads import RPNHeadWraper
+from mmdet2trt.models.roi_heads import StandardRoIHeadWraper
 import torch
 from torch import nn
 
-@register_warper("mmdet.models.HybridTaskCascade")
-@register_warper("mmdet.models.MaskRCNN")
-@register_warper("mmdet.models.CascadeRCNN")
-@register_warper("mmdet.models.FasterRCNN")
-@register_warper("mmdet.models.TwoStageDetector")
-class TwoStageDetectorWarper(nn.Module):
+@register_wraper("mmdet.models.HybridTaskCascade")
+@register_wraper("mmdet.models.MaskRCNN")
+@register_wraper("mmdet.models.CascadeRCNN")
+@register_wraper("mmdet.models.FasterRCNN")
+@register_wraper("mmdet.models.TwoStageDetector")
+class TwoStageDetectorWraper(nn.Module):
     def __init__(self, model):
-        super(TwoStageDetectorWarper, self).__init__()
+        super(TwoStageDetectorWraper, self).__init__()
         self.model = model
         
         mmdet_rpn_head = self.model.rpn_head
-        self.rpn_head_warper = build_warper(mmdet_rpn_head, RPNHeadWarper)
+        self.rpn_head_wraper = build_wraper(mmdet_rpn_head, RPNHeadWraper)
 
         mmdet_roi_head = self.model.roi_head
-        self.roi_head_warper = build_warper(mmdet_roi_head, StandardRoIHeadWarper)
+        self.roi_head_wraper = build_wraper(mmdet_roi_head, StandardRoIHeadWraper)
 
     def forward(self, x):
         model = self.model
-        rpn_head = self.rpn_head_warper
+        rpn_head = self.rpn_head_wraper
 
         # backbone
         feat = model.extract_feat(x)
         rois = rpn_head(feat, x)
 
-        result = self.roi_head_warper(feat, rois, x.shape[2:])
+        result = self.roi_head_wraper(feat, rois, x.shape[2:])
         return result
 

@@ -1,18 +1,18 @@
 import torch
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
 from torch import nn
 
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 import mmdet2trt.ops.util_ops as mm2trt_util
 
-@register_warper("mmdet.models.RPNHead")
-class RPNHeadWarper(nn.Module):
+@register_wraper("mmdet.models.RPNHead")
+class RPNHeadWraper(nn.Module):
     def __init__(self, module):
-        super(RPNHeadWarper, self).__init__()
+        super(RPNHeadWraper, self).__init__()
         self.module = module
-        self.anchor_generator = build_warper(self.module.anchor_generator)
-        self.bbox_coder = build_warper(self.module.bbox_coder)
+        self.anchor_generator = build_wraper(self.module.anchor_generator)
+        self.bbox_coder = build_wraper(self.module.bbox_coder)
 
         self.test_cfg = module.test_cfg
         self.rpn_nms = BatchedNMS(0.0, self.test_cfg.nms_thr, -1)

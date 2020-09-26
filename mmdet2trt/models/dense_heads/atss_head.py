@@ -1,15 +1,15 @@
 import torch
 from torch import nn
-from mmdet2trt.models.builder import register_warper, build_warper
-from .anchor_head import AnchorHeadWarper
+from mmdet2trt.models.builder import register_wraper, build_wraper
+from .anchor_head import AnchorHeadWraper
 
 import mmdet2trt.ops.util_ops as mm2trt_util
 
 
-@register_warper("mmdet.models.dense_heads.ATSSHead")
-class ATSSHeadWarper(AnchorHeadWarper):
+@register_wraper("mmdet.models.dense_heads.ATSSHead")
+class ATSSHeadWraper(AnchorHeadWraper):
     def __init__(self, module):
-        super(ATSSHeadWarper, self).__init__(module)
+        super(ATSSHeadWraper, self).__init__(module)
 
 
     def forward(self, feat, x):

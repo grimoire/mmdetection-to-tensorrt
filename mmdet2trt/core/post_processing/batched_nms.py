@@ -2,9 +2,6 @@ import numpy as np
 import torch
 from torch import nn
 from torchvision.ops import nms as tv_nms
-# from mmcv.ops import batched_nms as ops_nms
-
-# from mmdet2trt.models.builder import register_warper, build_warper
 
 class BatchedNMS(nn.Module):
     def __init__(self,

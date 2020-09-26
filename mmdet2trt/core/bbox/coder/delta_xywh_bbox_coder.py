@@ -1,4 +1,4 @@
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
 from torch import nn
 import numpy as np
@@ -87,10 +87,10 @@ def delta2bbox_batched(rois,
 
 
 
-@register_warper("mmdet.core.bbox.coder.DeltaXYWHBBoxCoder")
-class DeltaXYWHBBoxCoderWarper(nn.Module):
+@register_wraper("mmdet.core.bbox.coder.DeltaXYWHBBoxCoder")
+class DeltaXYWHBBoxCoderWraper(nn.Module):
     def __init__(self, module):
-        super(DeltaXYWHBBoxCoderWarper, self).__init__()
+        super(DeltaXYWHBBoxCoderWraper, self).__init__()
         self.means =  module.means
         self.stds = module.stds
 

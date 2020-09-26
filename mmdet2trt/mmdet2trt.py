@@ -5,8 +5,8 @@ from mmdet.apis.inference import LoadImage
 from mmdet.datasets.pipelines import Compose
 import mmcv
 
-from mmdet2trt.models.builder import build_warper
-from mmdet2trt.models.detectors import TwoStageDetectorWarper
+from mmdet2trt.models.builder import build_wraper
+from mmdet2trt.models.detectors import TwoStageDetectorWraper
 
 import logging
 import torch
@@ -69,7 +69,7 @@ def mmdet2trt(
     max_workspace_size=0.5e9,
     opt_shape_param=None,
     trt_log_level="INFO",
-    return_warp_model=False,
+    return_wrap_model=False,
     output_names=["num_detections", "boxes", "scores", "classes"],
 ):
     r"""
@@ -85,7 +85,7 @@ def mmdet2trt(
         max_workspace_size (int): tensorrt workspace size. some tactic might need large workspace.
         opt_shape_param (list[list[list[int]]]): the min/optimize/max shape of input tensor
         trt_log_level (str): tensorrt log level, ["VERBOSE", "INFO", "WARNING", "ERROR"]
-        return_warp_model (bool): return pytorch warp model, used for debug
+        return_wrap_model (bool): return pytorch wrap model, used for debug
         output_names (str): the output names of tensorrt engine
     """
 
@@ -96,7 +96,7 @@ def mmdet2trt(
     cfg = torch_model.cfg
 
     logger.info("Wrapping model")
-    warp_model = build_warper(torch_model, TwoStageDetectorWarper)
+    wrap_model = build_wraper(torch_model, TwoStageDetectorWraper)
 
     if opt_shape_param is None:
         img_scale = cfg.test_pipeline[1]["img_scale"]
@@ -117,7 +117,7 @@ def mmdet2trt(
 
     logger.info("Model warmup")
     with torch.no_grad():
-        result = warp_model(dummy_input)
+        result = wrap_model(dummy_input)
 
     logger.info("Converting model")
     start = time.time()
@@ -128,7 +128,7 @@ def mmdet2trt(
         elif int8_calib_alg=="entropy":
             int8_calib_algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
         trt_model = torch2trt(
-            warp_model,
+            wrap_model,
             [dummy_input],
             log_level=getattr(trt.Logger, trt_log_level),
             fp16_mode=fp16_mode,
@@ -145,8 +145,8 @@ def mmdet2trt(
     duration = time.time() - start
     logger.info("Conversion took {} s".format(duration))
 
-    if return_warp_model:
-        return trt_model, warp_model
+    if return_wrap_model:
+        return trt_model, wrap_model
 
     return trt_model
 

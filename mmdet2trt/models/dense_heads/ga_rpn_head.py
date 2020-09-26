@@ -1,16 +1,16 @@
 import torch
 from torch import nn
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 import mmdet2trt.ops.util_ops as mm2trt_util
-from .guided_anchor_head import  GuidedAnchorHeadWarper
+from .guided_anchor_head import  GuidedAnchorHeadWraper
 
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 
 
-@register_warper("mmdet.models.GARPNHead")
-class GARPNHeadWarper(GuidedAnchorHeadWarper):
+@register_wraper("mmdet.models.GARPNHead")
+class GARPNHeadWraper(GuidedAnchorHeadWraper):
     def __init__(self, module):
-        super(GARPNHeadWarper, self).__init__(module)
+        super(GARPNHeadWraper, self).__init__(module)
 
         self.rpn_nms = BatchedNMS(0.0, self.test_cfg.nms_thr, -1)
     

@@ -1,4 +1,4 @@
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -6,16 +6,16 @@ from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 import mmdet2trt.ops.util_ops as mm2trt_util
 
-@register_warper("mmdet.models.roi_heads.dynamic_roi_head.DynamicRoIHead")
-@register_warper("mmdet.models.roi_heads.standard_roi_head.StandardRoIHead")
-class StandardRoIHeadWarper(nn.Module):
+@register_wraper("mmdet.models.roi_heads.dynamic_roi_head.DynamicRoIHead")
+@register_wraper("mmdet.models.roi_heads.standard_roi_head.StandardRoIHead")
+class StandardRoIHeadWraper(nn.Module):
     def __init__(self, module):
-        super(StandardRoIHeadWarper, self).__init__()
+        super(StandardRoIHeadWraper, self).__init__()
         self.module = module
 
-        self.bbox_roi_extractor = build_warper(module.bbox_roi_extractor)
+        self.bbox_roi_extractor = build_wraper(module.bbox_roi_extractor)
         
-        self.bbox_head = build_warper(module.bbox_head, test_cfg=module.test_cfg)
+        self.bbox_head = build_wraper(module.bbox_head, test_cfg=module.test_cfg)
         if module.with_shared_head:
             self.shared_head = module.shared_head
         else:

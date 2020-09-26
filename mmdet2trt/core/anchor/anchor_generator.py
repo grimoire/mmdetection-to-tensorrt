@@ -1,4 +1,4 @@
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
 from torch import nn
 
@@ -29,11 +29,11 @@ class AnchorGeneratorSingle(nn.Module):
                                                         stride=stride,
                                                         device=device)
 
-@register_warper("mmdet.core.anchor.anchor_generator.YOLOAnchorGenerator")
-@register_warper("mmdet.core.AnchorGenerator")
-class AnchorGeneratorWarper(nn.Module):
+@register_wraper("mmdet.core.anchor.anchor_generator.YOLOAnchorGenerator")
+@register_wraper("mmdet.core.AnchorGenerator")
+class AnchorGeneratorWraper(nn.Module):
     def __init__(self, module):
-        super(AnchorGeneratorWarper, self).__init__()
+        super(AnchorGeneratorWraper, self).__init__()
         self.generator = module
 
         self.base_sizes = module.base_sizes
@@ -56,10 +56,10 @@ class AnchorGeneratorWarper(nn.Module):
 
 
 
-@register_warper("mmdet.core.anchor.anchor_generator.SSDAnchorGenerator")
-class SSDAnchorGeneratorWarper(nn.Module):
+@register_wraper("mmdet.core.anchor.anchor_generator.SSDAnchorGenerator")
+class SSDAnchorGeneratorWraper(nn.Module):
     def __init__(self, module):
-        super(SSDAnchorGeneratorWarper, self).__init__()
+        super(SSDAnchorGeneratorWraper, self).__init__()
         self.generator = module
         self.mlvl_anchors = None
 

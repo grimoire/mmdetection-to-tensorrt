@@ -1,4 +1,4 @@
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -6,15 +6,15 @@ from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 import mmdet2trt.ops.util_ops as mm2trt_util
 
-@register_warper("mmdet.models.roi_heads.HybridTaskCascadeRoIHead")
-@register_warper("mmdet.models.roi_heads.CascadeRoIHead")
-class CascadeRoIHeadWarper(nn.Module):
+@register_wraper("mmdet.models.roi_heads.HybridTaskCascadeRoIHead")
+@register_wraper("mmdet.models.roi_heads.CascadeRoIHead")
+class CascadeRoIHeadWraper(nn.Module):
     def __init__(self, module):
-        super(CascadeRoIHeadWarper, self).__init__()
+        super(CascadeRoIHeadWraper, self).__init__()
         self.module = module
 
-        self.bbox_roi_extractor = [build_warper(extractor) for extractor in module.bbox_roi_extractor]
-        self.bbox_head = [build_warper(bb_head, test_cfg=module.test_cfg) for bb_head in module.bbox_head]
+        self.bbox_roi_extractor = [build_wraper(extractor) for extractor in module.bbox_roi_extractor]
+        self.bbox_head = [build_wraper(bb_head, test_cfg=module.test_cfg) for bb_head in module.bbox_head]
         if module.with_shared_head:
             self.shared_head = module.shared_head
         else:

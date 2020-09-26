@@ -1,5 +1,5 @@
 import torch
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
 from torch import nn
 
@@ -9,14 +9,14 @@ import mmdet2trt.ops.util_ops as mm2trt_util
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 
 
-@register_warper("mmdet.models.dense_heads.YOLOV3Head")
-class YOLOV3HeadWarper(nn.Module):
+@register_wraper("mmdet.models.dense_heads.YOLOV3Head")
+class YOLOV3HeadWraper(nn.Module):
 
     def __init__(self, module):
-        super(YOLOV3HeadWarper, self).__init__()
+        super(YOLOV3HeadWraper, self).__init__()
         self.module = module
-        self.anchor_generator = build_warper(self.module.anchor_generator)
-        self.bbox_coder = build_warper(self.module.bbox_coder)
+        self.anchor_generator = build_wraper(self.module.anchor_generator)
+        self.bbox_coder = build_wraper(self.module.bbox_coder)
         self.featmap_strides = module.featmap_strides
         self.num_attrib = module.num_attrib
         self.num_levels = module.num_levels

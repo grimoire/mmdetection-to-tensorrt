@@ -1,16 +1,16 @@
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
 from torch import nn
 import torch.nn.functional as F
 from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 import mmdet2trt.ops.util_ops as mm2trt_util
-from .standard_roi_head import StandardRoIHeadWarper
+from .standard_roi_head import StandardRoIHeadWraper
 
-@register_warper("mmdet.models.roi_heads.double_roi_head.DoubleHeadRoIHead")
-class DoubleHeadRoIHeadWarper(StandardRoIHeadWarper):
+@register_wraper("mmdet.models.roi_heads.double_roi_head.DoubleHeadRoIHead")
+class DoubleHeadRoIHeadWraper(StandardRoIHeadWraper):
     def __init__(self, module):
-        super(DoubleHeadRoIHeadWarper, self).__init__(module)
+        super(DoubleHeadRoIHeadWraper, self).__init__(module)
 
         self.reg_roi_scale_factor = self.module.reg_roi_scale_factor
         

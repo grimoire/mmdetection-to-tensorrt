@@ -1,22 +1,22 @@
 import torch
 from torch import nn
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 import mmdet2trt.ops.util_ops as mm2trt_util
 
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 
 
-@register_warper("mmdet.models.GARetinaHead")
-class GuidedAnchorHeadWarper(nn.Module):
+@register_wraper("mmdet.models.GARetinaHead")
+class GuidedAnchorHeadWraper(nn.Module):
 
     def __init__(self, module):
-        super(GuidedAnchorHeadWarper, self).__init__()
+        super(GuidedAnchorHeadWraper, self).__init__()
         self.module = module
         self.loc_filter_thr = module.loc_filter_thr
         self.num_anchors = module.num_anchors
-        self.square_anchor_generator = build_warper(self.module.square_anchor_generator)
-        self.anchor_coder = build_warper(self.module.anchor_coder)
-        self.bbox_coder = build_warper(self.module.bbox_coder)
+        self.square_anchor_generator = build_wraper(self.module.square_anchor_generator)
+        self.anchor_coder = build_wraper(self.module.anchor_coder)
+        self.bbox_coder = build_wraper(self.module.bbox_coder)
 
         self.test_cfg = module.test_cfg
         self.num_classes = self.module.num_classes

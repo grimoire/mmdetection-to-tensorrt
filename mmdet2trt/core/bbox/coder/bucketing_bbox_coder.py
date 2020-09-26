@@ -1,4 +1,4 @@
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 from mmdet2trt.ops import util_ops
 import torch
 from torch import nn
@@ -73,10 +73,10 @@ def bucket2bbox_batched(proposals,
 
 
 
-@register_warper("mmdet.core.bbox.coder.BucketingBBoxCoder")
-class BucketingBBoxCoderWarper(nn.Module):
+@register_wraper("mmdet.core.bbox.coder.BucketingBBoxCoder")
+class BucketingBBoxCoderWraper(nn.Module):
     def __init__(self, module):
-        super(BucketingBBoxCoderWarper, self).__init__()
+        super(BucketingBBoxCoderWraper, self).__init__()
         self.module = module
 
     def forward(self, cls_scores, bbox_preds, anchors,

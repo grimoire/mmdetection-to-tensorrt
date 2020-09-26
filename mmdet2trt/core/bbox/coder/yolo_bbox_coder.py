@@ -1,4 +1,4 @@
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 from mmdet2trt.ops import util_ops
 import torch
 from torch import nn
@@ -23,10 +23,10 @@ def yolodecoder_batched(bboxes, pred_bboxes, stride):
 
 
 
-@register_warper("mmdet.core.bbox.coder.YOLOBBoxCoder")
-class YOLOBBoxCoderWarper(nn.Module):
+@register_wraper("mmdet.core.bbox.coder.YOLOBBoxCoder")
+class YOLOBBoxCoderWraper(nn.Module):
     def __init__(self, module):
-        super(YOLOBBoxCoderWarper, self).__init__()
+        super(YOLOBBoxCoderWraper, self).__init__()
 
     
     def forward(self, cls_scores, bbox_preds, anchors,

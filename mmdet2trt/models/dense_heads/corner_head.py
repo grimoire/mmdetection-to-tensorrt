@@ -1,17 +1,17 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from mmdet2trt.models.builder import register_warper, build_warper
+from mmdet2trt.models.builder import register_wraper, build_wraper
 import mmdet2trt.ops.util_ops as mm2trt_util
 
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 
 
-@register_warper("mmdet.models.CornerHead")
-class CornerHeadWarper(nn.Module):
+@register_wraper("mmdet.models.CornerHead")
+class CornerHeadWraper(nn.Module):
 
     def __init__(self, module):
-        super(CornerHeadWarper, self).__init__()
+        super(CornerHeadWraper, self).__init__()
         self.module = module
         self.num_classes = module.num_classes
         self.test_cfg = module.test_cfg
