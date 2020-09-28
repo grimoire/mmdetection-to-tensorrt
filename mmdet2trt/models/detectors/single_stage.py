@@ -5,6 +5,7 @@ import torch
 from torch import nn
 
 
+@register_wraper("mmdet.models.GFL")
 @register_wraper("mmdet.models.CornerNet")
 @register_wraper("mmdet.models.PAA")
 @register_wraper("mmdet.models.YOLOV3")

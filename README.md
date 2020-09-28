@@ -110,12 +110,13 @@ read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
 - [x] Guided Anchoring
 - [x] Generalized Attention
 - [x] Dynamic R-CNN
-- [x] Hybrid Task Cascade (object detection only)
+- [x] Hybrid Task Cascade
 - [x] DetectoRS
 - [x] Side-Aware Boundary Localization
 - [x] YOLOv3
 - [x] PAA
 - [ ] CornerNet(WIP)
+- [x] GFL
 
 
 Tested on:
