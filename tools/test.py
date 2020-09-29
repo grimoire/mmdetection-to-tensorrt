@@ -26,7 +26,7 @@ class ModelWarper(nn.Module):
             result = list(result)
             result[1] = result[1]/scale_factor
 
-        return convert_to_mmdet_result(result, self.num_classes)[0]
+        return convert_to_mmdet_result(result, self.num_classes)#[0]
 
 
 def parse_args():
