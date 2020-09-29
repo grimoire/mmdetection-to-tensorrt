@@ -116,7 +116,7 @@ read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
 - [x] YOLOv3
 - [x] PAA
 - [ ] CornerNet(WIP)
-- [x] GFL
+- [x] Generalized Focal Loss
 
 
 Tested on:
@@ -132,5 +132,8 @@ If you find any error, please report in the issue.
 
 This repo is maintained by [@grimoire](https://github.com/grimoire)  
 
-Discuss group: QQ:1107959378
-
+Discuss group: QQ:1107959378  
+Discuss group QR Code:
+<div align="center">
+  <img src="resources/discuss_qq_qr.png"/>
+</div>
