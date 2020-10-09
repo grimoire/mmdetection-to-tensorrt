@@ -1,4 +1,4 @@
-from torch2trt import tensorrt_converter, trt_
+from torch2trt_dynamic import tensorrt_converter, trt_
 from .plugins import create_batchednms_plugin
 import torch
 

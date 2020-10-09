@@ -1,4 +1,4 @@
-from torch2trt import TRTModule
+from torch2trt_dynamic import TRTModule
 from mmdet.apis.inference import LoadImage
 from mmdet.datasets.pipelines import Compose
 import torch

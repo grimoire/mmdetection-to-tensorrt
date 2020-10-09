@@ -1,5 +1,5 @@
-from torch2trt.torch2trt import *
-from torch2trt.converters.Conv2d import convert_Conv2d
+from torch2trt_dynamic.torch2trt_dynamic import *
+from torch2trt_dynamic.converters.Conv2d import convert_Conv2d
 
 from .plugins import *
 import mmcv.ops

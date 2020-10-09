@@ -1,6 +1,6 @@
-from torch2trt.torch2trt import *
-from torch2trt.plugins import create_adaptivepool_plugin
-from torch2trt.plugins import create_meshgrid_plugin
+from torch2trt_dynamic.torch2trt_dynamic import *
+from torch2trt_dynamic.plugins import create_adaptivepool_plugin
+from torch2trt_dynamic.plugins import create_meshgrid_plugin
 # from mmdet2trt.ops import *
 
 @tensorrt_converter('mmdet2trt.ops.adaptive_max_pool2d_by_input')

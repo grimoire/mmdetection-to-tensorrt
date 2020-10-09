@@ -1,4 +1,4 @@
-from torch2trt import tensorrt_converter, trt_, get_arg
+from torch2trt_dynamic import tensorrt_converter, trt_, get_arg
 import torch
 from torch import nn
 import numpy as np

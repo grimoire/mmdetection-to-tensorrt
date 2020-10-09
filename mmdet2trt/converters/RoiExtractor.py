@@ -1,4 +1,4 @@
-from torch2trt.torch2trt import *
+from torch2trt_dynamic.torch2trt_dynamic import *
 
 from .plugins import *
 import mmdet

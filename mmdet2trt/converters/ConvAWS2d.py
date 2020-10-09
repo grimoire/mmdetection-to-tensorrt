@@ -1,5 +1,5 @@
 import torch
-from torch2trt.converters.Conv2d import *
+from torch2trt_dynamic.converters.Conv2d import *
 import mmcv.cnn
 
 @tensorrt_converter("mmcv.cnn.ConvAWS2d.forward")

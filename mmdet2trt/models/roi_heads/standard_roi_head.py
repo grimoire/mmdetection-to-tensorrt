@@ -6,6 +6,7 @@ from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 import mmdet2trt.ops.util_ops as mm2trt_util
 
+
 @register_wraper("mmdet.models.roi_heads.dynamic_roi_head.DynamicRoIHead")
 @register_wraper("mmdet.models.roi_heads.standard_roi_head.StandardRoIHead")
 class StandardRoIHeadWraper(nn.Module):
@@ -14,8 +15,9 @@ class StandardRoIHeadWraper(nn.Module):
         self.module = module
 
         self.bbox_roi_extractor = build_wraper(module.bbox_roi_extractor)
-        
-        self.bbox_head = build_wraper(module.bbox_head, test_cfg=module.test_cfg)
+
+        self.bbox_head = build_wraper(module.bbox_head,
+                                      test_cfg=module.test_cfg)
         if module.with_shared_head:
             self.shared_head = module.shared_head
         else:
@@ -31,11 +33,10 @@ class StandardRoIHeadWraper(nn.Module):
         # rcnn
         cls_score, bbox_pred = self.bbox_head(bbox_feats)
 
-        bbox_results = dict(
-            cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=bbox_feats)
+        bbox_results = dict(cls_score=cls_score,
+                            bbox_pred=bbox_pred,
+                            bbox_feats=bbox_feats)
         return bbox_results
-
-    
 
     def forward(self, feat, proposals, img_shape):
         batch_size = proposals.shape[0]
@@ -49,24 +50,9 @@ class StandardRoIHeadWraper(nn.Module):
         bbox_results = self._bbox_forward(feat, rois)
         cls_score = bbox_results['cls_score']
         bbox_pred = bbox_results['bbox_pred']
-        xx = self.bbox_head.get_bboxes(
-            rois,
-            cls_score,
-            bbox_pred,
-            img_shape,
-            batch_size,
-            num_proposals,
-            self.test_cfg
-        )
-        return xx
+
         num_detections, det_boxes, det_scores, det_classes = self.bbox_head.get_bboxes(
-            rois,
-            cls_score,
-            bbox_pred,
-            img_shape,
-            batch_size,
-            num_proposals,
-            self.test_cfg
-        )
+            rois, cls_score, bbox_pred, img_shape, batch_size, num_proposals,
+            self.test_cfg)
 
         return num_detections, det_boxes, det_scores, det_classes

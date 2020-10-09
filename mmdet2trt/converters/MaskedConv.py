@@ -1,5 +1,5 @@
-from torch2trt.torch2trt import *
-from torch2trt.converters import convert_float, convert_Conv2d, convert_unsqueeze, convert_pad, convert_mul, convert_tensor_getitem
+from torch2trt_dynamic.torch2trt_dynamic import *
+from torch2trt_dynamic.converters import convert_float, convert_Conv2d, convert_unsqueeze, convert_pad, convert_mul, convert_tensor_getitem
 
 import mmcv.ops
 

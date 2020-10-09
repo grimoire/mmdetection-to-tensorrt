@@ -1,5 +1,5 @@
 import tensorrt as trt
-from torch2trt import torch2trt
+from torch2trt_dynamic import torch2trt_dynamic
 from mmdet.apis import init_detector
 from mmdet.apis.inference import LoadImage
 from mmdet.datasets.pipelines import Compose
@@ -127,7 +127,7 @@ def mmdet2trt(
             int8_calib_algorithm = trt.CalibrationAlgoType.MINMAX_CALIBRATION
         elif int8_calib_alg=="entropy":
             int8_calib_algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
-        trt_model = torch2trt(
+        trt_model = torch2trt_dynamic(
             wrap_model,
             [dummy_input],
             log_level=getattr(trt.Logger, trt_log_level),

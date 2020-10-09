@@ -1,6 +1,6 @@
-from torch2trt.torch2trt import *
-from torch2trt.converters.pixel_shuffle import *
-from torch2trt.converters.softmax import *
+from torch2trt_dynamic.torch2trt_dynamic import *
+from torch2trt_dynamic.converters.pixel_shuffle import *
+from torch2trt_dynamic.converters.softmax import *
 from .plugins import *
 import mmcv.ops
 import mmdet.models

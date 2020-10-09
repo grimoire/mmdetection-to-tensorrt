@@ -1,5 +1,5 @@
 
-from torch2trt.torch2trt import *
+from torch2trt_dynamic.torch2trt_dynamic import *
 import torch.nn.functional as F
 from mmdet.models.necks import BFP
 import mmdet2trt.ops as mmdet2trt_ops

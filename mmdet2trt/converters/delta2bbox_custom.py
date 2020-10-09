@@ -1,6 +1,6 @@
 
-from torch2trt import tensorrt_converter, trt_
-from torch2trt.torch2trt import *
+from torch2trt_dynamic import tensorrt_converter, trt_
+from torch2trt_dynamic.torch2trt_dynamic import *
 import torch
 from .plugins import create_delta2bbox_custom_plugin
 
