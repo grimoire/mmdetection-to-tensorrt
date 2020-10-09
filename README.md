@@ -117,6 +117,7 @@ read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
 - [x] PAA
 - [ ] CornerNet(WIP)
 - [x] Generalized Focal Loss
+- [x] Grid RCNN
 
 
 Tested on:

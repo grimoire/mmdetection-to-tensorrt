@@ -54,12 +54,18 @@ class BBoxHeadWraper(nn.Module):
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         scores = F.softmax(cls_score, dim=-1)
-
-        if rois.size(1) == 4:
-            bboxes = self.bbox_coder.decode(rois.unsqueeze(0), bbox_pred.unsqueeze(0), max_shape=img_shape)
+        
+        if bbox_pred is not None:
+            if rois.size(1) == 4:
+                bboxes = self.bbox_coder.decode(rois.unsqueeze(0), bbox_pred.unsqueeze(0), max_shape=img_shape)
+            else:
+                bboxes = self.bbox_coder.decode(rois[:,1:].unsqueeze(0), bbox_pred.unsqueeze(0), max_shape=img_shape)
+            bboxes = bboxes.squeeze(0)
         else:
-            bboxes = self.bbox_coder.decode(rois[:,1:].unsqueeze(0), bbox_pred.unsqueeze(0), max_shape=img_shape)
-        bboxes = bboxes.squeeze(0)
+            if rois.size(1) == 4:
+                bboxes = rois
+            else:
+                bboxes = rois[:, 1:]
 
         scores = scores.view(batch_size, num_proposals, -1)
         bboxes = bboxes.view(batch_size, num_proposals, -1, 4)
