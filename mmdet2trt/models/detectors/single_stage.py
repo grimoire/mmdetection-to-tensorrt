@@ -1,5 +1,7 @@
 import torch
 from mmdet2trt.models.builder import register_wraper, build_wraper
+from mmdet2trt.models.backbones import BaseBackboneWraper
+from mmdet2trt.models.necks import BaseNeckWraper
 from mmdet2trt.models.dense_heads import RPNHeadWraper
 import torch
 from torch import nn
@@ -20,17 +22,29 @@ class SingleStageDetectorWraper(nn.Module):
     def __init__(self, model):
         super(SingleStageDetectorWraper, self).__init__()
         self.model = model
-        
+
+        mmdet_backbone = self.model.backbone
+        self.backbone_wraper = build_wraper(mmdet_backbone, BaseBackboneWraper)
+
+        if self.model.with_neck:
+            mmdet_neck = self.model.neck
+            self.neck_wraper = build_wraper(mmdet_neck, BaseNeckWraper)
+
         mmdet_bbox_head = self.model.bbox_head
         self.bbox_head_wraper = build_wraper(mmdet_bbox_head)
+
+    def extract_feat(self, img):
+        x = self.backbone_wraper(img)
+        if self.model.with_neck:
+            x = self.neck_wraper(x)
+        return x
 
     def forward(self, x):
         model = self.model
         bbox_head = self.bbox_head_wraper
 
         # backbone
-        feat = model.extract_feat(x)
+        feat = self.extract_feat(x)
         result = bbox_head(feat, x)
 
         return result
-
