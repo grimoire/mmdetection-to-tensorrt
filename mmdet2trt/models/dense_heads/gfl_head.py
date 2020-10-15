@@ -14,7 +14,9 @@ class GFLHeadWraper(AnchorHeadWraper):
     def __init__(self, module):
         super(GFLHeadWraper, self).__init__(module)
 
-        self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr, module.test_cfg.nms.iou_threshold, backgroundLabelId = -1)
+        self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr,
+                                   module.test_cfg.nms.iou_threshold,
+                                   backgroundLabelId=-1)
 
     def batched_integral(self, intergral, x):
         batch_size = x.size(0)

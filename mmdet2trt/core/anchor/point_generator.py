@@ -11,10 +11,11 @@ class PointGeneratorWraper(nn.Module):
         super(PointGeneratorWraper, self).__init__()
 
     def forward(self, featmap, stride):
-        shift_yy, shift_xx = mmdet2trt.ops.arange_gridmesh(featmap, strides=[stride, stride])
+        shift_yy, shift_xx = mmdet2trt.ops.arange_gridmesh(
+            featmap, strides=[stride, stride])
 
         shift_yy = shift_yy.flatten()
         shift_xx = shift_xx.flatten()
-        stride = shift_yy*0.+stride
+        stride = shift_yy * 0. + stride
         shifts = torch.stack([shift_xx, shift_yy, stride], dim=-1)
         return shifts

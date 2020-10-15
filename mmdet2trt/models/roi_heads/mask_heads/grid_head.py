@@ -35,10 +35,10 @@ class GridHeadWraper(nn.Module):
         ]
         sub_region_xs = xs.new_tensor(sub_region_xs)
         sub_region_ys = ys.new_tensor(sub_region_ys)
-        
+
         xs = xs + sub_region_xs
         ys = ys + sub_region_ys
-        xs= xs.view(-1)
+        xs = xs.view(-1)
         ys = ys.view(-1)
 
         pred_scores, xs, ys = tuple(
@@ -51,8 +51,8 @@ class GridHeadWraper(nn.Module):
         y1 = (det_bboxes[:, 1, None] - heights / 2)
 
         # map the grid point to the absolute coordinates
-        abs_xs = (xs.float() + 0.5) / (w*1.0) * widths + x1
-        abs_ys = (ys.float() + 0.5) / (h*1.0) * heights + y1
+        abs_xs = (xs.float() + 0.5) / (w * 1.0) * widths + x1
+        abs_ys = (ys.float() + 0.5) / (h * 1.0) * heights + y1
 
         x1_inds = [i for i in range(module.grid_size)]
         y1_inds = [i * module.grid_size for i in range(module.grid_size)]

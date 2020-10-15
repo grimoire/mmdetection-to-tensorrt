@@ -1,16 +1,15 @@
 import torch
 
 
-
 def bbox_rescale_batched(bboxes, scale_factor=1.0):
-    
+
     if bboxes.size(2) == 5:
         bboxes_ = bboxes[:, :, 1:]
         inds_ = bboxes[:, :, 0]
     else:
         bboxes_ = bboxes
     cx = (bboxes_[:, :, 0] + bboxes_[:, :, 2]) * 0.5
-    cy = (bboxes_[:, :, 1] + bboxes_[:,:, 3]) * 0.5
+    cy = (bboxes_[:, :, 1] + bboxes_[:, :, 3]) * 0.5
     w = bboxes_[:, :, 2] - bboxes_[:, :, 0]
     h = bboxes_[:, :, 3] - bboxes_[:, :, 1]
     w = w * scale_factor

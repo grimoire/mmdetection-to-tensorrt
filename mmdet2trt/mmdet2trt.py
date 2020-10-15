@@ -15,7 +15,6 @@ import time
 from argparse import ArgumentParser
 from pathlib import Path
 
-
 logger = logging.getLogger("mmdet2trt")
 
 
@@ -35,17 +34,17 @@ class Int8CalibDataset():
         """
         if isinstance(config, str):
             config = mmcv.Config.fromfile(config)
-        
+
         self.cfg = config
         self.image_paths = image_paths
         self.opt_shape = opt_shape_param[0][1]
 
         test_pipeline = [LoadImage()] + config.data.test.pipeline[1:]
         self.test_pipeline = Compose(test_pipeline)
-    
+
     def __len__(self):
         return len(self.image_paths)
-    
+
     def __getitem__(self, index):
         image_path = self.image_paths[index]
 
@@ -53,7 +52,8 @@ class Int8CalibDataset():
         data = self.test_pipeline(data)
 
         tensor = data['img'][0].unsqueeze(0)
-        tensor = torch.nn.functional.interpolate(tensor, self.opt_shape[-2:]).squeeze(0)
+        tensor = torch.nn.functional.interpolate(
+            tensor, self.opt_shape[-2:]).squeeze(0)
 
         return [tensor]
 
@@ -101,18 +101,16 @@ def mmdet2trt(
     if opt_shape_param is None:
         img_scale = cfg.test_pipeline[1]["img_scale"]
         min_scale = min(img_scale)
-        max_scale = max(img_scale)+32
-        opt_shape_param = [
-            [
-                [1, 3, min_scale, min_scale],
-                [1, 3, img_scale[1], img_scale[0]],
-                [1, 3, max_scale, max_scale],
-            ]
-        ]
+        max_scale = max(img_scale) + 32
+        opt_shape_param = [[
+            [1, 3, min_scale, min_scale],
+            [1, 3, img_scale[1], img_scale[0]],
+            [1, 3, max_scale, max_scale],
+        ]]
 
     dummy_shape = opt_shape_param[0][1]
     dummy_input = torch.rand(dummy_shape).to(device)
-    dummy_input = (dummy_input-0.45)/0.27
+    dummy_input = (dummy_input - 0.45) / 0.27
     dummy_input = dummy_input.contiguous()
 
     logger.info("Model warmup")
@@ -123,13 +121,12 @@ def mmdet2trt(
     start = time.time()
     with torch.cuda.device(device), torch.no_grad():
         int8_calib_algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
-        if int8_calib_alg=="minmax":
+        if int8_calib_alg == "minmax":
             int8_calib_algorithm = trt.CalibrationAlgoType.MINMAX_CALIBRATION
-        elif int8_calib_alg=="entropy":
+        elif int8_calib_alg == "entropy":
             int8_calib_algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
         trt_model = torch2trt_dynamic(
-            wrap_model,
-            [dummy_input],
+            wrap_model, [dummy_input],
             log_level=getattr(trt.Logger, trt_log_level),
             fp16_mode=fp16_mode,
             opt_shape_param=opt_shape_param,
@@ -139,8 +136,7 @@ def mmdet2trt(
             output_names=output_names,
             int8_mode=int8_mode,
             int8_calib_dataset=int8_calib_dataset,
-            int8_calib_algorithm=int8_calib_algorithm
-        )
+            int8_calib_algorithm=int8_calib_algorithm)
 
     duration = time.time() - start
     logger.info("Conversion took {} s".format(duration))
@@ -155,43 +151,53 @@ def main():
     parser = ArgumentParser()
     parser.add_argument("config", help="Path to a mmdet Config file")
     parser.add_argument("checkpoint", help="Path to a mmdet Checkpoint file")
-    parser.add_argument("output", help="Path where tensorrt model will be saved")
-    parser.add_argument("--fp16", type=bool, default=True, help="Enable fp16 inference")
+    parser.add_argument("output",
+                        help="Path where tensorrt model will be saved")
+    parser.add_argument("--fp16",
+                        type=bool,
+                        default=True,
+                        help="Enable fp16 inference")
     parser.add_argument(
         "--save-engine",
         type=bool,
         default=True,
-        help="Enable saving TensorRT engine. (will be saved at Path(output).with_suffix('.engine')).",
+        help=
+        "Enable saving TensorRT engine. (will be saved at Path(output).with_suffix('.engine')).",
     )
-    parser.add_argument(
-        "--device", type=str, default="cuda:0", help="Device used for conversion."
-    )
+    parser.add_argument("--device",
+                        type=str,
+                        default="cuda:0",
+                        help="Device used for conversion.")
     parser.add_argument(
         "--max-workspace-gb",
         type=float,
         default=0.5,
-        help="The maximum `device` (GPU) temporary memory in GB (gigabytes) which TensorRT can use at execution time.",
+        help=
+        "The maximum `device` (GPU) temporary memory in GB (gigabytes) which TensorRT can use at execution time.",
     )
     parser.add_argument(
         "--min-scale",
         type=int,
         nargs=2,
         default=None,
-        help="Minimum input scale in [height, width] order. Only used if all min-scale, opt-scale and max-scale are set.",
+        help=
+        "Minimum input scale in [height, width] order. Only used if all min-scale, opt-scale and max-scale are set.",
     )
     parser.add_argument(
         "--opt-scale",
         type=int,
         nargs=2,
         default=None,
-        help="Optimal input scale in [height, width] order. Only used if all min-scale, opt-scale and max-scale are set.",
+        help=
+        "Optimal input scale in [height, width] order. Only used if all min-scale, opt-scale and max-scale are set.",
     )
     parser.add_argument(
         "--max-scale",
         type=int,
         nargs=2,
         default=None,
-        help="Maximum input scale in [height, width] order. Only used if all min-scale, opt-scale and max-scale are set.",
+        help=
+        "Maximum input scale in [height, width] order. Only used if all min-scale, opt-scale and max-scale are set.",
     )
     parser.add_argument(
         "--log-level",
@@ -217,8 +223,8 @@ def main():
     logger.setLevel(getattr(logging, args.log_level))
 
     if all(
-        getattr(args, x) is not None for x in ["min_scale", "opt_scale", "max_scale"]
-    ):
+            getattr(args, x) is not None
+            for x in ["min_scale", "opt_scale", "max_scale"]):
         opt_shape_param = [args.min_scale, args.opt_scale, args.max_scale]
     else:
         opt_shape_param = None
@@ -238,7 +244,8 @@ def main():
     torch.save(trt_model.state_dict(), args.output)
 
     if args.save_engine:
-        logger.info("Saving TRT model engine to: {}".format(Path(args.output).with_suffix(".engine")))
+        logger.info("Saving TRT model engine to: {}".format(
+            Path(args.output).with_suffix(".engine")))
         with open(Path(args.output).with_suffix(".engine"), "wb") as f:
             f.write(trt_model.state_dict()["engine"])
 

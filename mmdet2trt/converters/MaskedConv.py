@@ -20,7 +20,8 @@ def convert_MaskedConv(ctx):
     output = ctx.method_return
 
     ## convert conv
-    conv = torch.nn.Conv2d(input.shape[1], output.shape[1], weight.shape[2:], stride, padding)
+    conv = torch.nn.Conv2d(input.shape[1], output.shape[1], weight.shape[2:],
+                           stride, padding)
     conv.weight = weight
     conv.bias = bias
     conv_input = conv(input)
@@ -48,19 +49,26 @@ def convert_MaskedConv(ctx):
     if pad_size_h == 0 and pad_size_w == 0:
         ## output shape == mask shape
         final_mask = unsqueeze_mask
-    elif pad_size_h*pad_size_w>=0 and pad_size_h>=0 and pad_size_h>=0:
+    elif pad_size_h * pad_size_w >= 0 and pad_size_h >= 0 and pad_size_h >= 0:
         ## pad
-        final_mask = torch.nn.functional.pad(unsqueeze_mask, (0, pad_size_w, 0, pad_size_h))
-        ctx.method_args = [unsqueeze_mask, (pad_size_w, pad_size_w, pad_size_h, pad_size_h)]
+        final_mask = torch.nn.functional.pad(unsqueeze_mask,
+                                             (0, pad_size_w, 0, pad_size_h))
+        ctx.method_args = [
+            unsqueeze_mask, (pad_size_w, pad_size_w, pad_size_h, pad_size_h)
+        ]
         ctx.method_return = final_mask
         convert_pad(ctx)
 
-    elif pad_size_h*pad_size_w>=0 and pad_size_h<=0 and pad_size_h<=0:
+    elif pad_size_h * pad_size_w >= 0 and pad_size_h <= 0 and pad_size_h <= 0:
         ## slice
         # final_mask = unsqueeze_mask[:, :, -pad_size_h:pad_size_h, -pad_size_w:pad_size_w]
         # ctx.method_args = [unsqueeze_mask, (slice(None), slice(None), slice(-pad_size_h, pad_size_h, 1), slice(-pad_size_w, pad_size_w, 1))]
         final_mask = unsqueeze_mask[:, :, :pad_size_h, :pad_size_w]
-        ctx.method_args = [unsqueeze_mask, (slice(None), slice(None), slice(0, pad_size_h, 1), slice(0, pad_size_w, 1))]
+        ctx.method_args = [
+            unsqueeze_mask,
+            (slice(None), slice(None), slice(0, pad_size_h,
+                                             1), slice(0, pad_size_w, 1))
+        ]
         ctx.method_return = final_mask
         convert_tensor_getitem(ctx)
 
@@ -72,4 +80,3 @@ def convert_MaskedConv(ctx):
     ## recovery
     ctx.method_args = old_args
     ctx.method_kwargs = old_kwargs
-    

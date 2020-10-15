@@ -1,4 +1,3 @@
-
 from torch2trt_dynamic.torch2trt_dynamic import *
 import torch.nn.functional as F
 import mmcv.cnn
@@ -7,22 +6,22 @@ import mmdet2trt
 import math
 
 
-def get_position_embedding(self, 
-                            x_q, 
-                            x_kv,
-                            q_stride,
-                            kv_stride,
-                            feat_dim,
-                            wave_length=1000):
+def get_position_embedding(self,
+                           x_q,
+                           x_kv,
+                           q_stride,
+                           kv_stride,
+                           feat_dim,
+                           wave_length=1000):
     h_idxs = mmdet2trt.ops.util_ops.arange_by_input(x_q, 2)
-    h_idxs = h_idxs.unsqueeze(1)*q_stride
+    h_idxs = h_idxs.unsqueeze(1) * q_stride
     w_idxs = mmdet2trt.ops.util_ops.arange_by_input(x_q, 3)
-    w_idxs = w_idxs.unsqueeze(1)*q_stride
+    w_idxs = w_idxs.unsqueeze(1) * q_stride
 
     h_kv_idxs = mmdet2trt.ops.util_ops.arange_by_input(x_kv, 2)
-    h_kv_idxs = h_kv_idxs.unsqueeze(1)*kv_stride
+    h_kv_idxs = h_kv_idxs.unsqueeze(1) * kv_stride
     w_kv_idxs = mmdet2trt.ops.util_ops.arange_by_input(x_kv, 3)
-    w_kv_idxs = w_kv_idxs.unsqueeze(1)*kv_stride
+    w_kv_idxs = w_kv_idxs.unsqueeze(1) * kv_stride
 
     # (h, h_kv, 1)
     h_diff = h_idxs.unsqueeze(1) - h_kv_idxs.unsqueeze(0)
@@ -47,7 +46,8 @@ def get_position_embedding(self,
     return embedding_x, embedding_y
 
 
-@tensorrt_converter('mmcv.cnn.bricks.GeneralizedAttention.forward', is_real=False)
+@tensorrt_converter('mmcv.cnn.bricks.GeneralizedAttention.forward',
+                    is_real=False)
 def convert_GeneralizeAttention(ctx):
     self = ctx.method_args[0]
     x_input = ctx.method_args[1]
@@ -79,8 +79,7 @@ def convert_GeneralizeAttention(ctx):
 
     if self.attention_type[1] or self.attention_type[3]:
         position_embed_x, position_embed_y = get_position_embedding(
-            self,
-            x_q, x_kv, self.q_stride, self.kv_stride,
+            self, x_q, x_kv, self.q_stride, self.kv_stride,
             self.position_embedding_dim)
         # (n, num_heads, w, w_kv, dim)
         position_feat_x = self.appr_geom_fc_x(position_embed_x).\
@@ -94,7 +93,6 @@ def convert_GeneralizeAttention(ctx):
 
         position_feat_x /= math.sqrt(2)
         position_feat_y /= math.sqrt(2)
-    
 
         # accelerate for saliency only
     if (np.sum(self.attention_type) == 1) and self.attention_type[2]:
@@ -111,7 +109,7 @@ def convert_GeneralizeAttention(ctx):
         if not self.attention_type[0]:
             energy = torch.matmul(proj_query, proj_key).\
                 view(n, num_heads, h, w, h_kv, w_kv) * 0.
-        
+
         # attention_type[0]: appr - appr
         # attention_type[1]: appr - position
         # attention_type[2]: bias - appr
@@ -148,9 +146,8 @@ def convert_GeneralizeAttention(ctx):
                 energy_x = energy_x.\
                     permute(0, 1, 3, 2, 4).unsqueeze(4)
 
-                energy_y = torch.matmul(
-                    proj_query_reshape,
-                    position_feat_y.permute(0, 1, 2, 4, 3))
+                energy_y = torch.matmul(proj_query_reshape,
+                                        position_feat_y.permute(0, 1, 2, 4, 3))
                 energy_y = energy_y.unsqueeze(5)
 
                 energy += energy_x + energy_y
@@ -195,15 +192,13 @@ def convert_GeneralizeAttention(ctx):
 
         energy = energy.view(n, num_heads, h * w, h_kv * w_kv)
 
-
     if self.spatial_range >= 0:
         cur_local_constraint_map = \
             self.local_constraint_map[:h, :w, :h_kv, :w_kv].\
             contiguous().\
             view(1, 1, h*w, h_kv*w_kv)
 
-        energy = energy.masked_fill_(cur_local_constraint_map,
-                                        float('-inf'))
+        energy = energy.masked_fill_(cur_local_constraint_map, float('-inf'))
 
     attention = F.softmax(energy, 3)
 
@@ -221,13 +216,12 @@ def convert_GeneralizeAttention(ctx):
 
     # output is downsampled, upsample back to input size
     if self.q_downsample is not None:
-        out = F.interpolate(
-            out,
-            size=x_input.shape[2:],
-            mode='bilinear',
-            align_corners=False)
+        out = F.interpolate(out,
+                            size=x_input.shape[2:],
+                            mode='bilinear',
+                            align_corners=False)
 
     out = self.gamma * out + x_input
-    
+
     output._trt = out._trt
     ctx.method_return = output

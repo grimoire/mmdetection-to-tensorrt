@@ -12,16 +12,25 @@ def main():
     parser.add_argument('config', help='mmdet Config file')
     parser.add_argument('checkpoint', help='mmdet Checkpoint file')
     parser.add_argument('save_path', help='tensorrt model save path')
-    parser.add_argument(
-        '--device', default='cuda:0', help='Device used for inference')
-    parser.add_argument(
-        '--score-thr', type=float, default=0.3, help='bbox score threshold')
-    parser.add_argument("--fp16", type=bool, default=True, help="enable fp16 inference")
+    parser.add_argument('--device',
+                        default='cuda:0',
+                        help='Device used for inference')
+    parser.add_argument('--score-thr',
+                        type=float,
+                        default=0.3,
+                        help='bbox score threshold')
+    parser.add_argument("--fp16",
+                        type=bool,
+                        default=True,
+                        help="enable fp16 inference")
     args = parser.parse_args()
 
     cfg_path = args.config
 
-    trt_model = mmdet2trt(cfg_path, args.checkpoint, fp16_mode=args.fp16, device=args.device)
+    trt_model = mmdet2trt(cfg_path,
+                          args.checkpoint,
+                          fp16_mode=args.fp16,
+                          device=args.device)
     torch.save(trt_model.state_dict(), args.save_path)
 
     trt_model = init_detector(args.save_path)
@@ -44,15 +53,15 @@ def main():
             continue
         bbox = tuple(trt_bbox[i])
         bbox = tuple(int(v) for v in bbox)
-        
-        color = ((classes>>2 &1) *128 + (classes>>5 &1) *128,
-                (classes>>1 &1) *128 + (classes>>4 &1) *128,
-                (classes>>0 &1) *128 + (classes>>3 &1) *128)
+
+        color = ((classes >> 2 & 1) * 128 + (classes >> 5 & 1) * 128,
+                 (classes >> 1 & 1) * 128 + (classes >> 4 & 1) * 128,
+                 (classes >> 0 & 1) * 128 + (classes >> 3 & 1) * 128)
         cv2.rectangle(image, bbox[:2], bbox[2:], color, thickness=5)
-    
-    if input_image_shape[0]>1280 or input_image_shape[1]>720:
-        scales = min(720/image.shape[0], 1280/image.shape[1])
-        image = cv2.resize(image, (0,0), fx=scales, fy=scales)
+
+    if input_image_shape[0] > 1280 or input_image_shape[1] > 720:
+        scales = min(720 / image.shape[0], 1280 / image.shape[1])
+        image = cv2.resize(image, (0, 0), fx=scales, fy=scales)
     cv2.imshow('image', image)
     c = cv2.waitKey()
 

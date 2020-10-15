@@ -12,10 +12,10 @@ import mmcv
 class ModelWarper(nn.Module):
     def __init__(self, model, num_classes=80, device="cuda:0"):
         super(ModelWarper, self).__init__()
-        self.model =model
+        self.model = model
         self.device = torch.device(device)
         self.num_classes = num_classes
-    
+
     def forward(self, **kwargs):
         tensor = kwargs['img'][0].to(self.device)
         scale_factor = kwargs['img_metas'][0].data[0][0]['scale_factor']
@@ -24,9 +24,9 @@ class ModelWarper(nn.Module):
         with torch.no_grad():
             result = self.model(tensor)
             result = list(result)
-            result[1] = result[1]/scale_factor
+            result[1] = result[1] / scale_factor
 
-        return convert_to_mmdet_result(result, self.num_classes)#[0]
+        return convert_to_mmdet_result(result, self.num_classes)  #[0]
 
 
 def parse_args():
@@ -39,23 +39,23 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 def main():
     args = parse_args()
-    
+
     cfg = mmcv.Config.fromfile(args.config)
     cfg.data.test.test_mode = True
     trt_model = init_detector(args.trt_model_path)
 
     # create dataset and dataloader
     dataset = build_dataset(cfg.data.test)
-    data_loader = build_dataloader(
-        dataset,
-        samples_per_gpu=1,
-        workers_per_gpu=cfg.data.workers_per_gpu,
-        dist=False,
-        shuffle=False)
+    data_loader = build_dataloader(dataset,
+                                   samples_per_gpu=1,
+                                   workers_per_gpu=cfg.data.workers_per_gpu,
+                                   dist=False,
+                                   shuffle=False)
     model = ModelWarper(trt_model, num_classes=len(dataset.CLASSES))
-    
+
     outputs = single_gpu_test(model, data_loader)
     if args.out:
         print('\nwriting results to {}'.format(args.out))
@@ -63,8 +63,9 @@ def main():
     # outputs = mmcv.load(args.out)
     import numpy as np
     print('eval bbox:')
-    eval_result=dataset.evaluate(outputs, metric='bbox', classwise=False)
+    eval_result = dataset.evaluate(outputs, metric='bbox', classwise=False)
     print(eval_result)
+
 
 if __name__ == "__main__":
     main()

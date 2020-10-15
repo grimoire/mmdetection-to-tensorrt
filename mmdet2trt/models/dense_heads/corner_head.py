@@ -9,19 +9,23 @@ from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 
 @register_wraper("mmdet.models.CornerHead")
 class CornerHeadWraper(nn.Module):
-
     def __init__(self, module):
         super(CornerHeadWraper, self).__init__()
         self.module = module
         self.num_classes = module.num_classes
         self.test_cfg = module.test_cfg
 
-        self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr, module.test_cfg.nms_cfg.iou_threshold, backgroundLabelId = -1)
+        self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr,
+                                   module.test_cfg.nms_cfg.iou_threshold,
+                                   backgroundLabelId=-1)
 
     def forward(self, feat, x):
         batch_size = x.size(0)
         module = self.module
-        img_meta = {'pad_shape':(x.shape[2],x.shape[3], 3), 'border':(0,0,0,0)}
+        img_meta = {
+            'pad_shape': (x.shape[2], x.shape[3], 3),
+            'border': (0, 0, 0, 0)
+        }
 
         tl_heats, br_heats, tl_embs, br_embs, tl_offs, br_offs = module(feat)
         batch_bboxes, batch_scores, batch_clses = self.decode_heatmap(
@@ -38,17 +42,17 @@ class CornerHeadWraper(nn.Module):
 
         cls_mask = []
         for i in range(self.num_classes):
-            cls_mask.append((batch_clses==i).int().float())
+            cls_mask.append((batch_clses == i).int().float())
         cls_mask = torch.cat(cls_mask, dim=2)
-        batch_scores = batch_scores*cls_mask
+        batch_scores = batch_scores * cls_mask
         batch_bboxes = batch_bboxes.unsqueeze(2)
 
         num_bboxes = batch_bboxes.shape[1]
 
-        num_detected, proposals, scores, cls_id = self.rcnn_nms(batch_scores, batch_bboxes, num_bboxes, self.test_cfg.max_per_img)
+        num_detected, proposals, scores, cls_id = self.rcnn_nms(
+            batch_scores, batch_bboxes, num_bboxes, self.test_cfg.max_per_img)
 
         return num_detected, proposals, scores, cls_id
-
 
     def _gather_feat(self, feat, ind, mask=None):
         dim = feat.size(2)
@@ -96,9 +100,8 @@ class CornerHeadWraper(nn.Module):
                        distance_threshold=0.5,
                        num_dets=1000):
         with_embedding = tl_emb is not None and br_emb is not None
-        with_centripetal_shift = (
-            tl_centripetal_shift is not None
-            and br_centripetal_shift is not None)
+        with_centripetal_shift = (tl_centripetal_shift is not None
+                                  and br_centripetal_shift is not None)
         assert with_embedding + with_centripetal_shift == 1
         batch, _, height, width = tl_heat.size()
         inp_h, inp_w, _ = img_meta['pad_shape']
@@ -191,14 +194,15 @@ class CornerHeadWraper(nn.Module):
             bboxes_center_x = (bboxes[..., 0] + bboxes[..., 2]) / 2
             bboxes_center_y = (bboxes[..., 1] + bboxes[..., 3]) / 2
             rcentral0 = bboxes_center_x - mu * (bboxes[..., 2] -
-                                                       bboxes[..., 0]) / 2
+                                                bboxes[..., 0]) / 2
             rcentral1 = bboxes_center_y - mu * (bboxes[..., 3] -
-                                                       bboxes[..., 1]) / 2
+                                                bboxes[..., 1]) / 2
             rcentral2 = bboxes_center_x + mu * (bboxes[..., 2] -
-                                                       bboxes[..., 0]) / 2
+                                                bboxes[..., 0]) / 2
             rcentral3 = bboxes_center_y + mu * (bboxes[..., 3] -
-                                                       bboxes[..., 1]) / 2
-            rcentral = torch.cat([rcentral0, rcentral1, rcentral2, rcentral3], dim=-1)
+                                                bboxes[..., 1]) / 2
+            rcentral = torch.cat([rcentral0, rcentral1, rcentral2, rcentral3],
+                                 dim=-1)
             area_rcentral = ((rcentral[..., 2] - rcentral[..., 0]) *
                              (rcentral[..., 3] - rcentral[..., 1])).abs()
             dists = area_ct_bboxes / area_rcentral
@@ -239,9 +243,9 @@ class CornerHeadWraper(nn.Module):
         score_neg_mask = cls_inds | width_inds | height_inds | dist_inds
         if with_centripetal_shift:
             score_neg_mask = score_neg_mask | tl_ctx_inds | tl_cty_inds | br_ctx_inds | br_cty_inds
-        
+
         score_neg_mask = score_neg_mask.int().type_as(scores)
-        scores = (1-score_neg_mask)*scores + score_neg_mask*(-1)
+        scores = (1 - score_neg_mask) * scores + score_neg_mask * (-1)
 
         scores = scores.view(batch, -1)
         scores, inds = torch.topk(scores, num_dets)

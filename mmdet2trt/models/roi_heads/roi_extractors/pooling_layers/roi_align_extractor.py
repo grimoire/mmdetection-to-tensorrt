@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 
+
 class RoiAlignExtractor(nn.Module):
     def __init__(self, module):
         super(RoiAlignExtractor, self).__init__()
