@@ -5,7 +5,9 @@ import numpy as np
 
 from .plugins import create_gridanchordynamic_plugin
 
-@tensorrt_converter("mmdet2trt.core.anchor.anchor_generator.AnchorGeneratorSingle.forward")
+
+@tensorrt_converter(
+    "mmdet2trt.core.anchor.anchor_generator.AnchorGeneratorSingle.forward")
 def convert_AnchorGeneratorDynamic(ctx):
     module = ctx.method_args[0]
     input = ctx.method_args[1]
@@ -21,9 +23,9 @@ def convert_AnchorGeneratorDynamic(ctx):
         base_anchors = ag.generator.base_anchors[index]
         base_anchors = base_anchors.view(-1).cpu().numpy()
         plugin = create_gridanchordynamic_plugin("ag_" + str(id(module)),
-                                        base_size=base_size,
-                                        stride=stride,
-                                        base_anchors=base_anchors)
+                                                 base_size=base_size,
+                                                 stride=stride,
+                                                 base_anchors=base_anchors)
     else:
         scales = ag.scales.detach().cpu().numpy().astype(np.float32)
         ratios = ag.ratios.detach().cpu().numpy().astype(np.float32)
@@ -38,15 +40,14 @@ def convert_AnchorGeneratorDynamic(ctx):
             center_x, center_y = ag.ctr
 
         plugin = create_gridanchordynamic_plugin("ag_" + str(id(module)),
-                                        base_size=base_size,
-                                        stride=stride,
-                                        scales=scales,
-                                        ratios=ratios,
-                                        scale_major=scale_major,
-                                        center_x=center_x,
-                                        center_y=center_y)
+                                                 base_size=base_size,
+                                                 stride=stride,
+                                                 scales=scales,
+                                                 ratios=ratios,
+                                                 scale_major=scale_major,
+                                                 center_x=center_x,
+                                                 center_y=center_y)
 
-    custom_layer = ctx.network.add_plugin_v2(
-        inputs=[input_trt], plugin=plugin)
+    custom_layer = ctx.network.add_plugin_v2(inputs=[input_trt], plugin=plugin)
 
     output._trt = custom_layer.get_output(0)
