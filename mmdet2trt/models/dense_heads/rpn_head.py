@@ -20,6 +20,9 @@ class RPNHeadWraper(nn.Module):
 
     def forward(self, feat, x):
         module = self.module
+        nms_pre = self.test_cfg.nms_pre if self.test_cfg.nms_pre > 0 else 1000
+        nms_post = self.test_cfg.nms_post
+        use_sigmoid_cls = module.use_sigmoid_cls
 
         cls_scores, bbox_preds = module(feat)
 
@@ -38,14 +41,15 @@ class RPNHeadWraper(nn.Module):
                 rpn_cls_score,
                 rpn_bbox_pred,
                 anchors,
-                min_num_bboxes=self.test_cfg.nms_pre,
+                min_num_bboxes=nms_pre,
                 num_classes=1,
-                use_sigmoid_cls=True,
+                use_sigmoid_cls=use_sigmoid_cls,
                 input_x=x)
 
-            _, proposals, scores, _ = self.rpn_nms(scores, proposals,
-                                                   self.test_cfg.nms_pre,
-                                                   self.test_cfg.nms_post)
+            if nms_pre > 0:
+                _, topk_inds = scores.squeeze(2).topk(nms_pre, dim=1)
+                proposals = mm2trt_util.gather_topk(proposals, 1, topk_inds)
+                scores = mm2trt_util.gather_topk(scores, 1, topk_inds)
 
             mlvl_scores.append(scores)
             mlvl_proposals.append(proposals)
@@ -53,7 +57,7 @@ class RPNHeadWraper(nn.Module):
         scores = torch.cat(mlvl_scores, dim=1)
         proposals = torch.cat(mlvl_proposals, dim=1)
 
-        _, topk_inds = scores.topk(self.test_cfg.max_num, dim=1)
-        proposals = mm2trt_util.gather_topk(proposals, 1, topk_inds)
+        _, proposals, scores, _ = self.rpn_nms(scores, proposals,
+                                               scores.size(1), nms_post)
 
         return proposals

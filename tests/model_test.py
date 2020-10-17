@@ -8,6 +8,9 @@ from argparse import ArgumentParser
 import tqdm
 
 from mmdet2trt.apis import inference_detector, init_detector
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 
 def model_test(test_folder,
