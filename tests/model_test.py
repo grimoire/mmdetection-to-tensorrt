@@ -11,6 +11,7 @@ from mmdet2trt.apis import inference_detector, init_detector
 import logging
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("mmdet2trt")
 
 
 def model_test(test_folder,
@@ -27,14 +28,14 @@ def model_test(test_folder,
         os.mkdir(save_folder)
     trt_model_path = osp.join(save_folder, 'trt_model.pth')
 
-    print("creating {} trt model.".format(cfg_path))
+    logger.info("creating {} trt model.".format(cfg_path))
     trt_model = mmdet2trt(cfg_path,
                           checkpoint,
                           opt_shape_param=opt_shape_param,
                           max_workspace_size=int(max_workspace_size),
                           fp16_mode=fp16,
                           device=device)
-    print("finish, save trt_model in {}".format(trt_model_path))
+    logger.info("finish, save trt_model in {}".format(trt_model_path))
     torch.save(trt_model.state_dict(), trt_model_path)
 
     trt_model = init_detector(trt_model_path)
@@ -93,9 +94,8 @@ def main():
                         type=float,
                         default=0.3,
                         help='bbox score threshold')
-    parser.add_argument("--fp16",
-                        type=bool,
-                        default=True,
+    parser.add_argument('--fp16',
+                        action='store_true',
                         help="enable fp16 inference")
     args = parser.parse_args()
 

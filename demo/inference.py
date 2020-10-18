@@ -19,9 +19,8 @@ def main():
                         type=float,
                         default=0.3,
                         help='bbox score threshold')
-    parser.add_argument("--fp16",
-                        type=bool,
-                        default=True,
+    parser.add_argument('--fp16',
+                        action='store_true',
                         help="enable fp16 inference")
     args = parser.parse_args()
 

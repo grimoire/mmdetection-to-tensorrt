@@ -12,3 +12,4 @@ from .sabl_retina_head import SABLRetinaHeadWraper
 from .paa_head import PPAHeadWraper
 from .corner_head import CornerHeadWraper
 from .gfl_head import GFLHeadWraper
+from .centripetal_head import CentripetalHeadWraper

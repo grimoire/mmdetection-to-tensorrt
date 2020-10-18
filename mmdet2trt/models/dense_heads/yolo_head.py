@@ -19,11 +19,16 @@ class YOLOV3HeadWraper(nn.Module):
         self.featmap_strides = module.featmap_strides
         self.num_attrib = module.num_attrib
         self.num_levels = module.num_levels
+        iou_thr = 0.7
+        if 'iou_thr' in module.test_cfg.nms:
+            iou_thr = module.test_cfg.nms.iou_thr
+        elif 'iou_threshold' in module.test_cfg.nms:
+            iou_thr = module.test_cfg.nms.iou_threshold
 
         self.test_cfg = module.test_cfg
         self.num_classes = self.module.num_classes
         self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr,
-                                   module.test_cfg.nms.iou_thr,
+                                   iou_thr,
                                    backgroundLabelId=-1)
 
     def forward(self, feats, x):

@@ -144,16 +144,21 @@ class CornerHeadWraper(nn.Module):
             br_ctys = br_ys - br_centripetal_shift[..., 1]
 
         # all possible boxes based on top k corners (ignoring class)
-        tl_xs *= (inp_w / width)
-        tl_ys *= (inp_h / height)
-        br_xs *= (inp_w / width)
-        br_ys *= (inp_h / height)
+        zero_tensor = torch.zeros([1], dtype=torch.int32)
+        w_ratio = ((inp_w + zero_tensor).to(tl_heat.device)).float() / (
+            (width + zero_tensor).to(tl_heat.device)).float()
+        h_ratio = ((inp_h + zero_tensor).to(tl_heat.device)).float() / (
+            (height + zero_tensor).to(tl_heat.device)).float()
+        tl_xs *= w_ratio
+        tl_ys *= h_ratio
+        br_xs *= w_ratio
+        br_ys *= h_ratio
 
         if with_centripetal_shift:
-            tl_ctxs *= (inp_w / width)
-            tl_ctys *= (inp_h / height)
-            br_ctxs *= (inp_w / width)
-            br_ctys *= (inp_h / height)
+            tl_ctxs *= w_ratio
+            tl_ctys *= h_ratio
+            br_ctxs *= w_ratio
+            br_ctys *= h_ratio
 
         x_off = img_meta['border'][2]
         y_off = img_meta['border'][0]
@@ -189,7 +194,9 @@ class CornerHeadWraper(nn.Module):
             rcentral = torch.zeros_like(ct_bboxes)
             # magic nums from paper section 4.1
             mu = torch.ones_like(area_bboxes) / 2.4
-            mu[area_bboxes > 3500] = 1 / 2.1  # large bbox have smaller mu
+            mu_mask = (area_bboxes > 3500).int().type_as(mu)
+            # mu[area_bboxes > 3500] = 1 / 2.1  # large bbox have smaller mu
+            mu = (1 / 2.1) * mu_mask + mu * (1. - mu_mask)
 
             bboxes_center_x = (bboxes[..., 0] + bboxes[..., 2]) / 2
             bboxes_center_y = (bboxes[..., 1] + bboxes[..., 3]) / 2
@@ -201,10 +208,10 @@ class CornerHeadWraper(nn.Module):
                                                 bboxes[..., 0]) / 2
             rcentral3 = bboxes_center_y + mu * (bboxes[..., 3] -
                                                 bboxes[..., 1]) / 2
-            rcentral = torch.cat([rcentral0, rcentral1, rcentral2, rcentral3],
-                                 dim=-1)
-            area_rcentral = ((rcentral[..., 2] - rcentral[..., 0]) *
-                             (rcentral[..., 3] - rcentral[..., 1])).abs()
+            rcentral = torch.stack(
+                [rcentral0, rcentral1, rcentral2, rcentral3], dim=-1)
+            area_rcentral = ((rcentral2 - rcentral0) *
+                             (rcentral3 - rcentral1)).abs()
             dists = area_ct_bboxes / area_rcentral
 
             tl_ctx_inds = (ct_bboxes[..., 0] <= rcentral[..., 0]) | (
