@@ -13,6 +13,10 @@ support:
 
 Any advices, bug reports and stars are welcome.
 
+## License
+
+This project is released under the [Apache 2.0 license](LICENSE).
+
 ## Requirement
 
 - mmdet>=2.3.0
