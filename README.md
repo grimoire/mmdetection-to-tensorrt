@@ -24,7 +24,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
 - https://github.com/grimoire/amirstan_plugin
 
 ### Important!
-set the envoirment variable(in ~/.bashrc):
+Set the envoirment variable(in ~/.bashrc):
 
 ```shell
 export AMIRSTAN_LIBRARY_PATH=${amirstan_plugin_root}/build/lib
@@ -32,11 +32,25 @@ export AMIRSTAN_LIBRARY_PATH=${amirstan_plugin_root}/build/lib
 
 ## Installation
 
+### Host
 ```shell
 git clone https://github.com/grimoire/mmdetection-to-tensorrt.git
 cd mmdetection-to-tensorrt
 python setup.py develop
 ```
+
+### Docker
+
+Build docker image
+```shell
+# cuda10.2 tensorrt7.0 pytorch1.6
+sudo docker build -t mmdet2trt_docker:v1.0 docker/
+```
+Run
+```shell
+sudo docker run --gpus all -it --rm -v ${your_data_path}:${bind_path}  mmdet2trt_docker:v1.0
+```
+
 
 ## Usage
 
