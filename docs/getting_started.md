@@ -87,7 +87,7 @@ with open(engine_path, mode='wb') as f:
     f.write(model_trt.state_dict()['engine'])
 ```
 
-Link the **libamirstan_plugin.so** in your project. compile and load the engine. enjoy.
+Link the `${AMIRSTAN_PLUGIN_DIR}/build/lib/libamirstan_plugin.so` in your project. compile and load the engine. enjoy.
 
 **warning:**
 might need to invode `initLibAmirstanInferPlugins()` in [amirInferPlugin.h](https://github.com/grimoire/amirstan_plugin/blob/master/include/plugin/amirInferPlugin.h) to load the plugins.  
