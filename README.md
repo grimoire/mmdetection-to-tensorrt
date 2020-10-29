@@ -147,6 +147,10 @@ Tested on:
 
 If you find any error, please report in the issue.
 
+## FAQ
+
+read [this page](./docs/FAQ.md) if you meet any problem.
+
 ## Contact
 
 This repo is maintained by [@grimoire](https://github.com/grimoire)  
