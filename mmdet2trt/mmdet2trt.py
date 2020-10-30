@@ -147,6 +147,17 @@ def mmdet2trt(
     return trt_model
 
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
 def main():
     parser = ArgumentParser()
     parser.add_argument("config", help="Path to a mmdet Config file")
@@ -154,12 +165,12 @@ def main():
     parser.add_argument("output",
                         help="Path where tensorrt model will be saved")
     parser.add_argument("--fp16",
-                        type=bool,
+                        type=str2bool,
                         default=True,
                         help="Enable fp16 inference")
     parser.add_argument(
         "--save-engine",
-        type=bool,
+        type=str2bool,
         default=True,
         help=
         "Enable saving TensorRT engine. (will be saved at Path(output).with_suffix('.engine')).",
