@@ -15,10 +15,10 @@ RUN mkdir ~/space &&\
 RUN pip3 install --upgrade pip
 
 ### pytorch
-RUN pip3 install torch torchvision
+RUN pip3 install torch==1.6.0 torchvision==0.7.0
 
 ### install mmcv
-RUN pip3 install mmcv-full==latest+torch1.6.0+cu102 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+RUN pip3 install mmcv-full==1.1.5+torch1.6.0+cu102 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
 
 ### git mmdetection
 RUN git clone --depth=1 https://github.com/open-mmlab/mmdetection.git /root/space/mmdetection
