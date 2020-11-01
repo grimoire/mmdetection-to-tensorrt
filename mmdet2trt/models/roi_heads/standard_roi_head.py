@@ -96,5 +96,4 @@ class StandardRoIHeadWraper(nn.Module):
 
             result += [mask_pred]
 
-
         return result
