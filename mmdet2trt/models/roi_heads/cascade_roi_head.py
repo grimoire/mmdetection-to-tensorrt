@@ -10,9 +10,10 @@ import mmdet2trt.ops.util_ops as mm2trt_util
 @register_wraper("mmdet.models.roi_heads.HybridTaskCascadeRoIHead")
 @register_wraper("mmdet.models.roi_heads.CascadeRoIHead")
 class CascadeRoIHeadWraper(nn.Module):
-    def __init__(self, module):
+    def __init__(self, module, wrap_config):
         super(CascadeRoIHeadWraper, self).__init__()
         self.module = module
+        self.wrap_config = wrap_config
 
         self.bbox_roi_extractor = [
             build_wraper(extractor) for extractor in module.bbox_roi_extractor

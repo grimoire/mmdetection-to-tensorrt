@@ -59,20 +59,19 @@ class Int8CalibDataset():
         return [tensor]
 
 
-def mmdet2trt(
-    config,
-    checkpoint,
-    device="cuda:0",
-    fp16_mode=False,
-    int8_mode=False,
-    int8_calib_dataset=None,
-    int8_calib_alg="entropy",
-    max_workspace_size=0.5e9,
-    opt_shape_param=None,
-    trt_log_level="INFO",
-    return_wrap_model=False,
-    output_names=["num_detections", "boxes", "scores", "classes"],
-):
+def mmdet2trt(config,
+              checkpoint,
+              device="cuda:0",
+              fp16_mode=False,
+              int8_mode=False,
+              int8_calib_dataset=None,
+              int8_calib_alg="entropy",
+              max_workspace_size=0.5e9,
+              opt_shape_param=None,
+              trt_log_level="INFO",
+              return_wrap_model=False,
+              output_names=["num_detections", "boxes", "scores", "classes"],
+              enable_mask=False):
     r"""
     create tensorrt model from mmdetection.
     Args:
@@ -97,7 +96,14 @@ def mmdet2trt(
     cfg = torch_model.cfg
 
     logger.info("Wrapping model")
-    wrap_model = build_wraper(torch_model, TwoStageDetectorWraper)
+    if enable_mask and output_names is not None and len(output_names) != 5:
+        logger.warning("mask mode require len(output_names)==5 " +
+                       "but get output_names=" + str(output_names))
+        output_names = None
+    wrap_config = {"enable_mask": enable_mask}
+    wrap_model = build_wraper(torch_model,
+                              TwoStageDetectorWraper,
+                              wrap_config=wrap_config)
 
     if opt_shape_param is None:
         img_scale = cfg.test_pipeline[1]["img_scale"]

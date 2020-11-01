@@ -11,8 +11,8 @@ from .standard_roi_head import StandardRoIHeadWraper
 
 @register_wraper("mmdet.models.roi_heads.grid_roi_head.GridRoIHead")
 class GridRoIHeadWraper(StandardRoIHeadWraper):
-    def __init__(self, module):
-        super(GridRoIHeadWraper, self).__init__(module)
+    def __init__(self, module, wrap_config):
+        super(GridRoIHeadWraper, self).__init__(module, wrap_config)
 
         self.grid_roi_extractor = build_wraper(module.grid_roi_extractor)
         self.grid_head = build_wraper(module.grid_head,

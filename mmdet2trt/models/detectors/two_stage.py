@@ -15,7 +15,7 @@ from torch import nn
 @register_wraper("mmdet.models.FasterRCNN")
 @register_wraper("mmdet.models.TwoStageDetector")
 class TwoStageDetectorWraper(nn.Module):
-    def __init__(self, model):
+    def __init__(self, model, wrap_config={}):
         super(TwoStageDetectorWraper, self).__init__()
         self.model = model
 
@@ -31,7 +31,8 @@ class TwoStageDetectorWraper(nn.Module):
 
         mmdet_roi_head = self.model.roi_head
         self.roi_head_wraper = build_wraper(mmdet_roi_head,
-                                            StandardRoIHeadWraper)
+                                            StandardRoIHeadWraper,
+                                            wrap_config=wrap_config)
 
     def extract_feat(self, img):
         x = self.backbone_wraper(img)

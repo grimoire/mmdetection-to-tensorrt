@@ -10,9 +10,10 @@ import mmdet2trt.ops.util_ops as mm2trt_util
 @register_wraper("mmdet.models.roi_heads.dynamic_roi_head.DynamicRoIHead")
 @register_wraper("mmdet.models.roi_heads.standard_roi_head.StandardRoIHead")
 class StandardRoIHeadWraper(nn.Module):
-    def __init__(self, module):
+    def __init__(self, module, wrap_config={}):
         super(StandardRoIHeadWraper, self).__init__()
         self.module = module
+        self.wrap_config = wrap_config
 
         self.bbox_roi_extractor = build_wraper(module.bbox_roi_extractor)
 
@@ -23,7 +24,18 @@ class StandardRoIHeadWraper(nn.Module):
         else:
             self.shared_head = None
 
+        # init mask if exist
+        self.enable_mask = False
+        if "enable_mask" in wrap_config and wrap_config[
+                "enable_mask"] and module.with_mask:
+            self.enable_mask = True
+            self.init_mask_head(module.mask_roi_extractor, module.mask_head)
+
         self.test_cfg = module.test_cfg
+
+    def init_mask_head(self, mask_roi_extractor, mask_head):
+        self.mask_roi_extractor = build_wraper(mask_roi_extractor)
+        self.mask_head = build_wraper(mask_head, test_cfg=self.module.test_cfg)
 
     def _bbox_forward(self, x, rois):
         bbox_feats = self.bbox_roi_extractor(
@@ -37,6 +49,17 @@ class StandardRoIHeadWraper(nn.Module):
                             bbox_pred=bbox_pred,
                             bbox_feats=bbox_feats)
         return bbox_results
+
+    def _mask_forward(self, x, rois):
+        mask_feats = self.mask_roi_extractor(
+            x[:len(self.bbox_roi_extractor.featmap_strides)], rois)
+        if self.shared_head is not None:
+            mask_feats = self.shared_head(mask_feats)
+
+        # mask forward
+        mask_pred = self.mask_head(mask_feats)
+        mask_results = dict(mask_pred=mask_pred, mask_feats=mask_feats)
+        return mask_results
 
     def forward(self, feat, proposals, img_shape):
         batch_size = proposals.shape[0]
@@ -55,4 +78,23 @@ class StandardRoIHeadWraper(nn.Module):
             rois, cls_score, bbox_pred, img_shape, batch_size, num_proposals,
             self.test_cfg)
 
-        return num_detections, det_boxes, det_scores, det_classes
+        result = [num_detections, det_boxes, det_scores, det_classes]
+
+        if self.enable_mask:
+            # mask roi input
+            num_mask_proposals = det_boxes.size(1)
+            rois_pad = mm2trt_util.arange_by_input(det_boxes, 0).unsqueeze(1)
+            rois_pad = rois_pad.repeat(1, num_mask_proposals).view(-1, 1)
+            mask_proposals = det_boxes.view(-1, 4)
+            mask_rois = torch.cat([rois_pad, mask_proposals], dim=1)
+
+            mask_results = self._mask_forward(feat, mask_rois)
+            mask_pred = mask_results['mask_pred']
+
+            mc, mh, mw = mask_pred.shape[1:]
+            mask_pred = mask_pred.reshape(batch_size, -1, mc, mh, mw)
+
+            result += [mask_pred]
+
+
+        return result

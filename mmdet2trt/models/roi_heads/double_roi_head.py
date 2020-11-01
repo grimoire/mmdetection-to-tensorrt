@@ -10,8 +10,8 @@ from .standard_roi_head import StandardRoIHeadWraper
 
 @register_wraper("mmdet.models.roi_heads.double_roi_head.DoubleHeadRoIHead")
 class DoubleHeadRoIHeadWraper(StandardRoIHeadWraper):
-    def __init__(self, module):
-        super(DoubleHeadRoIHeadWraper, self).__init__(module)
+    def __init__(self, module, wrap_config):
+        super(DoubleHeadRoIHeadWraper, self).__init__(module, wrap_config)
 
         self.reg_roi_scale_factor = self.module.reg_roi_scale_factor
 

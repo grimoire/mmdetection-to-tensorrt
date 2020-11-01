@@ -19,7 +19,7 @@ from torch import nn
 @register_wraper("mmdet.models.RetinaNet")
 @register_wraper("mmdet.models.SingleStageDetector")
 class SingleStageDetectorWraper(nn.Module):
-    def __init__(self, model):
+    def __init__(self, model, wrap_config={}):
         super(SingleStageDetectorWraper, self).__init__()
         self.model = model
 
