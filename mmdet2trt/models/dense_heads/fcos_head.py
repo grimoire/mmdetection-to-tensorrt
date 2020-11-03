@@ -45,6 +45,7 @@ class FCOSHeadWraper(AnchorFreeHeadWraper):
             bbox_pred = bbox_pred.permute(0, 2, 3,
                                           1).reshape(bbox_pred.shape[0], -1, 4)
             points = points.unsqueeze(0)
+            points = points.expand_as(bbox_pred[:, :, :2])
             nms_pre = cfg.get('nms_pre', -1)
             if nms_pre > 0:
                 # concate zero to enable topk, dirty way, will find a better way in future
