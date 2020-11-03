@@ -92,7 +92,7 @@ class StandardRoIHeadWraper(nn.Module):
             mask_pred = mask_results['mask_pred']
 
             mc, mh, mw = mask_pred.shape[1:]
-            mask_pred = mask_pred.reshape(batch_size, -1, mc, mh, mw)
+            mask_pred = mask_pred.reshape(batch_size, -1, mc, mh, mw).sigmoid()
 
             result += [mask_pred]
 

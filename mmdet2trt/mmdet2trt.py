@@ -87,6 +87,7 @@ def mmdet2trt(config,
         trt_log_level (str): tensorrt log level, ["VERBOSE", "INFO", "WARNING", "ERROR"]
         return_wrap_model (bool): return pytorch wrap model, used for debug
         output_names (str): the output names of tensorrt engine
+        enable_mask (bool): weither output the instance segmentation result(w/o postprocess)
     """
 
     device = torch.device(device)

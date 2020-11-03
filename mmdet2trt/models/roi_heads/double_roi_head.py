@@ -34,21 +34,3 @@ class DoubleHeadRoIHeadWraper(StandardRoIHeadWraper):
                             bbox_pred=bbox_pred,
                             bbox_feats=bbox_cls_feats)
         return bbox_results
-
-    def forward(self, feat, proposals, img_shape):
-        batch_size = proposals.shape[0]
-        num_proposals = proposals.shape[1]
-        rois_pad = mm2trt_util.arange_by_input(proposals, 0).unsqueeze(1)
-        rois_pad = rois_pad.repeat(1, num_proposals).view(-1, 1)
-        proposals = proposals.view(-1, 4)
-        rois = torch.cat([rois_pad, proposals], dim=1)
-
-        bbox_results = self._bbox_forward(feat, rois)
-
-        cls_score = bbox_results['cls_score']
-        bbox_pred = bbox_results['bbox_pred']
-        num_detections, det_boxes, det_scores, det_classes = self.bbox_head.get_bboxes(
-            rois, cls_score, bbox_pred, img_shape, batch_size, num_proposals,
-            self.test_cfg)
-
-        return num_detections, det_boxes, det_scores, det_classes

@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 import mmdet2trt.ops.util_ops as mm2trt_util
+from mmdet2trt.core.post_processing import merge_aug_masks
 
 
 @register_wraper("mmdet.models.roi_heads.HybridTaskCascadeRoIHead")
@@ -27,9 +28,24 @@ class CascadeRoIHeadWraper(nn.Module):
         else:
             self.shared_head = None
 
+        # init mask if exist
+        self.enable_mask = False
+        if "enable_mask" in wrap_config and wrap_config[
+                "enable_mask"] and module.with_mask:
+            self.enable_mask = True
+            self.init_mask_head(module.mask_roi_extractor, module.mask_head)
+
         self.test_cfg = module.test_cfg
 
         self.num_stages = module.num_stages
+
+    def init_mask_head(self, mask_roi_extractor, mask_head):
+        self.mask_roi_extractor = [
+            build_wraper(mre) for mre in mask_roi_extractor
+        ]
+        self.mask_head = [
+            build_wraper(mh, test_cfg=self.module.test_cfg) for mh in mask_head
+        ]
 
     def _bbox_forward(self, stage, x, rois):
 
@@ -47,6 +63,17 @@ class CascadeRoIHeadWraper(nn.Module):
                             bbox_pred=bbox_pred,
                             bbox_feats=roi_feats)
         return bbox_results
+
+    def _mask_forward(self, stage, x, rois):
+        mask_roi_extractor = self.mask_roi_extractor[stage]
+        mask_head = self.mask_head[stage]
+        mask_feats = mask_roi_extractor(x[:mask_roi_extractor.num_inputs],
+                                        rois)
+
+        # mask forward
+        mask_pred = mask_head(mask_feats)
+        mask_results = dict(mask_pred=mask_pred, mask_feats=mask_feats)
+        return mask_results
 
     def regress_by_class(self, stage, rois, label, bbox_pred):
         bbox_head = self.bbox_head[stage]
@@ -91,4 +118,29 @@ class CascadeRoIHeadWraper(nn.Module):
         num_detections, det_boxes, det_scores, det_classes = self.bbox_head[
             -1].get_bboxes(rois, cls_score, bbox_pred, img_shape, batch_size,
                            num_proposals, self.test_cfg)
-        return num_detections, det_boxes, det_scores, det_classes
+
+        result = [num_detections, det_boxes, det_scores, det_classes]
+
+        if self.enable_mask:
+            # mask roi input
+            num_mask_proposals = det_boxes.size(1)
+            rois_pad = mm2trt_util.arange_by_input(det_boxes, 0).unsqueeze(1)
+            rois_pad = rois_pad.repeat(1, num_mask_proposals).view(-1, 1)
+            mask_proposals = det_boxes.view(-1, 4)
+            mask_rois = torch.cat([rois_pad, mask_proposals], dim=1)
+
+            aug_masks = []
+            for i in range(self.num_stages):
+                mask_results = self._mask_forward(i, feat, mask_rois)
+                mask_pred = mask_results['mask_pred']
+                mask_pred = mask_pred.sigmoid()
+                aug_masks.append(mask_pred)
+
+            mask_pred = merge_aug_masks(aug_masks, self.test_cfg)
+
+            mc, mh, mw = mask_pred.shape[1:]
+            mask_pred = mask_pred.reshape(batch_size, -1, mc, mh, mw)
+
+            result += [mask_pred]
+
+        return result
