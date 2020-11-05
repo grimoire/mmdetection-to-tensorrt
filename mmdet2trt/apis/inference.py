@@ -37,7 +37,10 @@ def inference_detector(model, img, cfg, device):
     # prepare data
     data = test_pipeline(data)
 
-    tensor = data['img'][0].unsqueeze(0).to(device)
+    tensor = data['img'][0]
+    if isinstance(tensor, mmcv.parallel.DataContainer):
+        tensor = tensor.data
+    tensor = tensor.unsqueeze(0).to(device)
     img_metas = data['img_metas']
     scale_factor = img_metas[0].data['scale_factor']
     scale_factor = torch.tensor(scale_factor,
