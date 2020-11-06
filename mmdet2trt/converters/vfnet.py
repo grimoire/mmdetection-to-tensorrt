@@ -1,5 +1,6 @@
 from torch2trt_dynamic.torch2trt_dynamic import *
 
+
 @tensorrt_converter('mmdet.models.VFNetHead.star_dcn_offset', is_real=False)
 def convert_vfnet_star_dcn_offset(ctx):
     self = ctx.method_args[0]
