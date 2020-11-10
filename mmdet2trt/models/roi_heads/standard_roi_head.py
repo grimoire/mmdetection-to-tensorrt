@@ -93,6 +93,16 @@ class StandardRoIHeadWraper(nn.Module):
 
             mc, mh, mw = mask_pred.shape[1:]
             mask_pred = mask_pred.reshape(batch_size, -1, mc, mh, mw).sigmoid()
+            if not self.module.mask_head[-1].class_agnostic:
+                det_index = det_classes.unsqueeze(-1).long()
+                det_index = det_index.where(
+                    det_index >= 0,
+                    det_index.new_ones((1, 1, 1)) * (mask_pred.size(2)))
+                mask_pad = mask_pred[:, :, 0:1, ...] * 0
+                mask_pred = torch.cat([mask_pred, mask_pad], dim=2)
+                mask_pred = mm2trt_util.gather_topk(mask_pred,
+                                                    dim=2,
+                                                    index=det_index)
 
             result += [mask_pred]
 
