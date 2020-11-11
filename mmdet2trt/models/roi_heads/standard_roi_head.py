@@ -93,7 +93,7 @@ class StandardRoIHeadWraper(nn.Module):
 
             mc, mh, mw = mask_pred.shape[1:]
             mask_pred = mask_pred.reshape(batch_size, -1, mc, mh, mw).sigmoid()
-            if not self.module.mask_head[-1].class_agnostic:
+            if not self.module.mask_head.class_agnostic:
                 det_index = det_classes.unsqueeze(-1).long()
                 det_index = det_index.where(
                     det_index >= 0,
