@@ -155,6 +155,70 @@ def mmdet2trt(config,
     return trt_model
 
 
+def mask_processor2trt(max_width,
+                       max_height,
+                       max_batch_size=1,
+                       max_box_per_batch=10,
+                       mask_size=[28, 28],
+                       device="cuda:0",
+                       fp16_mode=False,
+                       max_workspace_size=0.5e9,
+                       trt_log_level="INFO",
+                       return_wrap_model=False,
+                       output_names=None):
+
+    from mmdet2trt.models.roi_heads.mask_heads.fcn_mask_head import MaskProcessor
+
+    logger.info("Wrapping MaskProcessor")
+    wrap_model = MaskProcessor(max_width=max_width, max_height=max_height)
+
+    batch_size = max_batch_size
+    num_boxes = max_box_per_batch
+    opt_shape_param = [[
+        [1, 1] + mask_size,
+        [batch_size, num_boxes] + mask_size,
+        [batch_size, num_boxes] + mask_size,
+    ], [
+        [1, 1, 4],
+        [batch_size, num_boxes, 4],
+        [batch_size, num_boxes, 4],
+    ]]
+    device = torch.device(device)
+
+    dummy_mask_shape = opt_shape_param[0][1]
+    dummy_mask = torch.rand(dummy_mask_shape).to(device)
+    dummy_mask = dummy_mask.contiguous()
+
+    dummy_box_shape = opt_shape_param[1][1]
+    dummy_box_pre = torch.rand(dummy_box_shape[0], dummy_box_shape[1],
+                               2) * torch.tensor([max_width, max_height]) / 2
+    dummy_box_post = torch.rand(dummy_box_shape[0], dummy_box_shape[1],
+                                2) * torch.tensor([max_width, max_height]) / 2
+    dummy_box = torch.cat([dummy_box_pre, dummy_box_pre + dummy_box_post],
+                          dim=-1).to(device)
+
+    logger.info("Converting MaskProcessor")
+    start = time.time()
+    with torch.cuda.device(device), torch.no_grad():
+        trt_model = torch2trt_dynamic(
+            wrap_model, [dummy_mask, dummy_box],
+            log_level=getattr(trt.Logger, trt_log_level),
+            fp16_mode=fp16_mode,
+            opt_shape_param=opt_shape_param,
+            max_workspace_size=int(max_workspace_size),
+            keep_network=False,
+            strict_type_constraints=True,
+            output_names=output_names)
+
+    duration = time.time() - start
+    logger.info("Conversion took {} s".format(duration))
+
+    if return_wrap_model:
+        return trt_model, wrap_model
+
+    return trt_model
+
+
 def str2bool(v):
     if isinstance(v, bool):
         return v
