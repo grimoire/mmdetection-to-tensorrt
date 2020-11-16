@@ -9,6 +9,7 @@ This page provide details about mmdet2trt.
   - [max workspace size](#max-workspace-size)
   - [use in c++](#use-in-c)
   - [deepstream support](#deepstream-support)
+  - [instance segmentation support(experimentation)](#instance-segmentation-supportexperimentation)
 
 ## dynamic shape/batched input
 
@@ -143,3 +144,35 @@ enjoy the model in deepstream.
 
 **warning:**
 I am not so familiar with deepstream, if you find any thing wrong with above, please let me know.
+
+## instance segmentation support(experimentation)
+
+set flag `enable_mask` to True
+
+```python
+# enable mask
+trt_model = mmdet2trt(... , enable_mask = True)
+```
+
+inference with trt_model will return 5 tensors
+
+```python
+num_detections, bboxes, scores, class_ids, masks = trt_model(input_tensor)
+```
+
+convert and do postprocess if you needed.
+
+```python
+# convert post process
+mask_postprocessor = mask_processor2trt(max_width = max_width,
+                                        max_height = max_height,
+                                        max_batch_size = 1,
+                                        max_box_per_batch = 10,
+                                        mask_size = [28, 28]
+                                        )
+
+# do postprocess
+final_masks = mask_postprocessor(masks[0:1, :10, ...], bboxes[0:1, :10, ...])
+```
+
+
