@@ -238,12 +238,16 @@ def main():
                         help="Path where tensorrt model will be saved")
     parser.add_argument("--fp16",
                         type=str2bool,
-                        default=True,
+                        default=False,
                         help="Enable fp16 inference")
+    parser.add_argument("--enable-mask",
+                        type=str2bool,
+                        default=False,
+                        help="Enable mask output")
     parser.add_argument(
         "--save-engine",
         type=str2bool,
-        default=True,
+        default=False,
         help=
         "Enable saving TensorRT engine. (will be saved at Path(output).with_suffix('.engine')).",
     )
@@ -255,32 +259,35 @@ def main():
         "--max-workspace-gb",
         type=float,
         default=0.5,
-        help=
-        "The maximum `device` (GPU) temporary memory in GB (gigabytes) which TensorRT can use at execution time.",
+        help="The maximum `device` (GPU) temporary memory in GB (gigabytes)"
+        " which TensorRT can use at execution time.",
     )
     parser.add_argument(
         "--min-scale",
         type=int,
-        nargs=2,
+        nargs=4,
         default=None,
         help=
-        "Minimum input scale in [height, width] order. Only used if all min-scale, opt-scale and max-scale are set.",
+        "Minimum input scale in [batch_size, channels, height, width] order."
+        " Only used if all min-scale, opt-scale and max-scale are set.",
     )
     parser.add_argument(
         "--opt-scale",
         type=int,
-        nargs=2,
+        nargs=4,
         default=None,
         help=
-        "Optimal input scale in [height, width] order. Only used if all min-scale, opt-scale and max-scale are set.",
+        "Optimal input scale in [batch_size, channels, height, width] order."
+        " Only used if all min-scale, opt-scale and max-scale are set.",
     )
     parser.add_argument(
         "--max-scale",
         type=int,
-        nargs=2,
+        nargs=4,
         default=None,
         help=
-        "Maximum input scale in [height, width] order. Only used if all min-scale, opt-scale and max-scale are set.",
+        "Maximum input scale in [batch_size, channels, height, width] order."
+        " Only used if all min-scale, opt-scale and max-scale are set.",
     )
     parser.add_argument(
         "--log-level",
@@ -308,20 +315,19 @@ def main():
     if all(
             getattr(args, x) is not None
             for x in ["min_scale", "opt_scale", "max_scale"]):
-        opt_shape_param = [args.min_scale, args.opt_scale, args.max_scale]
+        opt_shape_param = [[args.min_scale, args.opt_scale, args.max_scale]]
     else:
         opt_shape_param = None
 
-    trt_model = mmdet2trt(
-        args.config,
-        args.checkpoint,
-        device=args.device,
-        fp16_mode=args.fp16,
-        max_workspace_size=int(args.max_workspace_gb * 1e9),
-        opt_shape_param=opt_shape_param,
-        trt_log_level=args.trt_log_level,
-        output_names=args.output_names,
-    )
+    trt_model = mmdet2trt(args.config,
+                          args.checkpoint,
+                          device=args.device,
+                          fp16_mode=args.fp16,
+                          max_workspace_size=int(args.max_workspace_gb * 1e9),
+                          opt_shape_param=opt_shape_param,
+                          trt_log_level=args.trt_log_level,
+                          output_names=args.output_names,
+                          enable_mask=args.enable_mask)
 
     logger.info("Saving TRT model to: {}".format(args.output))
     torch.save(trt_model.state_dict(), args.output)

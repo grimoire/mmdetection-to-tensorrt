@@ -22,7 +22,8 @@ def model_test(test_folder,
                max_workspace_size=1 << 25,
                device="cuda:0",
                score_thr=0.3,
-               fp16=True):
+               fp16=True,
+               enable_mask=False):
 
     if not osp.exists(save_folder):
         os.mkdir(save_folder)
@@ -34,7 +35,8 @@ def model_test(test_folder,
                           opt_shape_param=opt_shape_param,
                           max_workspace_size=int(max_workspace_size),
                           fp16_mode=fp16,
-                          device=device)
+                          device=device,
+                          enable_mask=enable_mask)
     logger.info("finish, save trt_model in {}".format(trt_model_path))
     torch.save(trt_model.state_dict(), trt_model_path)
 
@@ -97,6 +99,9 @@ def main():
     parser.add_argument('--fp16',
                         action='store_true',
                         help="enable fp16 inference")
+    parser.add_argument('--enable_mask',
+                        action='store_true',
+                        help="enable mask output")
     args = parser.parse_args()
 
     model_test(args.test_folder,
