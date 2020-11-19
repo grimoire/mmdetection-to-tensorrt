@@ -7,7 +7,7 @@ from mmdet2trt.models.roi_heads import StandardRoIHeadWraper
 import torch
 from torch import nn
 
-
+@register_wraper("mmdet.models.MaskScoringRCNN")
 @register_wraper("mmdet.models.GridRCNN")
 @register_wraper("mmdet.models.HybridTaskCascade")
 @register_wraper("mmdet.models.MaskRCNN")

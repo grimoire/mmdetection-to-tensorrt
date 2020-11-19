@@ -1,7 +1,8 @@
 # MMDet to tensorrt
 
 This project aims to convert the mmdetection model to tensorrt model end2end.  
-Focus on object detection for now, instance segmentation is not fully supported.  
+Focus on object detection for now.  
+Mask support is **experiment**.  
 
 support:
 - fp16
@@ -137,6 +138,8 @@ read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
 - [x] Generalized Focal Loss
 - [x] Grid RCNN
 - [x] VFNet
+- [ ] Mask R-CNN(experiment)
+- [ ] Cascade Mask R-CNN(experiment)
 
 
 Tested on:
