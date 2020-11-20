@@ -7,7 +7,8 @@ from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 import mmdet2trt.ops.util_ops as mm2trt_util
 
 
-@register_wraper("mmdet.models.roi_heads.mask_scoring_roi_head.MaskScoringRoIHead")
+@register_wraper(
+    "mmdet.models.roi_heads.mask_scoring_roi_head.MaskScoringRoIHead")
 @register_wraper("mmdet.models.roi_heads.dynamic_roi_head.DynamicRoIHead")
 @register_wraper("mmdet.models.roi_heads.standard_roi_head.StandardRoIHead")
 class StandardRoIHeadWraper(nn.Module):
