@@ -13,3 +13,4 @@ from .MaskedConv import convert_MaskedConv
 from .generalized_attention import convert_GeneralizeAttention
 from .SAConv2d import convert_SAConv2d
 from .vfnet import convert_vfnet_star_dcn_offset
+from .mmcv_roi_aligin import convert_mmcv_RoIAlign

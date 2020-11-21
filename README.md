@@ -129,7 +129,7 @@ read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
 - [x] Guided Anchoring
 - [x] Generalized Attention
 - [x] Dynamic R-CNN
-- [x] Hybrid Task Cascade
+- [x] Hybrid Task Cascade(object detection only)
 - [x] DetectoRS
 - [x] Side-Aware Boundary Localization
 - [x] YOLOv3
@@ -138,6 +138,7 @@ read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
 - [x] Generalized Focal Loss
 - [x] Grid RCNN
 - [x] VFNet
+- [x] GROIE
 - [ ] Mask R-CNN(experiment)
 - [ ] Cascade Mask R-CNN(experiment)
 

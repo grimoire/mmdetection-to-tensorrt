@@ -107,8 +107,7 @@ def convert_GeneralizeAttention(ctx):
     else:
         # (n, num_heads, h*w, h_kv*w_kv), query before key, 540mb for
         if not self.attention_type[0]:
-            energy = torch.matmul(proj_query, proj_key).\
-                view(n, num_heads, h, w, h_kv, w_kv) * 0.
+            energy = x_input.new_zeros(n, num_heads, h, w, h_kv, w_kv)
 
         # attention_type[0]: appr - appr
         # attention_type[1]: appr - position
