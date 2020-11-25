@@ -56,3 +56,6 @@ RUN cd /root/space/mmdetection-to-tensorrt &&\
     python3 setup.py develop
 
 WORKDIR /root/space
+
+CMD [ "--help" ]
+ENTRYPOINT [ "mmdet2trt" ]
