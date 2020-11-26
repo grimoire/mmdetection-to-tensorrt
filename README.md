@@ -47,9 +47,16 @@ Build docker image
 # cuda10.2 tensorrt7.0 pytorch1.6
 sudo docker build -t mmdet2trt_docker:v1.0 docker/
 ```
-Run
+
+Run (will show the help for the CLI entrypoint)
+
 ```shell
 sudo docker run --gpus all -it --rm -v ${your_data_path}:${bind_path}  mmdet2trt_docker:v1.0
+```
+
+Or if you want to open a terminal inside de container:
+```shell
+sudo docker run --gpus all -it --rm -v ${your_data_path}:${bind_path}  --entrypoint bash mmdet2trt_docker:v1.0
 ```
 
 
