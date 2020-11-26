@@ -38,8 +38,9 @@ RUN cd /root/space/amirstan_plugin &&\
     mkdir build &&\
     cd build &&\
     cmake .. &&\
-    make -j10 &&\
-    echo "export AMIRSTAN_LIBRARY_PATH=/root/space/amirstan_plugin/build/lib" >> /root/.bashrc
+    make -j10
+
+ENV AMIRSTAN_LIBRARY_PATH=/root/space/amirstan_plugin/build/lib
 
 ### git torch2trt_dynamic
 RUN git clone --depth=1 https://github.com/grimoire/torch2trt_dynamic.git /root/space/torch2trt_dynamic
