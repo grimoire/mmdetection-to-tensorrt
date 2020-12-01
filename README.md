@@ -25,6 +25,9 @@ This project is released under the [Apache 2.0 license](LICENSE).
 - https://github.com/grimoire/amirstan_plugin
 
 ### Important!
+
+warning: please install nvidia driver <= 450.36 and cuda <= 11
+
 Set the envoirment variable(in ~/.bashrc):
 
 ```shell
