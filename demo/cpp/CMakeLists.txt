@@ -10,10 +10,11 @@ find_package(CUDA REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(TensorRT REQUIRED)
 
-###  Set path to root of amirstan_plugin
-set(amirstan_plugin_root "/root/space/amirstan_plugin")
-message("Used amirstan_plugin root folder: ${amirstan_plugin_root}")
-
+#set(amirstan_plugin_root "/root/space/amirstan_plugin")
+if(NOT DEFINED amirstan_plugin_root)
+    set(amirstan_plugin_root "/root/space/amirstan_plugin")
+endif(NOT DEFINED amirstan_plugin_root)
+message("Defined amirstan_plugin_root: ${amirstan_plugin_root}")
 set(amirstan_includes "${amirstan_plugin_root}/include")
 set(amirstan_libs "${amirstan_plugin_root}/build/lib/libamirstan_plugin.so")
 

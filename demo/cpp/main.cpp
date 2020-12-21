@@ -1,6 +1,7 @@
 #include <chrono>
 #include <iostream>
 #include <fstream>
+#include <stdexcept>
 #include <iomanip>
 #include <NvUffParser.h>
 #include <cuda_runtime_api.h>
@@ -39,70 +40,136 @@ struct TRTDestroy {
 template< class T >
 using TRTUniquePtr = std::unique_ptr< T, TRTDestroy >;
 
-size_t getSizeByDim(const nvinfer1::Dims& dims) {
+size_t get_size_by_dim(const nvinfer1::Dims& dims) {
     size_t size = 1;
     for (size_t i = 0; i < dims.nbDims; ++i) size *= dims.d[i];
     return size;
 }
 
-//-----------------------------------------------------------------------------------------------------
-
-// Load the model function
-void parseUffModel(const std::string& model_path, int batch_size, TRTUniquePtr<nvinfer1::ICudaEngine>& engine,
-                    TRTUniquePtr< nvinfer1::IExecutionContext >& context)
-{
-    TRTUniquePtr< nvinfer1::IBuilder > builder{nvinfer1::createInferBuilder(gLogger)};
-    TRTUniquePtr< nvinfer1::INetworkDefinition > network{builder->createNetworkV2(0U)};
-    TRTUniquePtr< nvuffparser::IUffParser > parser{nvuffparser::createUffParser()};
-    parser->registerInput("input", nvinfer1::Dims3(3,128,128), nvuffparser::UffInputOrder::kNCHW);
-    parser->registerOutput("final_training_ops/package_layer");
-    // parse uff
-    if (!parser->parse(model_path.c_str(), *network, nvinfer1::DataType::kFLOAT)) {
-        std::cerr << "ERROR: could not parse the model." << std::endl;
-        return;
+//  Functions to allocate/release input/output memory
+bool allocate_cuda_inout_memory(TRTUniquePtr< nvinfer1::ICudaEngine >& engine,
+                                TRTUniquePtr< nvinfer1::IExecutionContext >& context,
+                                int batch_size,
+                                std::vector< void* >& inout_buffer_pointers,
+                                std::vector< void* >& input_buffer_pointers,
+                                std::vector< void* >& output_buffer_pointers,
+                                std::vector< nvinfer1::Dims >& input_dims,
+                                std::vector< nvinfer1::Dims >& output_dims,
+                                float*& cpu_transfer_buffer) {
+    for (size_t i = 0; i < engine->getNbBindings(); ++i) {
+        auto binding_size = get_size_by_dim(context->getBindingDimensions(i)) * batch_size * sizeof(float);
+        void* buffer_pointer;
+        cudaMalloc(&buffer_pointer, binding_size);
+        inout_buffer_pointers.push_back(buffer_pointer);
+        std::cout << "Allocated " << binding_size << " bytes in GPU, i = " << i << std::endl;
+        if (engine->bindingIsInput(i)) {
+            input_buffer_pointers.push_back(buffer_pointer);
+            input_dims.emplace_back(context->getBindingDimensions(i));
+            if (cudaSuccess != cudaMallocHost((void**)&cpu_transfer_buffer, binding_size)) {
+                std::cerr << "Error: allocating pinned host memory!" << std::endl;
+                return false;
+            }
+            std::cout << "Allocated " << binding_size << " bytes in GPU for input and in CPU for transfer" << std::endl;
+        }
+        else {
+            output_buffer_pointers.push_back(buffer_pointer);
+            output_dims.emplace_back(context->getBindingDimensions(i));
+            std::cout << "Allocated " << binding_size << " bytes in GPU for output" << std::endl;
+        }
     }
-
-    TRTUniquePtr< nvinfer1::IBuilderConfig > config{builder->createBuilderConfig()};
-    // allow TensorRT to use up to 1GB of GPU memory for tactic selection.
-    config->setMaxWorkspaceSize(1ULL << 30);
-    // use FP16 mode if possible
-    if (builder->platformHasFastFp16()) {
-        config->setFlag(nvinfer1::BuilderFlag::kFP16);
+    if (input_dims.empty() || output_dims.empty()) {
+        std::cerr << "Expect at least one input and one output for network" << std::endl;
+        return false;
     }
-    // set batch size
-    builder->setMaxBatchSize(batch_size);
-    engine.reset(builder->buildEngineWithConfig(*network, *config));
-    context.reset(engine->createExecutionContext());
+    if (input_buffer_pointers.size() > 1 || input_buffer_pointers.size() < 1) {
+        std::cerr << "Expect exactly one input for network" << std::endl;
+        return false;
+    }
+    return true;
 }
+
+void deallocate_cuda_inout_memory(std::vector< void* >& inout_buffer_pointers,
+                                  std::vector< void* >& input_buffer_pointers,
+                                  std::vector< void* >& output_buffer_pointers,
+                                  std::vector< nvinfer1::Dims >& input_dims,
+                                  std::vector< nvinfer1::Dims >& output_dims,
+                                  float*& cpu_transfer_buffer) {
+    for (void* buf : inout_buffer_pointers) cudaFree(buf);
+    inout_buffer_pointers.clear();
+    input_buffer_pointers.clear();
+    output_buffer_pointers.clear();
+    input_dims.clear();
+    output_dims.clear();
+    cudaFreeHost(cpu_transfer_buffer);
+}
+
+// load the model engine
+bool load_engine(std::string const& model_path, TRTUniquePtr< nvinfer1::ICudaEngine >& engine,
+                 TRTUniquePtr< nvinfer1::IExecutionContext >& context)
+{
+    //  Load model data via stringstream to get model size
+    std::stringstream gieModelStream;
+    gieModelStream.seekg(0, gieModelStream.beg);
+    std::ifstream model_file( model_path );
+    //  read the model data to the stringstream
+    gieModelStream << model_file.rdbuf();
+	model_file.close();
+    //  find model size
+    gieModelStream.seekg(0, std::ios::end);
+	const int modelSize = gieModelStream.tellg();
+	gieModelStream.seekg(0, std::ios::beg);
+    //  load the model to the buffer
+	void* modelData = malloc(modelSize);
+	if( !modelData ) {
+		std::cout << "failed to allocate " << modelSize << " bytes to deserialize model" << std::endl;
+		return false;
+	}
+	gieModelStream.read((char*)modelData, modelSize);
+    //  create TRT engine in cuda device from model data
+    initLibAmirstanInferPlugins();
+    TRTUniquePtr< nvinfer1::IRuntime >    runtime{nvinfer1::createInferRuntime(gLogger)};
+    engine.reset(runtime->deserializeCudaEngine(modelData, modelSize, nullptr));
+    free(modelData);
+    if( !engine ) {
+        std::cout << "failed to create CUDA engine" << std::endl;
+        return false;
+    }
+    context.reset(engine->createExecutionContext());
+    if( !context ) {
+		std::cout << "failed to create execution context" << std::endl;
+		return false;
+	}
+    return true;
+}
+
 
 // read network output
 template < class T >
-unsigned getOutput(T* gpu_output, nvinfer1::Dims const& dims, int batch_size, std::vector< T >& cpu_output)
+unsigned read_output(T* gpu_output, nvinfer1::Dims const& dims, int batch_size, std::vector< T >& cpu_output)
 {
     // copy results from GPU to CPU
-    size_t output_size = getSizeByDim(dims) * batch_size;
+    size_t output_size = get_size_by_dim(dims) * batch_size;
     cpu_output.resize(output_size);
     cudaMemcpy(cpu_output.data(), gpu_output, cpu_output.size() * sizeof(T), cudaMemcpyDeviceToHost);
     return cpu_output.size();
 }
 
 // read network outputs
-unsigned getDetections(std::vector< void* >const& gpu_outputs, std::vector<nvinfer1::Dims>const& dims,
-    int batch_size, ImageTransformer const& image_transformer, cv::Size const& orig_image_size,
-    std::vector< Detection >& detections)
+unsigned parse_detections(std::vector< void* >const& gpu_outputs, std::vector<nvinfer1::Dims>const& dims,
+    int batch_size, cv::Size2d const& scale_factor, std::vector< Detection >& detections)
 {
     assert(dims.size() == 4);
     std::vector<int> num_detections_vector;
-    getOutput((int *) gpu_outputs[0], dims[0], batch_size, num_detections_vector);
+    read_output((int *) gpu_outputs[0], dims[0], batch_size, num_detections_vector);
     assert(num_detections_vector.size() == 1);
     int num_detections = num_detections_vector[0];
     std::cout << "Got num detections: " << num_detections << std::endl;
     std::vector<float> boxes, scores, labels;
     for (unsigned int i=1; i<dims.size(); i++) {
         switch(i) {
-            case 1: getOutput((float *) gpu_outputs[i], dims[i], batch_size, boxes);  break;
-            case 2: getOutput((float *) gpu_outputs[i], dims[i], batch_size, scores); break;
-            case 3: getOutput((float *) gpu_outputs[i], dims[i], batch_size, labels); break;
+            case 1: read_output((float *) gpu_outputs[i], dims[i], batch_size, boxes);  break;
+            case 2: read_output((float *) gpu_outputs[i], dims[i], batch_size, scores); break;
+            case 3: read_output((float *) gpu_outputs[i], dims[i], batch_size, labels); break;
         }
     }
 
@@ -113,7 +180,7 @@ unsigned getDetections(std::vector< void* >const& gpu_outputs, std::vector<nvinf
         float bottom = boxes[4*i+3];
         float score  = scores[i];
         float label  = labels[i];
-        Box scaled_back = image_transformer.transform_output_box(Box(left, top, right, bottom), orig_image_size);
+        Box scaled_back = ImageTransformer::transform_output_box(Box(left, top, right, bottom), scale_factor);
         detections.push_back(Detection(scaled_back, score, label));
     }    
     
@@ -133,156 +200,105 @@ void printOutput(std::vector< Detection >const& detections)
 }
 
 // pre-process the image and load it to tensor buffer
-bool processInput(std::string const& image_path, void* gpu_input, nvinfer1::Dims const& dims,
-    ImageTransformer const& image_transformer, cv::Size& orig_image_size)
+cv::Size2d processInput(std::string const& image_path, void* gpu_input, float*& cpu_transfer_buffer, 
+                        nvinfer1::Dims const& dims)
 {
     cv::Mat image = cv::imread(image_path);
-    if (image.empty()) {
-        std::cerr << "Input image " << image_path << " load failed " << std::endl;
-        return false;
-    }
-    orig_image_size = cv::Size(image.cols, image.rows);
+    if (image.empty()) 
+        throw std::runtime_error(std::string("Error: cannot load image ") + image_path);
+
     auto channels     = dims.d[1];
     auto input_height = dims.d[2];
     auto input_width  = dims.d[3];
     auto input_size   = cv::Size(input_width, input_height);
     cv::Mat transformed;
-    image_transformer.transform_input_image(image, transformed);
+    cv::Size2d scale_factor = ImageTransformer::transform_input_image(image, input_size, transformed);
+
     // split RGB to vector of 2D tensors and put to 1D buffer
-    size_t input_bindin_size = channels * input_width * input_height * sizeof(float);  //  8 or 16 bytes per elem?
-    float* cpu_input = (float*) malloc(input_bindin_size);
+    size_t input_bindin_size = channels * input_width * input_height * sizeof(float);
     std::vector< cv::Mat > rgb;
     for (size_t i = 0; i < channels; ++i) {
-        rgb.emplace_back(cv::Mat(input_size, CV_32FC1, cpu_input + i * input_width * input_height));
+        rgb.emplace_back(cv::Mat(input_size, CV_32FC1, cpu_transfer_buffer + i * input_width * input_height));
     }
     cv::split(transformed, rgb);
     // copy input image into GPU device
-    cudaMemcpy(gpu_input, cpu_input, input_bindin_size, cudaMemcpyHostToDevice);
-    free(cpu_input);
-    return true;
+    cudaMemcpy(gpu_input, cpu_transfer_buffer, input_bindin_size, cudaMemcpyHostToDevice);
+    return scale_factor;
 }
-
 
 int main(int argc, char** argv)
 {
     if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << " <serialized model engine> <image(-s)>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << 
+            " <serialized model engine> <results path> <image(-s)>" << std::endl;
         return -1;
     }
     std::string model_path(argv[1]);
     int batch_size = 1;
+    std::string results_path = std::string(argv[2]);
     std::vector<std::string> filepaths;
-    for (unsigned int i=2; i<argc; i++) filepaths.push_back(std::string(argv[i]));
+    for (unsigned int i=3; i<argc; i++) filepaths.push_back(std::string(argv[i]));
     
     //  Parse the model and initialize the engine and the context
-    //  Load model data via stringstream to get model size
-    std::stringstream gieModelStream;
-    gieModelStream.seekg(0, gieModelStream.beg);
-    std::ifstream model_file( model_path );
-    //  read the model data to the stringstream
-    gieModelStream << model_file.rdbuf();
-	model_file.close();
-    //  find model size
-    gieModelStream.seekg(0, std::ios::end);
-	const int modelSize = gieModelStream.tellg();
-	gieModelStream.seekg(0, std::ios::beg);
-    //  load the model to the buffer
-	void* modelData = malloc(modelSize);
-	if( !modelData ) {
-		std::cout << "failed to allocate " << modelSize << " bytes to deserialize model" << std::endl;
-		return 1;
-	}
-	gieModelStream.read((char*)modelData, modelSize);
-    //  create TRT engine in cuda device from model data
-    initLibAmirstanInferPlugins();
-    TRTUniquePtr< nvinfer1::IRuntime >    runtime{nvinfer1::createInferRuntime(gLogger)};
-    TRTUniquePtr< nvinfer1::ICudaEngine > engine{runtime->deserializeCudaEngine(modelData, modelSize, nullptr)};
-    free(modelData);
-    if( !engine ) {
-        std::cout << "failed to create CUDA engine" << std::endl;
-        return 1;
+    TRTUniquePtr< nvinfer1::ICudaEngine > engine{nullptr};
+    TRTUniquePtr< nvinfer1::IExecutionContext > context{nullptr};
+    if (load_engine(model_path, engine, context)) {
+        std::cout << "The model has been successfully parsed. Input dims set." << std::endl;
     }
-    TRTUniquePtr< nvinfer1::IExecutionContext > context{engine->createExecutionContext()};
-    if( !context ) {
-		std::cout << "failed to create execution context" << std::endl;
-		return 1;
-	}
+    else return 1;
 
     //  Specify (fix) model input layer size
-    //  fill free to try different input layer size in range used while model convertion
     cv::Size input_layer_size(960, 544);
-    context->setBindingDimensions(0, nvinfer1::Dims4(1, 3, input_layer_size.height, input_layer_size.width));
-    
-    //  Create image transformer
-    ImageTransformer image_transformer(input_layer_size);
-    std::cout << "The model has been successfully parsed. Input dims set." << std::endl;
+    unsigned channels = 3;
 
     //  Allocate input/output memory
-    std::vector< nvinfer1::Dims > input_dims;   // we expect only one input
-    std::vector< nvinfer1::Dims > output_dims;  // and one output
+    std::vector< nvinfer1::Dims > input_dims; // we expect only one input
+    std::vector< nvinfer1::Dims > output_dims; // and one output
     std::vector< void* > inout_buffer_pointers; // buffers for input and output data
     std::vector< void* > input_buffer_pointers, output_buffer_pointers;
-    for (size_t i = 0; i < engine->getNbBindings(); ++i) {
-        auto binding_size = getSizeByDim(context->getBindingDimensions(i)) * batch_size * sizeof(float);
-        void* buffer_pointer;
-        cudaMalloc(&buffer_pointer, binding_size);
-        inout_buffer_pointers.push_back(buffer_pointer);
-        std::cout << "Allocated " << binding_size << " bytes in GPU, i = " << i << std::endl;
-        if (engine->bindingIsInput(i)) {
-            input_buffer_pointers.push_back(buffer_pointer);
-            input_dims.emplace_back(context->getBindingDimensions(i));
-            std::cout << "Allocated " << binding_size << " bytes in GPU for input" << std::endl;
-        }
-        else {
-            output_buffer_pointers.push_back(buffer_pointer);
-            output_dims.emplace_back(context->getBindingDimensions(i));
-            std::cout << "Allocated " << binding_size << " bytes in GPU for output" << std::endl;
-        }
-    }
-    if (input_dims.empty() || output_dims.empty()) {
-        std::cerr << "Expect at least one input and one output for network" << std::endl;
-        return -1;
-    }
-    if (input_buffer_pointers.size() > 1 || input_buffer_pointers.size() < 1) {
-        std::cerr << "Expect exactly one input for network" << std::endl;
-        return -1;
-    }
+    float* cpu_transfer_buffer;
+    // set static dims
+    context->setBindingDimensions(0, nvinfer1::Dims4(batch_size, channels, 
+                                  input_layer_size.height, input_layer_size.width));
+    if (!allocate_cuda_inout_memory(engine, context, batch_size, inout_buffer_pointers, 
+                                        input_buffer_pointers, output_buffer_pointers, 
+                                        input_dims, output_dims, cpu_transfer_buffer))  return -1;
 
     //  Run the test
     float total1 = 0;
     float total2 = 0;
     unsigned miss = 5;
+    const auto t_start_total = std::chrono::high_resolution_clock::now();
     for (unsigned i=0; i<filepaths.size(); i++) {
         const auto t_start1 = std::chrono::high_resolution_clock::now();
         // preprocess input data
-        cv::Size orig_image_size;
-        if (!processInput(filepaths[i], input_buffer_pointers[0], input_dims[0], image_transformer, orig_image_size)) {
-            std::cerr << "Error while pre-processing image and moving it to GPU device" << std::endl;
-            return -1;
-        }
+        cv::Size2d scale_factor = processInput(filepaths[i], input_buffer_pointers[0], 
+            cpu_transfer_buffer, input_dims[0]); 
         const auto t_start2 = std::chrono::high_resolution_clock::now();
-        // run inference
+        // run inference        
         context->enqueueV2(inout_buffer_pointers.data(), 0, nullptr);
         // extract results
         std::vector< Detection > detections;       
-        getDetections(output_buffer_pointers, output_dims, batch_size, image_transformer, orig_image_size, detections);
+        parse_detections(output_buffer_pointers, output_dims, batch_size, scale_factor, detections);
         const auto t_end = std::chrono::high_resolution_clock::now();
         const float ms1 = std::chrono::duration<float, std::milli>(t_end - t_start1).count();
         const float ms2 = std::chrono::duration<float, std::milli>(t_end - t_start2).count();
-        std::cout << "image prepare + inference took: " << ms1 << " ms; only inference: " << ms2 << " ms" << std::endl;
+        std::cout << "image prepare + inference took: " << ms1 << " ms;" << std::endl;
+        std::cout << "inference only: " << ms2 << " ms" << std::endl;
         if (i >= miss) {
             total1 += ms1;
             total2 += ms2;
         }
         printOutput(detections);
     }
-    // release cuda memory
-    for (void* buf : inout_buffer_pointers) cudaFree(buf);
-    
+    const auto t_end_total = std::chrono::high_resolution_clock::now();
+    float ms_total = std::chrono::duration<float, std::milli>(t_end_total - t_start_total).count();
     total1 /= (filepaths.size() - miss);
     total2 /= (filepaths.size() - miss);
+    ms_total /= filepaths.size();
     std::cout << "Average over " << (filepaths.size() - miss) << 
-        " runs is " << total1 << " ms (pre-processing + inference); (" << total2 << " ms - inference only)" << std::endl;
-
+        " runs is " << total1 << " ms; (" << total2 << " ms - inference only)" << std::endl;
+    std::cout << "Alternative average timing over all " << filepaths.size() << " processed files: " <<
+        ms_total << " ms" << std::endl;
     return 0;
 }

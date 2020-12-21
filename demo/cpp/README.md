@@ -12,7 +12,7 @@ The sample needs additional installation of opencv:
 Within <mmdetection-to-trt-root/demo/cpp>
 
 'mkdir build & cd build'
-'cmake ..'
+'cmake -Damirstan_plugin_root=<path-to-amirstan_plugin-root> ..'
 'make -j4'
 
 #Run the sample
