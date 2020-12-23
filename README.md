@@ -26,8 +26,6 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 ### Important!
 
-warning: please install nvidia driver <= 450.36 and cuda <= 11
-
 Set the envoirment variable(in ~/.bashrc):
 
 ```shell
