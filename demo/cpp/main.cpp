@@ -267,7 +267,7 @@ int main(int argc, char** argv)
     //  Run the test
     float total1 = 0;
     float total2 = 0;
-    unsigned miss = 5;
+    unsigned miss = filepaths.size() > 5 ? 5 : 0;
     const auto t_start_total = std::chrono::high_resolution_clock::now();
     for (unsigned i=0; i<filepaths.size(); i++) {
         const auto t_start1 = std::chrono::high_resolution_clock::now();
