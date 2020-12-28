@@ -14,3 +14,4 @@ from .corner_head import CornerHeadWraper
 from .gfl_head import GFLHeadWraper
 from .centripetal_head import CentripetalHeadWraper
 from .vfnet_head import VFNetHeadWraper
+from .cascade_rpn_head import StageCascadeRPNHeadWraper, CascadeRPNHeadWraper

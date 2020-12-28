@@ -154,6 +154,7 @@ read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
 - [x] GROIE
 - [ ] Mask R-CNN(experiment)
 - [ ] Cascade Mask R-CNN(experiment)
+- [x] Cascade RPN
 
 
 Tested on:
