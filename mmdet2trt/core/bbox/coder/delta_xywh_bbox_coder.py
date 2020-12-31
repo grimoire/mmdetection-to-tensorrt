@@ -43,10 +43,13 @@ def delta2bbox_custom_func(cls_scores,
 
     if scores.shape[1] < min_num_bboxes:
         pad_size = min_num_bboxes - scores.shape[1]
-        scores = torch.nn.functional.pad(
-            scores, [0, 0, 0, pad_size, 0, 0], mode='constant', value=0)
-        proposals = torch.nn.functional.pad(
-            proposals, [0, 0, 0, pad_size, 0, 0], mode='constant', value=0)
+        scores = torch.nn.functional.pad(scores, [0, 0, 0, pad_size, 0, 0],
+                                         mode='constant',
+                                         value=0)
+        proposals = torch.nn.functional.pad(proposals,
+                                            [0, 0, 0, pad_size, 0, 0],
+                                            mode='constant',
+                                            value=0)
 
     proposals = proposals.view(batch_size, -1, 1, 4)
     return scores, proposals
@@ -99,7 +102,6 @@ def delta2bbox_batched(rois,
 
 @register_wraper("mmdet.core.bbox.coder.DeltaXYWHBBoxCoder")
 class DeltaXYWHBBoxCoderWraper(nn.Module):
-
     def __init__(self, module):
         super(DeltaXYWHBBoxCoderWraper, self).__init__()
         self.means = module.means
@@ -126,10 +128,9 @@ class DeltaXYWHBBoxCoderWraper(nn.Module):
                pred_bboxes,
                max_shape=None,
                wh_ratio_clip=16 / 1000):
-        return delta2bbox_batched(
-            bboxes,
-            pred_bboxes,
-            self.means,
-            self.stds,
-            max_shape=max_shape,
-            wh_ratio_clip=wh_ratio_clip)
+        return delta2bbox_batched(bboxes,
+                                  pred_bboxes,
+                                  self.means,
+                                  self.stds,
+                                  max_shape=max_shape,
+                                  wh_ratio_clip=wh_ratio_clip)
