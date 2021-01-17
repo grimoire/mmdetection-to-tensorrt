@@ -13,6 +13,8 @@ def convert_roiextractor(ctx):
     feats = get_arg(ctx, 'feats', pos=1, default=None)
     rois = get_arg(ctx, 'rois', pos=2, default=None)
     roi_scale_factor = get_arg(ctx, 'roi_scale_factor', pos=3, default=None)
+    if not roi_scale_factor:
+        roi_scale_factor = -1.0
 
     out_size = module.roi_layers[0].output_size[0]
     sample_num = module.roi_layers[0].sampling_ratio

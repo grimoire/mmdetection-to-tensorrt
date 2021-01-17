@@ -11,9 +11,6 @@ RUN mkdir ~/space &&\
 ### set pip source
 # COPY ./pip.conf /root/.pip
 
-### python
-RUN pip3 install --upgrade pip
-
 ### pytorch
 RUN pip3 install torch==1.6.0 torchvision==0.7.0
 
