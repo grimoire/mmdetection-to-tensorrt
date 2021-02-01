@@ -5,48 +5,24 @@ import torch.nn.functional as F
 from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 import mmdet2trt.ops.util_ops as mm2trt_util
+from .cascade_roi_head import CascadeRoIHeadWraper
 from mmdet2trt.core.post_processing import merge_aug_masks
 
 
-@register_wraper("mmdet.models.roi_heads.CascadeRoIHead")
-class CascadeRoIHeadWraper(nn.Module):
+@register_wraper("mmdet.models.roi_heads.HybridTaskCascadeRoIHead")
+class HybridTaskCascadeRoIHeadWraper(CascadeRoIHeadWraper):
     def __init__(self, module, wrap_config):
-        super(CascadeRoIHeadWraper, self).__init__()
-        self.module = module
-        self.wrap_config = wrap_config
+        super(HybridTaskCascadeRoIHeadWraper,
+              self).__init__(module, wrap_config)
 
-        self.bbox_roi_extractor = [
-            build_wraper(extractor) for extractor in module.bbox_roi_extractor
-        ]
-        self.bbox_head = [
-            build_wraper(bb_head, test_cfg=module.test_cfg)
-            for bb_head in module.bbox_head
-        ]
-        if module.with_shared_head:
-            self.shared_head = module.shared_head
-        else:
-            self.shared_head = None
+        module = self.module
+        self.semantic_head = None
+        if module.semantic_head is not None:
+            self.semantic_roi_extractor = build_wraper(
+                module.semantic_roi_extractor)
+            self.semantic_head = module.semantic_head
 
-        # init mask if exist
-        self.enable_mask = False
-        if "enable_mask" in wrap_config and wrap_config[
-                "enable_mask"] and module.with_mask:
-            self.enable_mask = True
-            self.init_mask_head(module.mask_roi_extractor, module.mask_head)
-
-        self.test_cfg = module.test_cfg
-
-        self.num_stages = module.num_stages
-
-    def init_mask_head(self, mask_roi_extractor, mask_head):
-        self.mask_roi_extractor = [
-            build_wraper(mre) for mre in mask_roi_extractor
-        ]
-        self.mask_head = [
-            build_wraper(mh, test_cfg=self.module.test_cfg) for mh in mask_head
-        ]
-
-    def _bbox_forward(self, stage, x, rois):
+    def _bbox_forward(self, stage, x, rois, semantic_feat=None):
 
         bbox_roi_extractor = self.bbox_roi_extractor[stage]
         bbox_head = self.bbox_head[stage]
@@ -56,23 +32,19 @@ class CascadeRoIHeadWraper(nn.Module):
             rois = torch.cat([zeros, rois], dim=1)
 
         roi_feats = bbox_roi_extractor(x[:bbox_roi_extractor.num_inputs], rois)
+
+        if self.module.with_semantic and 'box' in self.module.semantic_fusion:
+            bbox_semantic_feat = self.semantic_roi_extractor([semantic_feat],
+                                                             rois)
+            if bbox_semantic_feat.shape[-2:] != roi_feats.shape[-2:]:
+                bbox_semantic_feat = F.adaptive_avg_pool2d(
+                    bbox_semantic_feat, roi_feats.shape[-2:])
         cls_score, bbox_pred = bbox_head(roi_feats)
 
         bbox_results = dict(cls_score=cls_score,
                             bbox_pred=bbox_pred,
                             bbox_feats=roi_feats)
         return bbox_results
-
-    def _mask_forward(self, stage, x, rois):
-        mask_roi_extractor = self.mask_roi_extractor[stage]
-        mask_head = self.mask_head[stage]
-        mask_feats = mask_roi_extractor(x[:mask_roi_extractor.num_inputs],
-                                        rois)
-
-        # mask forward
-        mask_pred = mask_head(mask_feats)
-        mask_results = dict(mask_pred=mask_pred, mask_feats=mask_feats)
-        return mask_results
 
     def regress_by_class(self, stage, rois, label, bbox_pred):
         bbox_head = self.bbox_head[stage]
@@ -98,9 +70,17 @@ class CascadeRoIHeadWraper(nn.Module):
         proposals = proposals.view(-1, 4)
         rois = proposals
 
+        if self.module.with_semantic:
+            _, semantic_feat = self.semantic_head(feat)
+        else:
+            semantic_feat = None
+
         for i in range(self.num_stages):
-            bbox_results = self._bbox_forward(
-                i, feat, torch.cat([rois_pad, rois], dim=1))
+            bbox_results = self._bbox_forward(i,
+                                              feat,
+                                              torch.cat([rois_pad, rois],
+                                                        dim=1),
+                                              semantic_feat=semantic_feat)
             ms_scores.append(bbox_results['cls_score'])
             bbox_pred = bbox_results['bbox_pred']
 
@@ -128,10 +108,23 @@ class CascadeRoIHeadWraper(nn.Module):
             mask_proposals = det_boxes.view(-1, 4)
             mask_rois = torch.cat([rois_pad, mask_proposals], dim=1)
 
+            mask_roi_extractor = self.mask_roi_extractor[-1]
+
+            mask_feats = mask_roi_extractor(feat[:mask_roi_extractor.num_inputs],
+                                            mask_rois)
+            if self.module.with_semantic and 'mask' in self.module.semantic_fusion:
+                mask_semantic_feat = self.semantic_roi_extractor(
+                    [semantic_feat], mask_rois)
+                mask_feats += mask_semantic_feat
+            last_feat = None
+
             aug_masks = []
             for i in range(self.num_stages):
-                mask_results = self._mask_forward(i, feat, mask_rois)
-                mask_pred = mask_results['mask_pred']
+                mask_head = self.mask_head[i]
+                if self.module.mask_info_flow:
+                    mask_pred, last_feat = mask_head(mask_feats, last_feat)
+                else:
+                    mask_pred = mask_head(mask_feats)
                 mask_pred = mask_pred.sigmoid()
                 aug_masks.append(mask_pred)
 
