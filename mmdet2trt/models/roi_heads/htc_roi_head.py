@@ -110,8 +110,8 @@ class HybridTaskCascadeRoIHeadWraper(CascadeRoIHeadWraper):
 
             mask_roi_extractor = self.mask_roi_extractor[-1]
 
-            mask_feats = mask_roi_extractor(feat[:mask_roi_extractor.num_inputs],
-                                            mask_rois)
+            mask_feats = mask_roi_extractor(
+                feat[:mask_roi_extractor.num_inputs], mask_rois)
             if self.module.with_semantic and 'mask' in self.module.semantic_fusion:
                 mask_semantic_feat = self.semantic_roi_extractor(
                     [semantic_feat], mask_rois)
