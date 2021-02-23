@@ -22,7 +22,8 @@ class GFLHeadWraper(AnchorHeadWraper):
         batch_size = x.size(0)
         x = F.softmax(x.reshape(batch_size, -1, intergral.reg_max + 1), dim=2)
         x = F.linear(x,
-                     intergral.project.type_as(x)).reshape(batch_size, -1, 4)
+                     intergral.project.type_as(x).unsqueeze(0)).reshape(
+                         batch_size, -1, 4)
         return x
 
     def batched_anchor_center(self, anchors):
