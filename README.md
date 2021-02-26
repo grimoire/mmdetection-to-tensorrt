@@ -43,7 +43,7 @@ python setup.py develop
 
 ### Docker
 
-Build docker image
+Build docker image(Note that TensorRT7.0 might have memory leak, better to upgrade to 7.1+)
 ```shell
 # cuda10.2 tensorrt7.0 pytorch1.6
 sudo docker build -t mmdet2trt_docker:v1.0 docker/
