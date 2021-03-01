@@ -11,10 +11,6 @@ import tensorrt as trt
 
 
 def create_dcn_plugin(layer_name,
-                      out_channels,
-                      kernel_size,
-                      W,
-                      type_id=trt.DataType.FLOAT,
                       stride=[1, 1],
                       padding=[0, 0],
                       dilation=[1, 1],
@@ -23,9 +19,6 @@ def create_dcn_plugin(layer_name,
 
     creator = trt.get_plugin_registry().get_plugin_creator(
         'DeformableConvPluginDynamic', '1', '')
-    if not isinstance(kernel_size, Iterable):
-        kernel_size = [kernel_size, kernel_size]
-
     if not isinstance(stride, Iterable):
         stride = [stride, stride]
 
@@ -36,24 +29,6 @@ def create_dcn_plugin(layer_name,
         dilation = [dilation, dilation]
 
     pfc = trt.PluginFieldCollection()
-
-    pf_out_channels = trt.PluginField("out_dims",
-                                      np.array([out_channels], dtype=np.int32),
-                                      trt.PluginFieldType.INT32)
-    pfc.append(pf_out_channels)
-
-    pf_kernel_size = trt.PluginField("kernel_size",
-                                     np.array(kernel_size, dtype=np.int32),
-                                     trt.PluginFieldType.INT32)
-    pfc.append(pf_kernel_size)
-
-    pf_W = trt.PluginField("W", W, trt.PluginFieldType.FLOAT32)
-    pfc.append(pf_W)
-
-    pf_type_id = trt.PluginField("type_id", np.array([type_id],
-                                                     dtype=np.int32),
-                                 trt.PluginFieldType.INT32)
-    pfc.append(pf_type_id)
 
     pf_stride = trt.PluginField("stride", np.array(stride, dtype=np.int32),
                                 trt.PluginFieldType.INT32)
@@ -81,10 +56,6 @@ def create_dcn_plugin(layer_name,
 
 
 def create_dcnv2_plugin(layer_name,
-                        out_channels,
-                        kernel_size,
-                        W,
-                        B=None,
                         stride=[1, 1],
                         padding=[0, 0],
                         dilation=[1, 1],
@@ -94,9 +65,6 @@ def create_dcnv2_plugin(layer_name,
     type_id = trt.DataType.FLOAT
     creator = trt.get_plugin_registry().get_plugin_creator(
         'ModulatedDeformableConvPluginDynamic', '1', '')
-    if not isinstance(kernel_size, Iterable):
-        kernel_size = [kernel_size, kernel_size]
-
     if not isinstance(stride, Iterable):
         stride = [stride, stride]
 
@@ -107,28 +75,6 @@ def create_dcnv2_plugin(layer_name,
         dilation = [dilation, dilation]
 
     pfc = trt.PluginFieldCollection()
-
-    pf_out_channels = trt.PluginField("out_dims",
-                                      np.array([out_channels], dtype=np.int32),
-                                      trt.PluginFieldType.INT32)
-    pfc.append(pf_out_channels)
-
-    pf_kernel_size = trt.PluginField("kernel_size",
-                                     np.array(kernel_size, dtype=np.int32),
-                                     trt.PluginFieldType.INT32)
-    pfc.append(pf_kernel_size)
-
-    pf_W = trt.PluginField("W", W, trt.PluginFieldType.FLOAT32)
-    pfc.append(pf_W)
-
-    if B is not None:
-        pf_B = trt.PluginField("B", B, trt.PluginFieldType.FLOAT32)
-        pfc.append(pf_B)
-
-    pf_type_id = trt.PluginField("type_id", np.array([type_id],
-                                                     dtype=np.int32),
-                                 trt.PluginFieldType.INT32)
-    pfc.append(pf_type_id)
 
     pf_stride = trt.PluginField("stride", np.array(stride, dtype=np.int32),
                                 trt.PluginFieldType.INT32)

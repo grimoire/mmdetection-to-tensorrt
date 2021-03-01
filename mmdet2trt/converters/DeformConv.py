@@ -21,10 +21,7 @@ def convert_DeformConv(ctx):
 
     input_trt = trt_(ctx.network, input)
     offset_trt = trt_(ctx.network, offset)
-
-    kernel_size = weight.shape[2]
-    if not isinstance(kernel_size, tuple):
-        kernel_size = (kernel_size, ) * 2
+    weight_trt = trt_(ctx.network, weight)
 
     if not isinstance(stride, tuple):
         stride = (stride, ) * 2
@@ -35,21 +32,15 @@ def convert_DeformConv(ctx):
     if not isinstance(dilation, tuple):
         dilation = (dilation, ) * 2
 
-    kernel = weight.detach().cpu().numpy()
-    out_channels = output.shape[1]
-
     plugin = create_dcn_plugin("dcn_" + str(id(input)),
-                               out_channels=out_channels,
-                               kernel_size=kernel_size,
-                               W=kernel,
-                               padding=padding,
                                stride=stride,
+                               padding=padding,
                                dilation=dilation,
                                deformable_group=deform_groups,
                                group=groups)
 
-    custom_layer = ctx.network.add_plugin_v2(inputs=[input_trt, offset_trt],
-                                             plugin=plugin)
+    custom_layer = ctx.network.add_plugin_v2(
+        inputs=[input_trt, offset_trt, weight_trt], plugin=plugin)
 
     output._trt = custom_layer.get_output(0)
 
@@ -73,10 +64,9 @@ def convert_ModulatedDeformConv(ctx):
     input_trt = trt_(ctx.network, input)
     offset_trt = trt_(ctx.network, offset)
     mask_trt = trt_(ctx.network, mask)
-
-    kernel_size = weight.shape[2]
-    if not isinstance(kernel_size, tuple):
-        kernel_size = (kernel_size, ) * 2
+    weight_trt = trt_(ctx.network, weight)
+    if bias is not None:
+        bias_trt = trt_(ctx.network, bias)
 
     if not isinstance(stride, tuple):
         stride = (stride, ) * 2
@@ -87,24 +77,17 @@ def convert_ModulatedDeformConv(ctx):
     if not isinstance(dilation, tuple):
         dilation = (dilation, ) * 2
 
-    kernel = weight.detach().cpu().numpy()
-    out_channels = output.shape[1]
-
-    if bias is not None:
-        bias = bias.detach().cpu().numpy()
-
     plugin = create_dcnv2_plugin("dcn_" + str(id(input)),
-                                 out_channels=out_channels,
-                                 kernel_size=kernel_size,
-                                 W=kernel,
-                                 B=bias,
-                                 padding=padding,
                                  stride=stride,
+                                 padding=padding,
                                  dilation=dilation,
                                  deformable_group=deform_groups,
                                  group=groups)
 
-    custom_layer = ctx.network.add_plugin_v2(
-        inputs=[input_trt, offset_trt, mask_trt], plugin=plugin)
+    layer_inputs = [input_trt, offset_trt, mask_trt, weight_trt]
+    if bias is not None:
+        layer_inputs += [bias_trt]
+    custom_layer = ctx.network.add_plugin_v2(inputs=layer_inputs,
+                                             plugin=plugin)
 
     output._trt = custom_layer.get_output(0)
