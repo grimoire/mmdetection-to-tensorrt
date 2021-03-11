@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/tensorrt:20.03-py3
+FROM nvcr.io/nvidia/tensorrt:21.02-py3
 
 ARG CUDA=10.2
 ARG TORCH_VERSION=1.6.0
