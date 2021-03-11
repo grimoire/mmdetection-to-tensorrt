@@ -49,6 +49,13 @@ Build docker image(Note that TensorRT7.0 might have memory leak, better to upgra
 sudo docker build -t mmdet2trt_docker:v1.0 docker/
 ```
 
+You can also specify CUDA, Pytorch and Torchvision versions with docker build args by:
+
+```shell
+# cuda10.2 tensorrt7.0 pytorch1.6
+sudo docker build -t mmdet2trt_docker:v1.0 --build-arg CUDA=11.2 --build-arg TORCH_VERSION=1.6.0 --build-arg TORCHVISION_VERSION=0.7.0 --docker/
+```
+
 Run (will show the help for the CLI entrypoint)
 
 ```shell
