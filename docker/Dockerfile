@@ -1,5 +1,9 @@
 FROM nvcr.io/nvidia/tensorrt:20.03-py3
 
+ARG CUDA=10.2
+ARG TORCH_VERSION=1.6.0
+ARG TORCHVISION_VERSION=0.7.0
+
 ### update apt and install libs
 RUN apt-get update &&\
     apt-get install -y vim cmake libsm6 libxext6 libxrender-dev libgl1-mesa-glx git
@@ -12,10 +16,10 @@ RUN mkdir ~/space &&\
 # COPY ./pip.conf /root/.pip
 
 ### pytorch
-RUN pip3 install torch==1.6.0 torchvision==0.7.0
+RUN pip3 install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION}
 
 ### install mmcv
-RUN pip3 install mmcv-full==1.1.5+torch1.6.0+cu102 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+RUN pip3 install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu${CUDA//./}/torch${TORCH_VERSION}/index.html
 
 ### git mmdetection
 RUN git clone --depth=1 https://github.com/open-mmlab/mmdetection.git /root/space/mmdetection
