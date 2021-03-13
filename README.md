@@ -155,12 +155,13 @@ read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
 - [x] Mask R-CNN(experiment)
 - [x] Cascade Mask R-CNN(experiment)
 - [x] Cascade RPN
+- [x] DETR
 
 
 Tested on:
 - torch=1.6.0
 - tensorrt=7.1.3.4
-- mmdetection=2.5.0
+- mmdetection=2.10.0
 - cuda=10.2
 - cudnn=8.0.2.39
 

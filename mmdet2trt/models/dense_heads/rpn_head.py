@@ -16,6 +16,10 @@ class RPNHeadWraper(nn.Module):
         self.bbox_coder = build_wraper(self.module.bbox_coder)
 
         self.test_cfg = module.test_cfg
+        if 'nms' in self.test_cfg:
+            self.test_cfg.nms_thr = self.test_cfg.nms['iou_threshold']
+        if 'max_per_img' in self.test_cfg:
+            self.test_cfg.nms_post = self.test_cfg.max_per_img
         self.rpn_nms = BatchedNMS(0.0, self.test_cfg.nms_thr, -1)
 
     def forward(self, feat, x):

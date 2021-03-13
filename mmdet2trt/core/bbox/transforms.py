@@ -23,3 +23,13 @@ def bbox2roi(proposals):
     proposals = proposals.view(-1, 4)
     rois = torch.cat([rois_pad, proposals], dim=1)
     return rois
+
+
+def batched_bbox_cxcywh_to_xyxy(bbox):
+    cx = bbox[:,:,0]
+    cy = bbox[:,:,1]
+    w = bbox[:,:,2]
+    h = bbox[:,:,3]
+    bbox_new = [(cx - 0.5 * w), (cy - 0.5 * h), (cx + 0.5 * w), (cy + 0.5 * h)]
+
+    return torch.stack(bbox_new, dim=-1)
