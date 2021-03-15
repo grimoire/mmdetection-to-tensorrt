@@ -4,6 +4,8 @@ ARG CUDA=11.2
 ARG TORCH_VERSION=1.6.0
 ARG TORCHVISION_VERSION=0.7.0
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 ### update apt and install libs
 RUN apt-get update &&\
     apt-get install -y vim cmake libsm6 libxext6 libxrender-dev libgl1-mesa-glx git
