@@ -1,17 +1,15 @@
-import numpy as np
-from collections.abc import Iterable
-
-import os
-import os.path as osp
-from .globals import dir_path
 import ctypes
-ctypes.CDLL(osp.join(dir_path, "libamirstan_plugin.so"))
+import os.path as osp
 
+import numpy as np
 import tensorrt as trt
 
+from .globals import dir_path
 
-def create_gridanchordynamic_plugin(layer_name,
-                                    stride):
+ctypes.CDLL(osp.join(dir_path, "libamirstan_plugin.so"))
+
+
+def create_gridanchordynamic_plugin(layer_name, stride):
 
     creator = trt.get_plugin_registry().get_plugin_creator(
         'GridAnchorDynamicPluginDynamic', '1', '')

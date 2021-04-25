@@ -1,13 +1,13 @@
-import numpy as np
+import ctypes
+import os.path as osp
 from collections.abc import Iterable
 
-import os
-import os.path as osp
-from .globals import dir_path
-import ctypes
-ctypes.CDLL(osp.join(dir_path, "libamirstan_plugin.so"))
-
+import numpy as np
 import tensorrt as trt
+
+from .globals import dir_path
+
+ctypes.CDLL(osp.join(dir_path, "libamirstan_plugin.so"))
 
 
 def create_deformable_pool_plugin(layer_name, out_size, spatial_scale,
@@ -21,8 +21,8 @@ def create_deformable_pool_plugin(layer_name, out_size, spatial_scale,
 
     pfc = trt.PluginFieldCollection()
 
-    pf_out_size = trt.PluginField("out_size", np.array(out_size,
-                                                       dtype=np.int32),
+    pf_out_size = trt.PluginField("out_size",
+                                  np.array(out_size, dtype=np.int32),
                                   trt.PluginFieldType.INT32)
     pfc.append(pf_out_size)
 

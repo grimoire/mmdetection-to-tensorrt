@@ -1,13 +1,11 @@
-import numpy as np
-from collections.abc import Iterable
-
-import os
+import ctypes
 import os.path as osp
 
+import numpy as np
 import tensorrt as trt
 
 from .globals import dir_path
-import ctypes
+
 ctypes.CDLL(osp.join(dir_path, "libamirstan_plugin.so"))
 
 
@@ -21,15 +19,6 @@ def create_batchednms_plugin(layer_name,
                              shareLocation=False,
                              isNormalized=False,
                              clipBoxes=True):
-
-    # creator_list = trt.get_plugin_registry().plugin_creator_list
-    # creator_name_list = [x.name for x in creator_list]
-    # plugin_name = "BatchedNMS_TRT"
-    # if plugin_name not in creator_name_list:
-    #     logger = trt.Logger()
-    #     trt.init_libnvinfer_plugins(logger, "")
-    # else:
-    #     print(plugin_name, ' not exists.')
 
     plugin_name = "BatchedNMS_TRT_CUSTOM"
 

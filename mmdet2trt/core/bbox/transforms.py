@@ -1,5 +1,5 @@
-import torch
 import mmdet2trt.ops.util_ops as mm2trt_util
+import torch
 
 
 def batched_distance2bbox(points, distance, max_shape=None):
@@ -16,7 +16,6 @@ def batched_distance2bbox(points, distance, max_shape=None):
 
 
 def bbox2roi(proposals):
-    batch_size = proposals.shape[0]
     num_proposals = proposals.shape[1]
     rois_pad = mm2trt_util.arange_by_input(proposals, 0).unsqueeze(1)
     rois_pad = rois_pad.repeat(1, num_proposals).view(-1, 1)
@@ -26,10 +25,10 @@ def bbox2roi(proposals):
 
 
 def batched_bbox_cxcywh_to_xyxy(bbox):
-    cx = bbox[:,:,0]
-    cy = bbox[:,:,1]
-    w = bbox[:,:,2]
-    h = bbox[:,:,3]
+    cx = bbox[:, :, 0]
+    cy = bbox[:, :, 1]
+    w = bbox[:, :, 2]
+    h = bbox[:, :, 3]
     bbox_new = [(cx - 0.5 * w), (cy - 0.5 * h), (cx + 0.5 * w), (cy + 0.5 * h)]
 
     return torch.stack(bbox_new, dim=-1)

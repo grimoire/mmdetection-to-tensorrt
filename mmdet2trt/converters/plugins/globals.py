@@ -1,5 +1,6 @@
 import os
 import os.path as osp
+
 dir_path = osp.join(os.path.expanduser('~'), "space/trt_plugin/build/lib/")
 
 if not osp.exists(dir_path):

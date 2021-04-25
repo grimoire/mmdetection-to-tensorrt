@@ -1,13 +1,13 @@
-import numpy as np
+import ctypes
+import os.path as osp
 from collections.abc import Iterable
 
-import os
-import os.path as osp
-from .globals import dir_path
-import ctypes
-ctypes.CDLL(osp.join(dir_path, "libamirstan_plugin.so"))
-
+import numpy as np
 import tensorrt as trt
+
+from .globals import dir_path
+
+ctypes.CDLL(osp.join(dir_path, "libamirstan_plugin.so"))
 
 
 def create_dcn_plugin(layer_name,
@@ -38,8 +38,8 @@ def create_dcn_plugin(layer_name,
                                  trt.PluginFieldType.INT32)
     pfc.append(pf_padding)
 
-    pf_dilation = trt.PluginField("dilation", np.array(dilation,
-                                                       dtype=np.int32),
+    pf_dilation = trt.PluginField("dilation",
+                                  np.array(dilation, dtype=np.int32),
                                   trt.PluginFieldType.INT32)
     pfc.append(pf_dilation)
 
@@ -62,7 +62,6 @@ def create_dcnv2_plugin(layer_name,
                         deformable_group=1,
                         group=1):
 
-    type_id = trt.DataType.FLOAT
     creator = trt.get_plugin_registry().get_plugin_creator(
         'ModulatedDeformableConvPluginDynamic', '1', '')
     if not isinstance(stride, Iterable):
@@ -84,8 +83,8 @@ def create_dcnv2_plugin(layer_name,
                                  trt.PluginFieldType.INT32)
     pfc.append(pf_padding)
 
-    pf_dilation = trt.PluginField("dilation", np.array(dilation,
-                                                       dtype=np.int32),
+    pf_dilation = trt.PluginField("dilation",
+                                  np.array(dilation, dtype=np.int32),
                                   trt.PluginFieldType.INT32)
     pfc.append(pf_dilation)
 
