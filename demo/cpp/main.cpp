@@ -182,8 +182,8 @@ unsigned parse_detections(std::vector< void* >const& gpu_outputs, std::vector<nv
         float label  = labels[i];
         Box scaled_back = ImageTransformer::transform_output_box(Box(left, top, right, bottom), scale_factor);
         detections.push_back(Detection(scaled_back, score, label));
-    }    
-    
+    }
+
     return detections.size();
 }
 
@@ -200,11 +200,11 @@ void printOutput(std::vector< Detection >const& detections)
 }
 
 // pre-process the image and load it to tensor buffer
-cv::Size2d processInput(std::string const& image_path, void* gpu_input, float*& cpu_transfer_buffer, 
+cv::Size2d processInput(std::string const& image_path, void* gpu_input, float*& cpu_transfer_buffer,
                         nvinfer1::Dims const& dims)
 {
     cv::Mat image = cv::imread(image_path);
-    if (image.empty()) 
+    if (image.empty())
         throw std::runtime_error(std::string("Error: cannot load image ") + image_path);
 
     auto channels     = dims.d[1];
@@ -229,7 +229,7 @@ cv::Size2d processInput(std::string const& image_path, void* gpu_input, float*& 
 int main(int argc, char** argv)
 {
     if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << 
+        std::cerr << "Usage: " << argv[0] <<
             " <serialized model engine> <results path> <image(-s)>" << std::endl;
         return -1;
     }
@@ -238,7 +238,7 @@ int main(int argc, char** argv)
     std::string results_path = std::string(argv[2]);
     std::vector<std::string> filepaths;
     for (unsigned int i=3; i<argc; i++) filepaths.push_back(std::string(argv[i]));
-    
+
     //  Parse the model and initialize the engine and the context
     TRTUniquePtr< nvinfer1::ICudaEngine > engine{nullptr};
     TRTUniquePtr< nvinfer1::IExecutionContext > context{nullptr};
@@ -258,10 +258,10 @@ int main(int argc, char** argv)
     std::vector< void* > input_buffer_pointers, output_buffer_pointers;
     float* cpu_transfer_buffer;
     // set static dims
-    context->setBindingDimensions(0, nvinfer1::Dims4(batch_size, channels, 
+    context->setBindingDimensions(0, nvinfer1::Dims4(batch_size, channels,
                                   input_layer_size.height, input_layer_size.width));
-    if (!allocate_cuda_inout_memory(engine, context, batch_size, inout_buffer_pointers, 
-                                        input_buffer_pointers, output_buffer_pointers, 
+    if (!allocate_cuda_inout_memory(engine, context, batch_size, inout_buffer_pointers,
+                                        input_buffer_pointers, output_buffer_pointers,
                                         input_dims, output_dims, cpu_transfer_buffer))  return -1;
 
     //  Run the test
@@ -272,13 +272,13 @@ int main(int argc, char** argv)
     for (unsigned i=0; i<filepaths.size(); i++) {
         const auto t_start1 = std::chrono::high_resolution_clock::now();
         // preprocess input data
-        cv::Size2d scale_factor = processInput(filepaths[i], input_buffer_pointers[0], 
-            cpu_transfer_buffer, input_dims[0]); 
+        cv::Size2d scale_factor = processInput(filepaths[i], input_buffer_pointers[0],
+            cpu_transfer_buffer, input_dims[0]);
         const auto t_start2 = std::chrono::high_resolution_clock::now();
-        // run inference        
+        // run inference
         context->enqueueV2(inout_buffer_pointers.data(), 0, nullptr);
         // extract results
-        std::vector< Detection > detections;       
+        std::vector< Detection > detections;
         parse_detections(output_buffer_pointers, output_dims, batch_size, scale_factor, detections);
         const auto t_end = std::chrono::high_resolution_clock::now();
         const float ms1 = std::chrono::duration<float, std::milli>(t_end - t_start1).count();
@@ -296,7 +296,7 @@ int main(int argc, char** argv)
     total1 /= (filepaths.size() - miss);
     total2 /= (filepaths.size() - miss);
     ms_total /= filepaths.size();
-    std::cout << "Average over " << (filepaths.size() - miss) << 
+    std::cout << "Average over " << (filepaths.size() - miss) <<
         " runs is " << total1 << " ms; (" << total2 << " ms - inference only)" << std::endl;
     std::cout << "Alternative average timing over all " << filepaths.size() << " processed files: " <<
         ms_total << " ms" << std::endl;

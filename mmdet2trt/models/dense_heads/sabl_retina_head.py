@@ -1,12 +1,12 @@
 import torch
 from torch import nn
-from mmdet2trt.models.builder import register_wraper, build_wraper
+
 import mmdet2trt.ops.util_ops as mm2trt_util
-
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from mmdet2trt.models.builder import build_wraper, register_wraper
 
 
-@register_wraper("mmdet.models.dense_heads.SABLRetinaHead")
+@register_wraper('mmdet.models.dense_heads.SABLRetinaHead')
 class SABLRetinaHeadWraper(nn.Module):
     def __init__(self, module):
         super(SABLRetinaHeadWraper, self).__init__()
@@ -31,7 +31,6 @@ class SABLRetinaHeadWraper(nn.Module):
 
         cls_scores, bbox_preds = module(feat)
 
-        num_levels = len(cls_scores)
         mlvl_anchors = self.square_anchor_generator(
             cls_scores, device=cls_scores[0].device)
 

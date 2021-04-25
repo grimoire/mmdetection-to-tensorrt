@@ -1,9 +1,11 @@
-from torch2trt_dynamic.torch2trt_dynamic import *
-import torch.nn.functional as F
-import mmcv.cnn
-# from mmdet2trt.ops import util_ops
-import mmdet2trt
 import math
+
+import numpy as np
+import torch
+import torch.nn.functional as F
+from torch2trt_dynamic.torch2trt_dynamic import tensorrt_converter
+
+import mmdet2trt
 
 
 def get_position_embedding(self,

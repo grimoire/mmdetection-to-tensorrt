@@ -21,17 +21,17 @@ RUN pip3 install mmcv-full==1.1.5+torch1.6.0+cu102 -f https://openmmlab.oss-acce
 RUN git clone --depth=1 https://github.com/open-mmlab/mmdetection.git /root/space/mmdetection
 
 ### install mmdetection
-RUN cd /root/space/mmdetection &&\ 
+RUN cd /root/space/mmdetection &&\
     pip3 install -r requirements.txt &&\
     python3 setup.py develop
 
 ### git amirstan plugin
-RUN git clone --depth=1 https://github.com/grimoire/amirstan_plugin.git /root/space/amirstan_plugin &&\ 
-    cd /root/space/amirstan_plugin &&\ 
+RUN git clone --depth=1 https://github.com/grimoire/amirstan_plugin.git /root/space/amirstan_plugin &&\
+    cd /root/space/amirstan_plugin &&\
     git submodule update --init --progress --depth=1
 
 ### install amirstan plugin
-RUN cd /root/space/amirstan_plugin &&\ 
+RUN cd /root/space/amirstan_plugin &&\
     mkdir build &&\
     cd build &&\
     cmake .. &&\

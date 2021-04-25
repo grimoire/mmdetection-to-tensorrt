@@ -1,12 +1,12 @@
 import torch
 from torch import nn
-from mmdet2trt.models.builder import register_wraper, build_wraper
+
 import mmdet2trt.ops.util_ops as mm2trt_util
-
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from mmdet2trt.models.builder import build_wraper, register_wraper
 
 
-@register_wraper("mmdet.models.GARetinaHead")
+@register_wraper('mmdet.models.GARetinaHead')
 class GuidedAnchorHeadWraper(nn.Module):
     def __init__(self, module):
         super(GuidedAnchorHeadWraper, self).__init__()
@@ -21,7 +21,9 @@ class GuidedAnchorHeadWraper(nn.Module):
         self.test_cfg = module.test_cfg
         self.num_classes = self.module.num_classes
         self.use_sigmoid_cls = self.module.use_sigmoid_cls
-        if "score_thr" in module.test_cfg and "nms" in module.test_cfg and "iou_threshold" in module.test_cfg.nms:
+        if ('score_thr' in module.test_cfg) and (
+                'nms' in module.test_cfg) and ('iou_threshold'
+                                               in module.test_cfg.nms):
             self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr,
                                        module.test_cfg.nms.iou_threshold,
                                        backgroundLabelId=self.num_classes)
@@ -106,7 +108,8 @@ class GuidedAnchorHeadWraper(nn.Module):
                                           1).reshape(bbox_pred.shape[0], -1, 4)
 
             if nms_pre > 0:
-                # concate zero to enable topk, dirty way, will find a better way in future
+                # concate zero to enable topk,
+                # dirty way, will find a better way in future
                 scores = mm2trt_util.pad_with_value(scores, 1, nms_pre, 0.)
                 bbox_pred = mm2trt_util.pad_with_value(bbox_pred, 1, nms_pre)
                 anchors = mm2trt_util.pad_with_value(anchors, 1, nms_pre)

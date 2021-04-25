@@ -1,4 +1,5 @@
-from torch2trt_dynamic.torch2trt_dynamic import *
+import torch
+from torch2trt_dynamic.torch2trt_dynamic import get_arg, tensorrt_converter
 
 
 @tensorrt_converter('mmdet.models.VFNetHead.star_dcn_offset', is_real=False)

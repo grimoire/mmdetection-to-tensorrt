@@ -1,9 +1,8 @@
-import torch
-from torch2trt_dynamic.converters.roi_align import *
-import mmcv.ops
+from torch2trt_dynamic import get_arg, tensorrt_converter
+from torch2trt_dynamic.converters.roi_align import convert_roi_align
 
 
-@tensorrt_converter("mmcv.ops.RoIAlign.forward")
+@tensorrt_converter('mmcv.ops.RoIAlign.forward')
 def convert_mmcv_RoIAlign(ctx):
     module = ctx.method_args[0]
     input = get_arg(ctx, 'input', pos=1, default=None)

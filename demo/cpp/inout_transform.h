@@ -27,12 +27,12 @@ unsigned g_pad_divisor = 32;
 class ImageTransformer {
   public:
     ImageTransformer() {}
-    
+
     static cv::Size2d transform_input_image(cv::Mat const& input_image, cv::Size const& dst_size,
                                             cv::Mat& output_image) {
         //  0. Check dst size is of mod32
         if (dst_size.width % g_pad_divisor != 0 || dst_size.height % g_pad_divisor != 0)
-            throw std::runtime_error(std::string("Error: input layer size must be mod of ") + 
+            throw std::runtime_error(std::string("Error: input layer size must be mod of ") +
                                      std::to_string(g_pad_divisor));
         //  1. Resize before normalization - smaller image takes less time to be transformed
         cv::Size2d scale_factor = resize_keep_aspect_ratio(input_image, dst_size, output_image);
@@ -60,7 +60,7 @@ class ImageTransformer {
 
     static cv::Size2d resize_keep_aspect_ratio(cv::Mat const& input, cv::Size const& dst_size, cv::Mat& output)
     {
-        cv::Mat temp_input = input;  // keep header (required if the function was called with same input and output) 
+        cv::Mat temp_input = input;  // keep header (required if the function was called with same input and output)
         double h = dst_size.width  * (input.rows / (double) input.cols);
         double w = dst_size.height * (input.cols / (double) input.rows);
         if( h <= dst_size.height) w = dst_size.width;
@@ -68,7 +68,7 @@ class ImageTransformer {
         cv::resize(input, output, cv::Size(w, h));
         double fx = (double) output.cols / temp_input.cols;
         double fy = (double) output.rows / temp_input.rows;
-        cv::Size2d scale_factors(fx, fy); 
+        cv::Size2d scale_factors(fx, fy);
         int top  = 0;
         int left = 0;
         int bottom = dst_size.height - output.rows;

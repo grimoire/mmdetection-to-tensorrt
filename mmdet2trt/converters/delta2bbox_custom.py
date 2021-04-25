@@ -1,11 +1,12 @@
-from torch2trt_dynamic import tensorrt_converter, trt_
-from torch2trt_dynamic.torch2trt_dynamic import *
 import torch
+from torch2trt_dynamic.torch2trt_dynamic import (get_arg, tensorrt_converter,
+                                                 trt_)
+
 from .plugins import create_delta2bbox_custom_plugin
 
 
 @tensorrt_converter(
-    "mmdet2trt.core.bbox.coder.delta_xywh_bbox_coder.delta2bbox_custom_func")
+    'mmdet2trt.core.bbox.coder.delta_xywh_bbox_coder.delta2bbox_custom_func')
 def convert_delta2bbox(ctx):
     cls_scores = get_arg(ctx, 'cls_scores', pos=0, default=None)
     bbox_preds = get_arg(ctx, 'bbox_preds', pos=1, default=None)
@@ -25,7 +26,7 @@ def convert_delta2bbox(ctx):
         input_x_shape_trt = ctx.network.add_shape(input_x_trt).get_output(0)
     output = ctx.method_return
 
-    plugin = create_delta2bbox_custom_plugin("delta2bbox_custom_" +
+    plugin = create_delta2bbox_custom_plugin('delta2bbox_custom_' +
                                              str(id(cls_scores)),
                                              use_sigmoid_cls=use_sigmoid_cls,
                                              min_num_bbox=min_num_bboxes,

@@ -1,7 +1,9 @@
-from torch2trt_dynamic.torch2trt_dynamic import *
-from torch2trt_dynamic.converters import convert_float, convert_Conv2d, convert_unsqueeze, convert_pad, convert_mul, convert_tensor_getitem
-
-import mmcv.ops
+import torch
+from torch2trt_dynamic.converters import (convert_Conv2d, convert_float,
+                                          convert_mul, convert_pad,
+                                          convert_tensor_getitem,
+                                          convert_unsqueeze)
+from torch2trt_dynamic.torch2trt_dynamic import get_arg, tensorrt_converter
 
 
 @tensorrt_converter('mmcv.ops.masked_conv.masked_conv2d')
@@ -19,7 +21,7 @@ def convert_MaskedConv(ctx):
 
     output = ctx.method_return
 
-    ## convert conv
+    # convert conv
     conv = torch.nn.Conv2d(input.shape[1], output.shape[1], weight.shape[2:],
                            stride, padding)
     conv.weight = weight
@@ -30,27 +32,27 @@ def convert_MaskedConv(ctx):
     ctx.method_return = conv_input
     convert_Conv2d(ctx)
 
-    ## mask to float
+    # mask to float
     float_mask = mask.float()
     ctx.method_args = [mask]
     ctx.method_return = float_mask
     convert_float(ctx)
 
-    ## unsqueeze mask
+    # unsqueeze mask
     unsqueeze_mask = float_mask.unsqueeze(1)
     ctx.method_args = [float_mask, 1]
     ctx.method_return = unsqueeze_mask
     convert_unsqueeze(ctx)
 
-    ## mask pad or slice
+    # mask pad or slice
     pad_size_h = (output.shape[2] - unsqueeze_mask.shape[2])
     pad_size_w = (output.shape[3] - unsqueeze_mask.shape[3])
 
     if pad_size_h == 0 and pad_size_w == 0:
-        ## output shape == mask shape
+        # output shape == mask shape
         final_mask = unsqueeze_mask
     elif pad_size_h * pad_size_w >= 0 and pad_size_h >= 0 and pad_size_h >= 0:
-        ## pad
+        # pad
         final_mask = torch.nn.functional.pad(unsqueeze_mask,
                                              (0, pad_size_w, 0, pad_size_h))
         ctx.method_args = [
@@ -60,9 +62,13 @@ def convert_MaskedConv(ctx):
         convert_pad(ctx)
 
     elif pad_size_h * pad_size_w >= 0 and pad_size_h <= 0 and pad_size_h <= 0:
-        ## slice
-        # final_mask = unsqueeze_mask[:, :, -pad_size_h:pad_size_h, -pad_size_w:pad_size_w]
-        # ctx.method_args = [unsqueeze_mask, (slice(None), slice(None), slice(-pad_size_h, pad_size_h, 1), slice(-pad_size_w, pad_size_w, 1))]
+        # slice
+        # final_mask =
+        # unsqueeze_mask[:, :, -pad_size_h:pad_size_h, -pad_size_w:pad_size_w]
+        # ctx.method_args =
+        # [unsqueeze_mask, (slice(None), slice(None),
+        # slice(-pad_size_h, pad_size_h, 1),
+        # slice(-pad_size_w, pad_size_w, 1))]
         final_mask = unsqueeze_mask[:, :, :pad_size_h, :pad_size_w]
         ctx.method_args = [
             unsqueeze_mask,
@@ -72,11 +78,11 @@ def convert_MaskedConv(ctx):
         ctx.method_return = final_mask
         convert_tensor_getitem(ctx)
 
-    ## mul
+    # mul
     ctx.method_args = [conv_input, final_mask]
     ctx.method_return = output
     convert_mul(ctx)
 
-    ## recovery
+    # recovery
     ctx.method_args = old_args
     ctx.method_kwargs = old_kwargs

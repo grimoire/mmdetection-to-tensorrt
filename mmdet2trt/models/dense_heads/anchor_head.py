@@ -1,17 +1,17 @@
 import torch
 from torch import nn
-from mmdet2trt.models.builder import register_wraper, build_wraper
+
 import mmdet2trt.ops.util_ops as mm2trt_util
-
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from mmdet2trt.models.builder import build_wraper, register_wraper
 
 
-@register_wraper("mmdet.models.dense_heads.FSAFHead")
-@register_wraper("mmdet.models.RetinaSepBNHead")
-@register_wraper("mmdet.models.FreeAnchorRetinaHead")
-@register_wraper("mmdet.models.RetinaHead")
-@register_wraper("mmdet.models.SSDHead")
-@register_wraper("mmdet.models.AnchorHead")
+@register_wraper('mmdet.models.dense_heads.FSAFHead')
+@register_wraper('mmdet.models.RetinaSepBNHead')
+@register_wraper('mmdet.models.FreeAnchorRetinaHead')
+@register_wraper('mmdet.models.RetinaHead')
+@register_wraper('mmdet.models.SSDHead')
+@register_wraper('mmdet.models.AnchorHead')
 class AnchorHeadWraper(nn.Module):
     def __init__(self, module):
         super(AnchorHeadWraper, self).__init__()
@@ -31,7 +31,6 @@ class AnchorHeadWraper(nn.Module):
 
         cls_scores, bbox_preds = module(feat)
 
-        num_levels = len(cls_scores)
         mlvl_anchors = self.anchor_generator(cls_scores,
                                              device=cls_scores[0].device)
 
@@ -39,8 +38,8 @@ class AnchorHeadWraper(nn.Module):
         mlvl_proposals = []
         nms_pre = self.test_cfg.get('nms_pre', -1)
         for idx in range(len(cls_scores)):
-            rpn_cls_score = cls_scores[idx]  #.squeeze()
-            rpn_bbox_pred = bbox_preds[idx]  #.squeeze()
+            rpn_cls_score = cls_scores[idx]
+            rpn_bbox_pred = bbox_preds[idx]
             anchors = mlvl_anchors[idx]
             scores, proposals = self.bbox_coder(
                 rpn_cls_score,

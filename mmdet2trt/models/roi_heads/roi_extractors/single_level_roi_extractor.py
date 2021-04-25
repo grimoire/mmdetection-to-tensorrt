@@ -1,12 +1,14 @@
-from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
-from torch import nn
 import torch.nn.functional as F
-from mmdet2trt.models.roi_heads.roi_extractors.pooling_layers import build_roi_extractor
+from torch import nn
+
+from mmdet2trt.models.builder import build_wraper, register_wraper
+from mmdet2trt.models.roi_heads.roi_extractors.pooling_layers import \
+    build_roi_extractor
 
 
 @register_wraper(
-    "mmdet.models.roi_heads.roi_extractors.single_level_roi_extractor.SingleRoIExtractor"
+    'mmdet.models.roi_heads.roi_extractors.single_level_roi_extractor.SingleRoIExtractor'
 )
 class SingleRoIExtractorWraper(nn.Module):
     def __init__(self, module):

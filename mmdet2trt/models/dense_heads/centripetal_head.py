@@ -1,20 +1,16 @@
 import torch
-from torch import nn
-import torch.nn.functional as F
-from mmdet2trt.models.builder import register_wraper, build_wraper
-import mmdet2trt.ops.util_ops as mm2trt_util
+
+from mmdet2trt.models.builder import register_wraper
+
 from .corner_head import CornerHeadWraper
 
-from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 
-
-@register_wraper("mmdet.models.dense_heads.CentripetalHead")
+@register_wraper('mmdet.models.dense_heads.CentripetalHead')
 class CentripetalHeadWraper(CornerHeadWraper):
     def __init__(self, module):
         super(CentripetalHeadWraper, self).__init__(module)
 
     def forward(self, feat, x):
-        batch_size = x.size(0)
         module = self.module
         img_meta = {
             'pad_shape': (x.shape[2], x.shape[3], 3),
@@ -27,8 +23,6 @@ class CentripetalHeadWraper(CornerHeadWraper):
         br_heats = forward_results[1]
         tl_offs = forward_results[2]
         br_offs = forward_results[3]
-        tl_guiding_shifts = forward_results[4]
-        br_guiding_shifts = forward_results[5]
         tl_centripetal_shifts = forward_results[6]
         br_centripetal_shifts = forward_results[7]
 

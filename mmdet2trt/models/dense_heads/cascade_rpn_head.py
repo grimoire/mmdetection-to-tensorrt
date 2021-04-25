@@ -7,7 +7,7 @@ from mmdet2trt.models.builder import build_wraper, register_wraper
 from .rpn_head import RPNHeadWraper
 
 
-@register_wraper("mmdet.models.dense_heads.StageCascadeRPNHead")
+@register_wraper('mmdet.models.dense_heads.StageCascadeRPNHead')
 class StageCascadeRPNHeadWraper(RPNHeadWraper):
     def __init__(self, module):
         super(StageCascadeRPNHeadWraper, self).__init__(module)
@@ -62,7 +62,6 @@ class StageCascadeRPNHeadWraper(RPNHeadWraper):
             return offset_x, offset_y
 
         num_lvls = len(anchor_list)
-        dtype = anchor_list[0].dtype
         device = anchor_list[0].device
 
         mlvl_offset = []
@@ -108,8 +107,8 @@ class StageCascadeRPNHeadWraper(RPNHeadWraper):
         mlvl_scores = []
         mlvl_proposals = []
         for idx in range(len(cls_scores)):
-            rpn_cls_score = cls_scores[idx]  #.squeeze()
-            rpn_bbox_pred = bbox_preds[idx]  #.squeeze()
+            rpn_cls_score = cls_scores[idx]
+            rpn_bbox_pred = bbox_preds[idx]
             anchors = mlvl_anchors[idx]
 
             scores, proposals = self.bbox_coder(
@@ -137,7 +136,7 @@ class StageCascadeRPNHeadWraper(RPNHeadWraper):
         return proposals
 
 
-@register_wraper("mmdet.models.dense_heads.CascadeRPNHead")
+@register_wraper('mmdet.models.dense_heads.CascadeRPNHead')
 class CascadeRPNHeadWraper(nn.Module):
     def __init__(self, module):
         super(CascadeRPNHeadWraper, self).__init__()

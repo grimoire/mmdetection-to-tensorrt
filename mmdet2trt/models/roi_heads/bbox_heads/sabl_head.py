@@ -1,11 +1,13 @@
-from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
-from torch import nn
 import torch.nn.functional as F
+from torch import nn
+
+from mmdet2trt.models.builder import build_wraper, register_wraper
+
 from .bbox_head import BBoxHeadWraper
 
 
-@register_wraper("mmdet.models.roi_heads.bbox_heads.sabl_head.SABLHead")
+@register_wraper('mmdet.models.roi_heads.bbox_heads.sabl_head.SABLHead')
 class SABLHeadWraper(BBoxHeadWraper):
     def __init__(self, module, test_cfg):
         super(SABLHeadWraper, self).__init__(module, test_cfg)

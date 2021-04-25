@@ -1,13 +1,12 @@
 import torch
-from mmdet2trt.models.builder import register_wraper, build_wraper
-import torch
 from torch import nn
 
-from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 import mmdet2trt.ops.util_ops as mm2trt_util
+from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from mmdet2trt.models.builder import build_wraper, register_wraper
 
 
-@register_wraper("mmdet.models.RPNHead")
+@register_wraper('mmdet.models.RPNHead')
 class RPNHeadWraper(nn.Module):
     def __init__(self, module):
         super(RPNHeadWraper, self).__init__()
@@ -30,15 +29,14 @@ class RPNHeadWraper(nn.Module):
 
         cls_scores, bbox_preds = module(feat)
 
-        num_levels = len(cls_scores)
         mlvl_anchors = self.anchor_generator(cls_scores,
                                              device=cls_scores[0].device)
 
         mlvl_scores = []
         mlvl_proposals = []
         for idx in range(len(cls_scores)):
-            rpn_cls_score = cls_scores[idx]  #.squeeze()
-            rpn_bbox_pred = bbox_preds[idx]  #.squeeze()
+            rpn_cls_score = cls_scores[idx]
+            rpn_bbox_pred = bbox_preds[idx]
             anchors = mlvl_anchors[idx]
 
             scores, proposals = self.bbox_coder(

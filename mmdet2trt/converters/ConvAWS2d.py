@@ -1,9 +1,9 @@
 import torch
-from torch2trt_dynamic.converters.Conv2d import *
-import mmcv.cnn
+from torch2trt_dynamic.converters.Conv2d import convert_Conv2d
+from torch2trt_dynamic.torch2trt_dynamic import tensorrt_converter, trt_
 
 
-@tensorrt_converter("mmcv.cnn.ConvAWS2d.forward")
+@tensorrt_converter('mmcv.cnn.ConvAWS2d.forward')
 def convert_ConvAWS2d(ctx):
     module = ctx.method_args[0]
     input = ctx.method_args[1]
@@ -36,7 +36,7 @@ def convert_ConvAWS2d(ctx):
     convert_Conv2d(ctx)
 
 
-@tensorrt_converter("mmcv.cnn.ConvAWS2d._get_weight")
+@tensorrt_converter('mmcv.cnn.ConvAWS2d._get_weight')
 def convert_convws_get_weight(ctx):
     output = ctx.method_return
 

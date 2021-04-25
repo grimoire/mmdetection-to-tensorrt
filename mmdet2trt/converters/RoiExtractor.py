@@ -1,13 +1,12 @@
-from torch2trt_dynamic.torch2trt_dynamic import *
+from torch2trt_dynamic.torch2trt_dynamic import (get_arg, tensorrt_converter,
+                                                 trt_)
 
-from .plugins import *
-import mmdet
+from .plugins import create_roiextractor_plugin
 
 
-# @tensorrt_converter('mmdet.models.roi_heads.roi_extractors.SingleRoIExtractor.forward')
 @tensorrt_converter(
-    'mmdet2trt.models.roi_heads.roi_extractors.pooling_layers.roi_align_extractor.RoiAlignExtractor.forward'
-)
+    'mmdet2trt.models.roi_heads.roi_extractors.'
+    'pooling_layers.roi_align_extractor.RoiAlignExtractor.forward')
 def convert_roiextractor(ctx):
     module = ctx.method_args[0]
     feats = get_arg(ctx, 'feats', pos=1, default=None)
@@ -25,7 +24,7 @@ def convert_roiextractor(ctx):
     rois_trt = trt_(ctx.network, rois)
     output = ctx.method_return
 
-    plugin = create_roiextractor_plugin("roiextractor_" + str(id(module)),
+    plugin = create_roiextractor_plugin('roiextractor_' + str(id(module)),
                                         out_size,
                                         sample_num,
                                         featmap_strides,

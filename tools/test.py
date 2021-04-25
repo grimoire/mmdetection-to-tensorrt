@@ -1,16 +1,18 @@
-from mmdet2trt.apis import init_detector
-from mmdet2trt.apis.test import convert_to_mmdet_result
 import argparse
 import os
-import torch
-from torch import nn
-from mmdet.datasets import build_dataloader, build_dataset
-from mmdet.apis import single_gpu_test
+
 import mmcv
+import torch
+from mmdet.apis import single_gpu_test
+from mmdet.datasets import build_dataloader, build_dataset
+from torch import nn
+
+from mmdet2trt.apis import init_detector
+from mmdet2trt.apis.test import convert_to_mmdet_result
 
 
 class ModelWarper(nn.Module):
-    def __init__(self, model, num_classes=80, device="cuda:0"):
+    def __init__(self, model, num_classes=80, device='cuda:0'):
         super(ModelWarper, self).__init__()
         self.model = model
         self.device = torch.device(device)
@@ -67,5 +69,5 @@ def main():
     print(eval_result)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

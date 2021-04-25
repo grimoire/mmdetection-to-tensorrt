@@ -1,6 +1,6 @@
-from .mmdet2trt import mmdet2trt, Int8CalibDataset, mask_processor2trt
-from .ops import *
-from .core import *
-from .models import *
 from .apis import *
 from .converters import *
+from .core import *
+from .mmdet2trt import Int8CalibDataset, mask_processor2trt, mmdet2trt
+from .models import *
+from .ops import *

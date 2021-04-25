@@ -1,7 +1,8 @@
-from torch2trt_dynamic.torch2trt_dynamic import *
-from torch2trt_dynamic.plugins import create_adaptivepool_plugin
-from torch2trt_dynamic.plugins import create_meshgrid_plugin
-# from mmdet2trt.ops import *
+import tensorrt as trt
+from torch2trt_dynamic.plugins import (create_adaptivepool_plugin,
+                                       create_meshgrid_plugin)
+from torch2trt_dynamic.torch2trt_dynamic import (get_arg, tensorrt_converter,
+                                                 trt_)
 
 
 @tensorrt_converter('mmdet2trt.ops.adaptive_max_pool2d_by_input')
@@ -14,7 +15,7 @@ def convert_adaptive_max_pool2d_by_input(ctx):
     input_trt = trt_(ctx.network, input)
     wrapshape_trt = trt_(ctx.network, shape_wraper)
 
-    plugin = create_adaptivepool_plugin("adaptive_max_pool2d_by_input_" +
+    plugin = create_adaptivepool_plugin('adaptive_max_pool2d_by_input_' +
                                         str(id(input)),
                                         output_size=output_size,
                                         pooling_type=trt.PoolingType.MAX)
@@ -38,7 +39,7 @@ def convert_arange_gridmesh(ctx):
     slice_length = len(starts)
     slice_dims = list(range(len(input_shape) - slice_length, len(input_shape)))
 
-    plugin = create_meshgrid_plugin("arange_gridmesh_" + str(id(input)),
+    plugin = create_meshgrid_plugin('arange_gridmesh_' + str(id(input)),
                                     num_inputs,
                                     slice_dims=slice_dims,
                                     starts=starts,
@@ -50,7 +51,7 @@ def convert_arange_gridmesh(ctx):
         output._trt = layer.get_output(idx)
 
 
-@tensorrt_converter("mmdet2trt.ops.util_ops.arange_by_input")
+@tensorrt_converter('mmdet2trt.ops.util_ops.arange_by_input')
 def convert_arange_by_input(ctx):
     input = get_arg(ctx, 'x', pos=0, default=None)
     dim = get_arg(ctx, 'dim', pos=1, default=0)
@@ -64,7 +65,7 @@ def convert_arange_by_input(ctx):
     starts = [start]
     strides = [stride]
 
-    plugin = create_meshgrid_plugin("arange_by_input_" + str(id(input)),
+    plugin = create_meshgrid_plugin('arange_by_input_' + str(id(input)),
                                     num_inputs,
                                     slice_dims=slice_dims,
                                     starts=starts,

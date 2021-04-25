@@ -1,7 +1,8 @@
-from mmdet2trt.models.builder import register_wraper, build_wraper
-from mmdet2trt.ops import util_ops
 import torch
 from torch import nn
+
+from mmdet2trt.models.builder import build_wraper, register_wraper
+from mmdet2trt.ops import util_ops
 
 
 def batched_blr2bboxes(priors,
@@ -34,7 +35,7 @@ def batched_blr2bboxes(priors,
     return boxes
 
 
-@register_wraper("mmdet.core.bbox.coder.TBLRBBoxCoder")
+@register_wraper('mmdet.core.bbox.coder.TBLRBBoxCoder')
 class TBLRBBoxCoderWraper(nn.Module):
     def __init__(self, module):
         super(TBLRBBoxCoderWraper, self).__init__()

@@ -1,13 +1,12 @@
 import torch
-from mmdet2trt.models.builder import register_wraper
-import torch
 from torch import nn
 from torch.nn import functional as F
 
 from mmdet2trt.core.bbox.transforms import batched_bbox_cxcywh_to_xyxy
+from mmdet2trt.models.builder import register_wraper
 
 
-@register_wraper("mmdet.models.dense_heads.TransformerHead")
+@register_wraper('mmdet.models.dense_heads.TransformerHead')
 class TransformerHeadWraper(nn.Module):
     def __init__(self, module):
         super(TransformerHeadWraper, self).__init__()

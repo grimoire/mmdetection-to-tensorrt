@@ -1,13 +1,10 @@
-from torch2trt_dynamic import tensorrt_converter, trt_, get_arg
-import torch
-from torch import nn
-import numpy as np
+from torch2trt_dynamic import get_arg, tensorrt_converter, trt_
 
 from .plugins import create_gridanchordynamic_plugin
 
 
 @tensorrt_converter(
-    "mmdet2trt.core.anchor.anchor_generator.AnchorGeneratorSingle.forward")
+    'mmdet2trt.core.anchor.anchor_generator.AnchorGeneratorSingle.forward')
 def convert_AnchorGeneratorDynamic(ctx):
     module = ctx.method_args[0]
     input = ctx.method_args[1]
@@ -24,10 +21,10 @@ def convert_AnchorGeneratorDynamic(ctx):
         # base_anchors = base_anchors.view(-1).cpu().numpy()
         base_anchors_trt = trt_(ctx.network, base_anchors.float())
 
-        plugin = create_gridanchordynamic_plugin("ag_" + str(id(module)),
+        plugin = create_gridanchordynamic_plugin('ag_' + str(id(module)),
                                                  stride=stride)
     else:
-        print("no base_anchors in {}".format(ag.generator))
+        print('no base_anchors in {}'.format(ag.generator))
         # scales = ag.scales.detach().cpu().numpy().astype(np.float32)
         # ratios = ag.ratios.detach().cpu().numpy().astype(np.float32)
         # scale_major = ag.scale_major

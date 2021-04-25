@@ -1,9 +1,11 @@
-from torch2trt_dynamic.torch2trt_dynamic import *
-from torch2trt_dynamic.converters.pixel_shuffle import *
-from torch2trt_dynamic.converters.softmax import *
-from .plugins import *
-import mmcv.ops
-import mmdet.models
+import tensorrt as trt
+import torch
+from torch2trt_dynamic.converters.pixel_shuffle import convert_pixel_shuffle
+from torch2trt_dynamic.converters.softmax import convert_softmax
+from torch2trt_dynamic.torch2trt_dynamic import (get_arg, tensorrt_converter,
+                                                 trt_)
+
+from .plugins import create_carafefeaturereassemble_plugin
 
 
 @tensorrt_converter('mmcv.ops.CARAFEPack.feature_reassemble')
@@ -21,7 +23,7 @@ def convert_carafe_feature_reassemble(ctx):
     output = ctx.method_return
 
     plugin = create_carafefeaturereassemble_plugin(
-        "carafefeaturereassemble_" + str(id(module)), scale_factor, up_kernel,
+        'carafefeaturereassemble_' + str(id(module)), scale_factor, up_kernel,
         up_group)
 
     custom_layer = ctx.network.add_plugin_v2(inputs=[x_trt, mask_trt],
@@ -40,7 +42,6 @@ def convert_carafe_kernel_normalizer(ctx):
     scale_factor = module.scale_factor
     up_kernel = module.up_kernel
 
-    mask_trt = trt_(ctx.network, mask)
     output = ctx.method_return
 
     # pixel shuffle
@@ -93,7 +94,6 @@ def convert_carafe_kernel_normalizer(ctx):
 
 @tensorrt_converter('mmdet.models.necks.fpn_carafe.FPN_CARAFE.tensor_add')
 def convert_carafe_tensor_add(ctx):
-    module = ctx.method_args[0]
     a = get_arg(ctx, 'a', pos=1, default=None)
     b = get_arg(ctx, 'b', pos=2, default=None)
 

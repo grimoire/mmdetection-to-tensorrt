@@ -1,12 +1,12 @@
 import torch
-from torch import nn
-from mmdet2trt.models.builder import register_wraper, build_wraper
-from .anchor_head import AnchorHeadWraper
 
 import mmdet2trt.ops.util_ops as mm2trt_util
+from mmdet2trt.models.builder import register_wraper
+
+from .anchor_head import AnchorHeadWraper
 
 
-@register_wraper("mmdet.models.dense_heads.ATSSHead")
+@register_wraper('mmdet.models.dense_heads.ATSSHead')
 class ATSSHeadWraper(AnchorHeadWraper):
     def __init__(self, module):
         super(ATSSHeadWraper, self).__init__(module)
@@ -16,7 +16,6 @@ class ATSSHeadWraper(AnchorHeadWraper):
 
         cls_scores, bbox_preds, centernesses = module(feat)
 
-        num_levels = len(cls_scores)
         mlvl_anchors = self.anchor_generator(cls_scores,
                                              device=cls_scores[0].device)
 

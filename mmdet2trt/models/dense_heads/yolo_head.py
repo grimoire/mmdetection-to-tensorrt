@@ -1,15 +1,12 @@
 import torch
-from mmdet2trt.models.builder import register_wraper, build_wraper
-import torch
 from torch import nn
 
-import mmdet2trt.ops as mm2trt_ops
 import mmdet2trt.ops.util_ops as mm2trt_util
-
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from mmdet2trt.models.builder import build_wraper, register_wraper
 
 
-@register_wraper("mmdet.models.dense_heads.YOLOV3Head")
+@register_wraper('mmdet.models.dense_heads.YOLOV3Head')
 class YOLOV3HeadWraper(nn.Module):
     def __init__(self, module):
         super(YOLOV3HeadWraper, self).__init__()

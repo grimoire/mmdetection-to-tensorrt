@@ -1,13 +1,13 @@
 import torch
-from torch import nn
-from mmdet2trt.models.builder import register_wraper, build_wraper
+
 import mmdet2trt.ops.util_ops as mm2trt_util
+from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from mmdet2trt.models.builder import register_wraper
+
 from .guided_anchor_head import GuidedAnchorHeadWraper
 
-from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 
-
-@register_wraper("mmdet.models.GARPNHead")
+@register_wraper('mmdet.models.GARPNHead')
 class GARPNHeadWraper(GuidedAnchorHeadWraper):
     def __init__(self, module):
         super(GARPNHeadWraper, self).__init__(module)
@@ -35,8 +35,8 @@ class GARPNHeadWraper(GuidedAnchorHeadWraper):
         mlvl_proposals = []
         nms_pre = self.test_cfg.get('nms_pre', -1)
         for idx in range(len(cls_scores)):
-            rpn_cls_score = cls_scores[idx]  #.squeeze()
-            rpn_bbox_pred = bbox_preds[idx]  #.squeeze()
+            rpn_cls_score = cls_scores[idx]
+            rpn_bbox_pred = bbox_preds[idx]
             anchors = guided_anchors[idx]
             mask = loc_masks[idx]
 
@@ -54,7 +54,8 @@ class GARPNHeadWraper(GuidedAnchorHeadWraper):
             rpn_bbox_pred = rpn_bbox_pred.permute(0, 2, 3, 1).reshape(
                 rpn_bbox_pred.size(0), -1, 4)
             if nms_pre > 0:
-                # concate zero to enable topk, dirty way, will find a better way in future
+                # concate zero to enable topk,
+                # dirty way, will find a better way in future
                 scores = mm2trt_util.pad_with_value(scores, 1, nms_pre, 0.)
                 bbox_pred = mm2trt_util.pad_with_value(rpn_bbox_pred, 1,
                                                        nms_pre)

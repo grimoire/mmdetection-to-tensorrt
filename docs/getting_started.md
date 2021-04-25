@@ -23,12 +23,12 @@ opt_shape_param=[
         [4,3,1344,1344],
     ]
 ]
-trt_model = mmdet2trt(  ..., 
+trt_model = mmdet2trt(  ...,
                         opt_shape_param=opt_shape_param, # set the opt shape
                         ...)
 ```
 
-this config will give you input tensor size between (320, 320) to (1344, 1344), max batch_size=4  
+this config will give you input tensor size between (320, 320) to (1344, 1344), max batch_size=4
 
 **warning:**
 Dynamic input shape and batch support might need more memory. Use fixed shape to avoid unnecessary memory usage(min=optimize=max).
@@ -39,14 +39,14 @@ Dynamic input shape and batch support might need more memory. Use fixed shape to
 
 
 ```python
-trt_model = mmdet2trt(  ..., 
-                        fp16_mode=True, # enable fp16 mode 
+trt_model = mmdet2trt(  ...,
+                        fp16_mode=True, # enable fp16 mode
                         ...)
 ```
 
 ## int8 support
 
-**int8 mode** need more configs.  
+**int8 mode** need more configs.
 - set `input8_mode=True`.
 - provide calibrate dataset, the `__getitem__()` method of dataset should return a list of tensor with shape (C,H,W), the shape **must** be the same as `opt_shape_param[0][1][1:]` (optimize shape). The tensor should do the same preprocess as the model. There is a default dataset, you can also set your custom one.
 - set the calibrate algrithm, support `entropy` and `minmax`.
@@ -64,8 +64,8 @@ opt_shape_param=[
     ]
 ]
 calib_dataset = Int8CalibDataset(image_path_list, cfg_path, opt_shape_param)
-trt_model = mmdet2trt(cfg_path, model_path, 
-                    opt_shape_param=opt_shape_param, 
+trt_model = mmdet2trt(cfg_path, model_path,
+                    opt_shape_param=opt_shape_param,
                     int8_mode=True,
                     int8_calib_dataset=calib_dataset,
                     int8_calib_alg="entropy")
@@ -80,7 +80,7 @@ Some layer need extra gpu memory. Any some optimize tactic also need more space.
 
 ## use in c++
 
-The converted model is a python warp on engine.  
+The converted model is a python warp on engine.
 first, get the serialized engine from trt_model:
 
 ```python
@@ -91,17 +91,17 @@ with open(engine_path, mode='wb') as f:
 Link the `${AMIRSTAN_PLUGIN_DIR}/build/lib/libamirstan_plugin.so` in your project. compile and load the engine. enjoy.
 
 **warning:**
-might need to invode `initLibAmirstanInferPlugins()` in [amirInferPlugin.h](https://github.com/grimoire/amirstan_plugin/blob/master/include/plugin/amirInferPlugin.h) to load the plugins.  
+might need to invode `initLibAmirstanInferPlugins()` in [amirInferPlugin.h](https://github.com/grimoire/amirstan_plugin/blob/master/include/plugin/amirInferPlugin.h) to load the plugins.
 
-The engine only contain inference forward. Preprocess(resize, normalize) and postprocess(divid scale factor) should be done in your project. 
+The engine only contain inference forward. Preprocess(resize, normalize) and postprocess(divid scale factor) should be done in your project.
 
 ## deepstream support
 
 when converting model, set the output names:
 
 ```python
-trt_model = mmdet2trt(  ..., 
-                        output_names=["num_detections", "boxes", "scores", "classes"], # output names 
+trt_model = mmdet2trt(  ...,
+                        output_names=["num_detections", "boxes", "scores", "classes"], # output names
                         ...)
 ```
 
@@ -174,5 +174,3 @@ mask_postprocessor = mask_processor2trt(max_width = max_width,
 # do postprocess
 final_masks = mask_postprocessor(masks[0:1, :10, ...], bboxes[0:1, :10, ...])
 ```
-
-

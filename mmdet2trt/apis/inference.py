@@ -1,11 +1,8 @@
-from torch2trt_dynamic import TRTModule
-from mmdet.apis.inference import LoadImage
-from mmdet.datasets.pipelines import Compose
-import torch
 import mmcv
 import numpy as np
-import time
-import logging
+import torch
+from mmdet.datasets.pipelines import Compose
+from torch2trt_dynamic import TRTModule
 
 
 def init_detector(trt_model_path):

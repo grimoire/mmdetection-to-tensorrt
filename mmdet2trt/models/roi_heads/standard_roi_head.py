@@ -1,16 +1,17 @@
-from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
-from torch import nn
 import torch.nn.functional as F
 from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
-from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from torch import nn
+
 import mmdet2trt.ops.util_ops as mm2trt_util
+from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from mmdet2trt.models.builder import build_wraper, register_wraper
 
 
 @register_wraper(
-    "mmdet.models.roi_heads.mask_scoring_roi_head.MaskScoringRoIHead")
-@register_wraper("mmdet.models.roi_heads.dynamic_roi_head.DynamicRoIHead")
-@register_wraper("mmdet.models.roi_heads.standard_roi_head.StandardRoIHead")
+    'mmdet.models.roi_heads.mask_scoring_roi_head.MaskScoringRoIHead')
+@register_wraper('mmdet.models.roi_heads.dynamic_roi_head.DynamicRoIHead')
+@register_wraper('mmdet.models.roi_heads.standard_roi_head.StandardRoIHead')
 class StandardRoIHeadWraper(nn.Module):
     def __init__(self, module, wrap_config={}):
         super(StandardRoIHeadWraper, self).__init__()
@@ -28,8 +29,8 @@ class StandardRoIHeadWraper(nn.Module):
 
         # init mask if exist
         self.enable_mask = False
-        if "enable_mask" in wrap_config and wrap_config[
-                "enable_mask"] and module.with_mask:
+        if 'enable_mask' in wrap_config and wrap_config[
+                'enable_mask'] and module.with_mask:
             self.enable_mask = True
             self.init_mask_head(module.mask_roi_extractor, module.mask_head)
 

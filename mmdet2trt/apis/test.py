@@ -1,5 +1,5 @@
-import torch
 import numpy as np
+import torch
 
 
 def convert_to_mmdet_result(results, num_classes=80):

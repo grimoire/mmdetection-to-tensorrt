@@ -1,20 +1,19 @@
-import torch
-from mmdet2trt.models.builder import register_wraper, build_wraper
-from mmdet2trt.models.backbones import BaseBackboneWraper
-from mmdet2trt.models.necks import BaseNeckWraper
-from mmdet2trt.models.dense_heads import RPNHeadWraper
-from mmdet2trt.models.roi_heads import StandardRoIHeadWraper
-import torch
 from torch import nn
 
+from mmdet2trt.models.backbones import BaseBackboneWraper
+from mmdet2trt.models.builder import build_wraper, register_wraper
+from mmdet2trt.models.dense_heads import RPNHeadWraper
+from mmdet2trt.models.necks import BaseNeckWraper
+from mmdet2trt.models.roi_heads import StandardRoIHeadWraper
 
-@register_wraper("mmdet.models.MaskScoringRCNN")
-@register_wraper("mmdet.models.GridRCNN")
-@register_wraper("mmdet.models.HybridTaskCascade")
-@register_wraper("mmdet.models.MaskRCNN")
-@register_wraper("mmdet.models.CascadeRCNN")
-@register_wraper("mmdet.models.FasterRCNN")
-@register_wraper("mmdet.models.TwoStageDetector")
+
+@register_wraper('mmdet.models.MaskScoringRCNN')
+@register_wraper('mmdet.models.GridRCNN')
+@register_wraper('mmdet.models.HybridTaskCascade')
+@register_wraper('mmdet.models.MaskRCNN')
+@register_wraper('mmdet.models.CascadeRCNN')
+@register_wraper('mmdet.models.FasterRCNN')
+@register_wraper('mmdet.models.TwoStageDetector')
 class TwoStageDetectorWraper(nn.Module):
     def __init__(self, model, wrap_config={}):
         super(TwoStageDetectorWraper, self).__init__()
@@ -42,7 +41,6 @@ class TwoStageDetectorWraper(nn.Module):
         return x
 
     def forward(self, x):
-        model = self.model
         rpn_head = self.rpn_head_wraper
 
         # backbone

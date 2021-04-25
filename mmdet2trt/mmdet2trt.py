@@ -1,22 +1,21 @@
+import argparse
+import logging
+import time
+from argparse import ArgumentParser
+from pathlib import Path
+
+import mmcv
 import tensorrt as trt
-from torch2trt_dynamic import torch2trt_dynamic
+import torch
 from mmdet.apis import init_detector
 from mmdet.apis.inference import LoadImage
 from mmdet.datasets.pipelines import Compose
-import mmcv
+from torch2trt_dynamic import torch2trt_dynamic
 
 from mmdet2trt.models.builder import build_wraper
 from mmdet2trt.models.detectors import TwoStageDetectorWraper
 
-import logging
-import torch
-import time
-
-import argparse
-from argparse import ArgumentParser
-from pathlib import Path
-
-logger = logging.getLogger("mmdet2trt")
+logger = logging.getLogger('mmdet2trt')
 
 
 class Int8CalibDataset():
@@ -61,16 +60,16 @@ class Int8CalibDataset():
 
 def mmdet2trt(config,
               checkpoint,
-              device="cuda:0",
+              device='cuda:0',
               fp16_mode=False,
               int8_mode=False,
               int8_calib_dataset=None,
-              int8_calib_alg="entropy",
+              int8_calib_alg='entropy',
               max_workspace_size=0.5e9,
               opt_shape_param=None,
-              trt_log_level="INFO",
+              trt_log_level='INFO',
               return_wrap_model=False,
-              output_names=["num_detections", "boxes", "scores", "classes"],
+              output_names=['num_detections', 'boxes', 'scores', 'classes'],
               enable_mask=False):
     r"""
     create tensorrt model from mmdetection.
@@ -92,22 +91,22 @@ def mmdet2trt(config,
 
     device = torch.device(device)
 
-    logger.info("Loading model from config: {}".format(config))
+    logger.info('Loading model from config: {}'.format(config))
     torch_model = init_detector(config, checkpoint=checkpoint, device=device)
     cfg = torch_model.cfg
 
-    logger.info("Wrapping model")
+    logger.info('Wrapping model')
     if enable_mask and output_names is not None and len(output_names) != 5:
-        logger.warning("mask mode require len(output_names)==5 " +
-                       "but get output_names=" + str(output_names))
+        logger.warning('mask mode require len(output_names)==5 ' +
+                       'but get output_names=' + str(output_names))
         output_names = None
-    wrap_config = {"enable_mask": enable_mask}
+    wrap_config = {'enable_mask': enable_mask}
     wrap_model = build_wraper(torch_model,
                               TwoStageDetectorWraper,
                               wrap_config=wrap_config)
 
     if opt_shape_param is None:
-        img_scale = cfg.test_pipeline[1]["img_scale"]
+        img_scale = cfg.test_pipeline[1]['img_scale']
         min_scale = min(img_scale)
         max_scale = max(img_scale) + 32
         opt_shape_param = [[
@@ -121,17 +120,17 @@ def mmdet2trt(config,
     dummy_input = (dummy_input - 0.45) / 0.27
     dummy_input = dummy_input.contiguous()
 
-    logger.info("Model warmup")
+    logger.info('Model warmup')
     with torch.no_grad():
         result = wrap_model(dummy_input)
 
-    logger.info("Converting model")
+    logger.info('Converting model')
     start = time.time()
     with torch.cuda.device(device), torch.no_grad():
         int8_calib_algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
-        if int8_calib_alg == "minmax":
+        if int8_calib_alg == 'minmax':
             int8_calib_algorithm = trt.CalibrationAlgoType.MINMAX_CALIBRATION
-        elif int8_calib_alg == "entropy":
+        elif int8_calib_alg == 'entropy':
             int8_calib_algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
         trt_model = torch2trt_dynamic(
             wrap_model, [dummy_input],
@@ -147,7 +146,7 @@ def mmdet2trt(config,
             int8_calib_algorithm=int8_calib_algorithm)
 
     duration = time.time() - start
-    logger.info("Conversion took {} s".format(duration))
+    logger.info('Conversion took {} s'.format(duration))
 
     if return_wrap_model:
         return trt_model, wrap_model
@@ -160,16 +159,16 @@ def mask_processor2trt(max_width,
                        max_batch_size=1,
                        max_box_per_batch=10,
                        mask_size=[28, 28],
-                       device="cuda:0",
+                       device='cuda:0',
                        fp16_mode=False,
                        max_workspace_size=0.5e9,
-                       trt_log_level="INFO",
+                       trt_log_level='INFO',
                        return_wrap_model=False,
                        output_names=None):
 
     from mmdet2trt.models.roi_heads.mask_heads.fcn_mask_head import MaskProcessor
 
-    logger.info("Wrapping MaskProcessor")
+    logger.info('Wrapping MaskProcessor')
     wrap_model = MaskProcessor(max_width=max_width, max_height=max_height)
 
     batch_size = max_batch_size
@@ -197,7 +196,7 @@ def mask_processor2trt(max_width,
     dummy_box = torch.cat([dummy_box_pre, dummy_box_pre + dummy_box_post],
                           dim=-1).to(device)
 
-    logger.info("Converting MaskProcessor")
+    logger.info('Converting MaskProcessor')
     start = time.time()
     with torch.cuda.device(device), torch.no_grad():
         trt_model = torch2trt_dynamic(
@@ -211,7 +210,7 @@ def mask_processor2trt(max_width,
             output_names=output_names)
 
     duration = time.time() - start
-    logger.info("Conversion took {} s".format(duration))
+    logger.info('Conversion took {} s'.format(duration))
 
     if return_wrap_model:
         return trt_model, wrap_model
@@ -232,81 +231,81 @@ def str2bool(v):
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument("config", help="Path to a mmdet Config file")
-    parser.add_argument("checkpoint", help="Path to a mmdet Checkpoint file")
-    parser.add_argument("output",
-                        help="Path where tensorrt model will be saved")
-    parser.add_argument("--fp16",
+    parser.add_argument('config', help='Path to a mmdet Config file')
+    parser.add_argument('checkpoint', help='Path to a mmdet Checkpoint file')
+    parser.add_argument('output',
+                        help='Path where tensorrt model will be saved')
+    parser.add_argument('--fp16',
                         type=str2bool,
                         default=False,
-                        help="Enable fp16 inference")
-    parser.add_argument("--enable-mask",
+                        help='Enable fp16 inference')
+    parser.add_argument('--enable-mask',
                         type=str2bool,
                         default=False,
-                        help="Enable mask output")
+                        help='Enable mask output')
     parser.add_argument(
-        "--save-engine",
+        '--save-engine',
         type=str2bool,
         default=False,
         help=
         "Enable saving TensorRT engine. (will be saved at Path(output).with_suffix('.engine')).",
     )
-    parser.add_argument("--device",
+    parser.add_argument('--device',
                         type=str,
-                        default="cuda:0",
-                        help="Device used for conversion.")
+                        default='cuda:0',
+                        help='Device used for conversion.')
     parser.add_argument(
-        "--max-workspace-gb",
+        '--max-workspace-gb',
         type=float,
         default=0.5,
-        help="The maximum `device` (GPU) temporary memory in GB (gigabytes)"
-        " which TensorRT can use at execution time.",
+        help='The maximum `device` (GPU) temporary memory in GB (gigabytes)'
+        ' which TensorRT can use at execution time.',
     )
     parser.add_argument(
-        "--min-scale",
+        '--min-scale',
         type=int,
         nargs=4,
         default=None,
         help=
-        "Minimum input scale in [batch_size, channels, height, width] order."
-        " Only used if all min-scale, opt-scale and max-scale are set.",
+        'Minimum input scale in [batch_size, channels, height, width] order.'
+        ' Only used if all min-scale, opt-scale and max-scale are set.',
     )
     parser.add_argument(
-        "--opt-scale",
+        '--opt-scale',
         type=int,
         nargs=4,
         default=None,
         help=
-        "Optimal input scale in [batch_size, channels, height, width] order."
-        " Only used if all min-scale, opt-scale and max-scale are set.",
+        'Optimal input scale in [batch_size, channels, height, width] order.'
+        ' Only used if all min-scale, opt-scale and max-scale are set.',
     )
     parser.add_argument(
-        "--max-scale",
+        '--max-scale',
         type=int,
         nargs=4,
         default=None,
         help=
-        "Maximum input scale in [batch_size, channels, height, width] order."
-        " Only used if all min-scale, opt-scale and max-scale are set.",
+        'Maximum input scale in [batch_size, channels, height, width] order.'
+        ' Only used if all min-scale, opt-scale and max-scale are set.',
     )
     parser.add_argument(
-        "--log-level",
-        default="INFO",
-        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        help="Python logging level.",
+        '--log-level',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help='Python logging level.',
     )
     parser.add_argument(
-        "--trt-log-level",
-        default="INFO",
-        choices=["VERBOSE", "INFO", "WARNING", "ERROR"],
-        help="TensorRT logging level.",
+        '--trt-log-level',
+        default='INFO',
+        choices=['VERBOSE', 'INFO', 'WARNING', 'ERROR'],
+        help='TensorRT logging level.',
     )
     parser.add_argument(
-        "--output-names",
+        '--output-names',
         nargs=4,
         type=str,
-        default=["num_detections", "boxes", "scores", "classes"],
-        help="Names for the output nodes of the created TRTModule",
+        default=['num_detections', 'boxes', 'scores', 'classes'],
+        help='Names for the output nodes of the created TRTModule',
     )
     args = parser.parse_args()
 
@@ -314,7 +313,7 @@ def main():
 
     if all(
             getattr(args, x) is not None
-            for x in ["min_scale", "opt_scale", "max_scale"]):
+            for x in ['min_scale', 'opt_scale', 'max_scale']):
         opt_shape_param = [[args.min_scale, args.opt_scale, args.max_scale]]
     else:
         opt_shape_param = None
@@ -329,15 +328,15 @@ def main():
                           output_names=args.output_names,
                           enable_mask=args.enable_mask)
 
-    logger.info("Saving TRT model to: {}".format(args.output))
+    logger.info('Saving TRT model to: {}'.format(args.output))
     torch.save(trt_model.state_dict(), args.output)
 
     if args.save_engine:
-        logger.info("Saving TRT model engine to: {}".format(
-            Path(args.output).with_suffix(".engine")))
-        with open(Path(args.output).with_suffix(".engine"), "wb") as f:
-            f.write(trt_model.state_dict()["engine"])
+        logger.info('Saving TRT model engine to: {}'.format(
+            Path(args.output).with_suffix('.engine')))
+        with open(Path(args.output).with_suffix('.engine'), 'wb') as f:
+            f.write(trt_model.state_dict()['engine'])
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

@@ -1,9 +1,9 @@
 import torch
-from torch2trt_dynamic.converters.Conv2d import *
-import mmcv.cnn
+from torch2trt_dynamic.converters.Conv2d import convert_Conv2d
+from torch2trt_dynamic.torch2trt_dynamic import tensorrt_converter
 
 
-@tensorrt_converter("mmcv.cnn.ConvWS2d.forward")
+@tensorrt_converter('mmcv.cnn.ConvWS2d.forward')
 def convert_ConvWS2d(ctx):
     module = ctx.method_args[0]
     input = ctx.method_args[1]

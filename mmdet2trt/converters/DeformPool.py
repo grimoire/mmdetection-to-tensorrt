@@ -1,11 +1,11 @@
-from torch2trt_dynamic.torch2trt_dynamic import *
-from .plugins import *
-import mmcv.ops
+from torch2trt_dynamic.torch2trt_dynamic import (get_arg, tensorrt_converter,
+                                                 trt_)
+
+from .plugins import create_deformable_pool_plugin
 
 
-@tensorrt_converter(
-    'mmdet2trt.models.roi_heads.roi_extractors.pooling_layers.deform_roi_pool_extractor.deformable_roi_pool_wrap'
-)
+@tensorrt_converter('mmdet2trt.models.roi_heads.roi_extractors.pooling_layers'
+                    '.deform_roi_pool_extractor.deformable_roi_pool_wrap')
 # @tensorrt_converter('mmcv.ops.deform_roi_pool')
 def convert_DeformPool(ctx):
     input = get_arg(ctx, 'input', pos=0, default=None)
@@ -24,7 +24,7 @@ def convert_DeformPool(ctx):
     if offset is not None and len(offset.shape) > 1:
         offset_trt = trt_(ctx.network, offset)
 
-    plugin = create_deformable_pool_plugin("deform_roi_pool_" + str(id(input)),
+    plugin = create_deformable_pool_plugin('deform_roi_pool_' + str(id(input)),
                                            out_size, spatial_scale,
                                            sampling_ratio, gamma)
 

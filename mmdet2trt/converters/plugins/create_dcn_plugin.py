@@ -7,7 +7,7 @@ import tensorrt as trt
 
 from .globals import dir_path
 
-ctypes.CDLL(osp.join(dir_path, "libamirstan_plugin.so"))
+ctypes.CDLL(osp.join(dir_path, 'libamirstan_plugin.so'))
 
 
 def create_dcn_plugin(layer_name,
@@ -30,25 +30,25 @@ def create_dcn_plugin(layer_name,
 
     pfc = trt.PluginFieldCollection()
 
-    pf_stride = trt.PluginField("stride", np.array(stride, dtype=np.int32),
+    pf_stride = trt.PluginField('stride', np.array(stride, dtype=np.int32),
                                 trt.PluginFieldType.INT32)
     pfc.append(pf_stride)
 
-    pf_padding = trt.PluginField("padding", np.array(padding, dtype=np.int32),
+    pf_padding = trt.PluginField('padding', np.array(padding, dtype=np.int32),
                                  trt.PluginFieldType.INT32)
     pfc.append(pf_padding)
 
-    pf_dilation = trt.PluginField("dilation",
-                                  np.array(dilation, dtype=np.int32),
+    pf_dilation = trt.PluginField('dilation', np.array(dilation,
+                                                       dtype=np.int32),
                                   trt.PluginFieldType.INT32)
     pfc.append(pf_dilation)
 
     pf_deformable_group = trt.PluginField(
-        "deformable_group", np.array([deformable_group], dtype=np.int32),
+        'deformable_group', np.array([deformable_group], dtype=np.int32),
         trt.PluginFieldType.INT32)
     pfc.append(pf_deformable_group)
 
-    pf_group = trt.PluginField("group", np.array([group], dtype=np.int32),
+    pf_group = trt.PluginField('group', np.array([group], dtype=np.int32),
                                trt.PluginFieldType.INT32)
     pfc.append(pf_group)
 
@@ -75,25 +75,25 @@ def create_dcnv2_plugin(layer_name,
 
     pfc = trt.PluginFieldCollection()
 
-    pf_stride = trt.PluginField("stride", np.array(stride, dtype=np.int32),
+    pf_stride = trt.PluginField('stride', np.array(stride, dtype=np.int32),
                                 trt.PluginFieldType.INT32)
     pfc.append(pf_stride)
 
-    pf_padding = trt.PluginField("padding", np.array(padding, dtype=np.int32),
+    pf_padding = trt.PluginField('padding', np.array(padding, dtype=np.int32),
                                  trt.PluginFieldType.INT32)
     pfc.append(pf_padding)
 
-    pf_dilation = trt.PluginField("dilation",
-                                  np.array(dilation, dtype=np.int32),
+    pf_dilation = trt.PluginField('dilation', np.array(dilation,
+                                                       dtype=np.int32),
                                   trt.PluginFieldType.INT32)
     pfc.append(pf_dilation)
 
     pf_deformable_group = trt.PluginField(
-        "deformable_group", np.array([deformable_group], dtype=np.int32),
+        'deformable_group', np.array([deformable_group], dtype=np.int32),
         trt.PluginFieldType.INT32)
     pfc.append(pf_deformable_group)
 
-    pf_group = trt.PluginField("group", np.array([group], dtype=np.int32),
+    pf_group = trt.PluginField('group', np.array([group], dtype=np.int32),
                                trt.PluginFieldType.INT32)
     pfc.append(pf_group)
 

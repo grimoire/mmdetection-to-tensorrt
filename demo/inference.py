@@ -1,9 +1,10 @@
-from mmdet2trt import mmdet2trt
-import torch
 from argparse import ArgumentParser
 
-from mmdet2trt.apis import inference_detector, init_detector
 import cv2
+import torch
+
+from mmdet2trt import mmdet2trt
+from mmdet2trt.apis import inference_detector, init_detector
 
 
 def main():
@@ -21,7 +22,7 @@ def main():
                         help='bbox score threshold')
     parser.add_argument('--fp16',
                         action='store_true',
-                        help="enable fp16 inference")
+                        help='enable fp16 inference')
     args = parser.parse_args()
 
     cfg_path = args.config

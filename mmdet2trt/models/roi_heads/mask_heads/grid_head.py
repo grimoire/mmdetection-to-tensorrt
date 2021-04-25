@@ -1,10 +1,11 @@
-from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
-from torch import nn
 import torch.nn.functional as F
+from torch import nn
+
+from mmdet2trt.models.builder import build_wraper, register_wraper
 
 
-@register_wraper("mmdet.models.roi_heads.mask_heads.grid_head.GridHead")
+@register_wraper('mmdet.models.roi_heads.mask_heads.grid_head.GridHead')
 class GridHeadWraper(nn.Module):
     def __init__(self, module, test_cfg):
         super(GridHeadWraper, self).__init__()

@@ -1,10 +1,11 @@
-from torch2trt_dynamic import tensorrt_converter, trt_
-from .plugins import create_batchednms_plugin
 import torch
+from torch2trt_dynamic import tensorrt_converter, trt_
+
+from .plugins import create_batchednms_plugin
 
 
 @tensorrt_converter(
-    "mmdet2trt.core.post_processing.batched_nms.BatchedNMS.forward")
+    'mmdet2trt.core.post_processing.batched_nms.BatchedNMS.forward')
 def convert_batchednms(ctx):
     module = ctx.method_args[0]
     scores = ctx.method_args[1]
@@ -25,7 +26,7 @@ def convert_batchednms(ctx):
     bboxes_trt = trt_(ctx.network, bboxes)
     output = ctx.method_return
 
-    plugin = create_batchednms_plugin("batchednms_" + str(id(module)),
+    plugin = create_batchednms_plugin('batchednms_' + str(id(module)),
                                       scoreThreshold,
                                       iouThreshold,
                                       topK,

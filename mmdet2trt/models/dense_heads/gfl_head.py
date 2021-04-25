@@ -1,15 +1,15 @@
 import torch
-from torch import nn
 import torch.nn.functional as F
-from mmdet2trt.models.builder import register_wraper, build_wraper
+
 import mmdet2trt.ops.util_ops as mm2trt_util
-from .anchor_head import AnchorHeadWraper
 from mmdet2trt.core.bbox.transforms import batched_distance2bbox
-
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from mmdet2trt.models.builder import register_wraper
+
+from .anchor_head import AnchorHeadWraper
 
 
-@register_wraper("mmdet.models.GFLHead")
+@register_wraper('mmdet.models.GFLHead')
 class GFLHeadWraper(AnchorHeadWraper):
     def __init__(self, module):
         super(GFLHeadWraper, self).__init__(module)
@@ -54,8 +54,8 @@ class GFLHeadWraper(AnchorHeadWraper):
         mlvl_proposals = []
         nms_pre = self.test_cfg.get('nms_pre', -1)
         for idx in range(num_levels):
-            rpn_cls_score = cls_scores[idx]  #.squeeze()
-            rpn_bbox_pred = bbox_preds[idx]  #.squeeze()
+            rpn_cls_score = cls_scores[idx]
+            rpn_bbox_pred = bbox_preds[idx]
             anchors = mlvl_anchors[idx]
             stride = module.anchor_generator.strides[idx]
             scores = rpn_cls_score.permute(0, 2, 3, 1).reshape(

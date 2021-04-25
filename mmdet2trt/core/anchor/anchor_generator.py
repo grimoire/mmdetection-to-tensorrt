@@ -1,6 +1,7 @@
-from mmdet2trt.models.builder import register_wraper, build_wraper
 import torch
 from torch import nn
+
+from mmdet2trt.models.builder import build_wraper, register_wraper
 
 
 class AnchorGeneratorSingle(nn.Module):
@@ -20,7 +21,7 @@ class AnchorGeneratorSingle(nn.Module):
             if module.centers is not None:
                 self.ctr = module.centers[index]
 
-    def forward(self, x, stride=None, device="cuda"):
+    def forward(self, x, stride=None, device='cuda'):
         if stride is None:
             stride = self.generator.strides[self.index]
         height, width = x.shape[2:]
@@ -31,8 +32,8 @@ class AnchorGeneratorSingle(nn.Module):
             device=device)
 
 
-@register_wraper("mmdet.core.anchor.anchor_generator.YOLOAnchorGenerator")
-@register_wraper("mmdet.core.AnchorGenerator")
+@register_wraper('mmdet.core.anchor.anchor_generator.YOLOAnchorGenerator')
+@register_wraper('mmdet.core.AnchorGenerator')
 class AnchorGeneratorWraper(nn.Module):
     def __init__(self, module):
         super(AnchorGeneratorWraper, self).__init__()
@@ -54,7 +55,7 @@ class AnchorGeneratorWraper(nn.Module):
             for index in range(len(self.base_sizes))
         ]
 
-    def forward(self, feat_list, device="cuda"):
+    def forward(self, feat_list, device='cuda'):
         multi_level_anchors = []
         for index, x in enumerate(feat_list):
             anchors = self.ag_single_list[index](
@@ -63,14 +64,14 @@ class AnchorGeneratorWraper(nn.Module):
         return multi_level_anchors
 
 
-@register_wraper("mmdet.core.anchor.anchor_generator.SSDAnchorGenerator")
+@register_wraper('mmdet.core.anchor.anchor_generator.SSDAnchorGenerator')
 class SSDAnchorGeneratorWraper(nn.Module):
     def __init__(self, module):
         super(SSDAnchorGeneratorWraper, self).__init__()
         self.generator = module
         self.mlvl_anchors = None
 
-    def forward(self, feat_list, device="cuda"):
+    def forward(self, feat_list, device='cuda'):
         if self.mlvl_anchors is None:
             num_levels = len(feat_list)
             featmap_sizes = [

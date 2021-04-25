@@ -47,6 +47,6 @@ Please check [this](#model-convertion) see if your device have full rate fp16 su
 
 ### **Q: error: [TensorRT] INTERNAL ERROR: Assertion failed: cublasStatus == CUBLAS_STATUS_SUCCESS**
 
-This is the offcial answer of nvidia in [forums](https://forums.developer.nvidia.com/t/matrixmultiply-failed-on-tensorrt-7-2-1/158187/4):  
+This is the offcial answer of nvidia in [forums](https://forums.developer.nvidia.com/t/matrixmultiply-failed-on-tensorrt-7-2-1/158187/4):
 
 TRT 7.2.1 switches to use cuBLASLt (previously it was cuBLAS). cuBLASLt is the defaulted choice for SM version >= 7.0. However,you may need [CUDA-10.2 Patch 1 (Released Aug 26, 2020)](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=runfilelocal) to resolve some cuBLASLt issues. Another option is to use the new [TacticSource](https://docs.nvidia.com/deeplearning/tensorrt/api/c_api/namespacenvinfer1.html#a9e1d81e5a8bfeb38b86e22a66d5f836a) API and disable cuBLASLt tactics if you dont want to upgrade.

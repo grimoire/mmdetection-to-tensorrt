@@ -1,8 +1,9 @@
-from mmdet2trt.models.builder import register_wraper, build_wraper
-import torch
-from torch import nn
 import numpy as np
+import torch
 from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
+from torch import nn
+
+from mmdet2trt.models.builder import build_wraper, register_wraper
 
 
 def delta2bbox_custom_func(cls_scores,
@@ -100,7 +101,7 @@ def delta2bbox_batched(rois,
     return bboxes
 
 
-@register_wraper("mmdet.core.bbox.coder.DeltaXYWHBBoxCoder")
+@register_wraper('mmdet.core.bbox.coder.DeltaXYWHBBoxCoder')
 class DeltaXYWHBBoxCoderWraper(nn.Module):
     def __init__(self, module):
         super(DeltaXYWHBBoxCoderWraper, self).__init__()

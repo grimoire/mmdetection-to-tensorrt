@@ -1,15 +1,11 @@
 import torch
-from mmdet2trt.models.builder import register_wraper, build_wraper
-from torch import nn
 
 import mmdet2trt.ops.util_ops as mm2trt_util
+from mmdet2trt.models.builder import build_wraper, register_wraper
 from mmdet2trt.models.dense_heads.anchor_free_head import AnchorFreeHeadWraper
 
-import mmdet2trt.core.post_processing.batched_nms as batched_nms
-import mmdet2trt
 
-
-@register_wraper("mmdet.models.RepPointsHead")
+@register_wraper('mmdet.models.RepPointsHead')
 class RepPointsHeadWraper(AnchorFreeHeadWraper):
     def __init__(self, module):
         super(RepPointsHeadWraper, self).__init__(module)
@@ -18,7 +14,6 @@ class RepPointsHeadWraper(AnchorFreeHeadWraper):
             build_wraper(generator)
             for generator in self.module.point_generators
         ]
-        # self.rcnn_nms = batched_nms.BatchedNMS(module.test_cfg.score_thr, module.test_cfg.nms.iou_threshold, backgroundLabelId = module.num_classes)
 
     def forward(self, feat, x):
         img_shape = x.shape[2:]
@@ -54,7 +49,8 @@ class RepPointsHeadWraper(AnchorFreeHeadWraper):
 
             nms_pre = cfg.get('nms_pre', -1)
             if nms_pre > 0:
-                # concate zero to enable topk, dirty way, will find a better way in future
+                # concate zero to enable topk,
+                # dirty way, will find a better way in future
                 scores = mm2trt_util.pad_with_value(scores, 1, nms_pre, 0.)
                 bbox_pred = mm2trt_util.pad_with_value(bbox_pred, 1, nms_pre)
                 points = mm2trt_util.pad_with_value(points, 1, nms_pre)

@@ -1,25 +1,23 @@
-import torch
-from mmdet2trt.models.builder import register_wraper, build_wraper
-from mmdet2trt.models.backbones import BaseBackboneWraper
-from mmdet2trt.models.necks import BaseNeckWraper
-from mmdet2trt.models.dense_heads import RPNHeadWraper
-import torch
 from torch import nn
 
+from mmdet2trt.models.backbones import BaseBackboneWraper
+from mmdet2trt.models.builder import build_wraper, register_wraper
+from mmdet2trt.models.necks import BaseNeckWraper
 
-@register_wraper("mmdet.models.GFL")
-@register_wraper("mmdet.models.CornerNet")
-@register_wraper("mmdet.models.PAA")
-@register_wraper("mmdet.models.YOLOV3")
-@register_wraper("mmdet.models.FSAF")
-@register_wraper("mmdet.models.ATSS")
-@register_wraper("mmdet.models.RepPointsDetector")
-@register_wraper("mmdet.models.FOVEA")
-@register_wraper("mmdet.models.FCOS")
-@register_wraper("mmdet.models.RetinaNet")
-@register_wraper("mmdet.models.SingleStageDetector")
-@register_wraper("mmdet.models.VFNet")
-@register_wraper("mmdet.models.DETR")
+
+@register_wraper('mmdet.models.GFL')
+@register_wraper('mmdet.models.CornerNet')
+@register_wraper('mmdet.models.PAA')
+@register_wraper('mmdet.models.YOLOV3')
+@register_wraper('mmdet.models.FSAF')
+@register_wraper('mmdet.models.ATSS')
+@register_wraper('mmdet.models.RepPointsDetector')
+@register_wraper('mmdet.models.FOVEA')
+@register_wraper('mmdet.models.FCOS')
+@register_wraper('mmdet.models.RetinaNet')
+@register_wraper('mmdet.models.SingleStageDetector')
+@register_wraper('mmdet.models.VFNet')
+@register_wraper('mmdet.models.DETR')
 class SingleStageDetectorWraper(nn.Module):
     def __init__(self, model, wrap_config={}):
         super(SingleStageDetectorWraper, self).__init__()
@@ -42,7 +40,6 @@ class SingleStageDetectorWraper(nn.Module):
         return x
 
     def forward(self, x):
-        model = self.model
         bbox_head = self.bbox_head_wraper
 
         # backbone

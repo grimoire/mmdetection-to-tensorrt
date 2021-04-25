@@ -1,16 +1,11 @@
 import torch
-from mmdet2trt.models.builder import register_wraper, build_wraper
-from torch import nn
 
 import mmdet2trt.ops.util_ops as mm2trt_util
+from mmdet2trt.models.builder import register_wraper
 from mmdet2trt.models.dense_heads.anchor_free_head import AnchorFreeHeadWraper
-from mmdet2trt.core.bbox import batched_distance2bbox
-
-import mmdet2trt.core.post_processing.batched_nms as batched_nms
-import mmdet2trt
 
 
-@register_wraper("mmdet.models.FoveaHead")
+@register_wraper('mmdet.models.FoveaHead')
 class FoveaHeadWraper(AnchorFreeHeadWraper):
     def __init__(self, module):
         super(FoveaHeadWraper, self).__init__(module)
@@ -24,7 +19,6 @@ class FoveaHeadWraper(AnchorFreeHeadWraper):
 
         mlvl_bboxes = []
         mlvl_scores = []
-        mlvl_centerness = []
         for cls_score, bbox_pred, stride, base_len, (y, x) in zip(
                 cls_scores, bbox_preds, module.strides, module.base_edge_list,
                 mlvl_points):
@@ -39,7 +33,8 @@ class FoveaHeadWraper(AnchorFreeHeadWraper):
             y = y.expand_as(bbox_pred[:, :, 0])
             nms_pre = cfg.get('nms_pre', -1)
             if nms_pre > 0:
-                # concate zero to enable topk, dirty way, will find a better way in future
+                # concate zero to enable topk,
+                # dirty way, will find a better way in future
                 scores = mm2trt_util.pad_with_value(scores, 1, nms_pre, 0.)
                 bbox_pred = mm2trt_util.pad_with_value(bbox_pred, 1, nms_pre)
                 y = mm2trt_util.pad_with_value(y, 1, nms_pre)
@@ -52,7 +47,6 @@ class FoveaHeadWraper(AnchorFreeHeadWraper):
                 scores = mm2trt_util.gather_topk(scores, 1, topk_inds)
                 y = mm2trt_util.gather_topk(y, 1, topk_inds)
                 x = mm2trt_util.gather_topk(x, 1, topk_inds)
-
 
             x1 = (stride * x - base_len * bbox_pred[:, :, 0]).\
                 clamp(min=0, max=img_shape[1] - 1)

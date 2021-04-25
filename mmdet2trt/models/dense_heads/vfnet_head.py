@@ -1,17 +1,13 @@
 import torch
-from mmdet2trt.models.builder import register_wraper, build_wraper
-import torch
-from torch import nn
-
-import mmdet2trt.ops.util_ops as mm2trt_util
-from mmdet2trt.models.dense_heads.anchor_free_head import AnchorFreeHeadWraper
-from mmdet2trt.core.bbox import batched_distance2bbox
 
 import mmdet2trt.core.post_processing.batched_nms as batched_nms
-import mmdet2trt
+import mmdet2trt.ops.util_ops as mm2trt_util
+from mmdet2trt.core.bbox import batched_distance2bbox
+from mmdet2trt.models.builder import register_wraper
+from mmdet2trt.models.dense_heads.anchor_free_head import AnchorFreeHeadWraper
 
 
-@register_wraper("mmdet.models.VFNetHead")
+@register_wraper('mmdet.models.VFNetHead')
 class VFNetHeadWraper(AnchorFreeHeadWraper):
     def __init__(self, module):
         super(VFNetHeadWraper, self).__init__(module)
@@ -35,7 +31,6 @@ class VFNetHeadWraper(AnchorFreeHeadWraper):
     def forward(self, feat, x):
         module = self.module
         cfg = self.test_cfg
-        result = module(feat)
         cls_scores, bbox_preds, bbox_preds_refine = module(feat)
         mlvl_points = self.get_points(cls_scores)
 
@@ -51,7 +46,8 @@ class VFNetHeadWraper(AnchorFreeHeadWraper):
             points = points.expand_as(bbox_pred[:, :, :2])
             nms_pre = cfg.get('nms_pre', -1)
             if nms_pre > 0:
-                # concate zero to enable topk, dirty way, will find a better way in future
+                # concate zero to enable topk,
+                # dirty way, will find a better way in future
                 scores = mm2trt_util.pad_with_value(scores, 1, nms_pre, 0.)
                 bbox_pred = mm2trt_util.pad_with_value(bbox_pred, 1, nms_pre)
                 points = mm2trt_util.pad_with_value(points, 1, nms_pre)

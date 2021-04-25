@@ -1,8 +1,7 @@
-from torch2trt_dynamic.torch2trt_dynamic import *
-from torch2trt_dynamic.converters.Conv2d import convert_Conv2d
+from torch2trt_dynamic.torch2trt_dynamic import (get_arg, tensorrt_converter,
+                                                 trt_)
 
-from .plugins import *
-import mmcv.ops
+from .plugins import create_dcn_plugin, create_dcnv2_plugin
 
 
 @tensorrt_converter('mmcv.ops.deform_conv.deform_conv2d')
@@ -32,7 +31,7 @@ def convert_DeformConv(ctx):
     if not isinstance(dilation, tuple):
         dilation = (dilation, ) * 2
 
-    plugin = create_dcn_plugin("dcn_" + str(id(input)),
+    plugin = create_dcn_plugin('dcn_' + str(id(input)),
                                stride=stride,
                                padding=padding,
                                dilation=dilation,
@@ -77,7 +76,7 @@ def convert_ModulatedDeformConv(ctx):
     if not isinstance(dilation, tuple):
         dilation = (dilation, ) * 2
 
-    plugin = create_dcnv2_plugin("dcn_" + str(id(input)),
+    plugin = create_dcnv2_plugin('dcn_' + str(id(input)),
                                  stride=stride,
                                  padding=padding,
                                  dilation=dilation,

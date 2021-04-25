@@ -11,7 +11,7 @@ assignees: ''
 A clear and concise description of what the bug is.
 
 **To Reproduce**
-Code snippet about how to reproduce the bug. 
+Code snippet about how to reproduce the bug.
 
 **enviroment:**
  - OS: [e.g. Ubuntu]

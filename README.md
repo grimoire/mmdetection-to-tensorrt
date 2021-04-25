@@ -1,8 +1,8 @@
 # MMDet to tensorrt
 
-This project aims to convert the mmdetection model to tensorrt model end2end.  
-Focus on object detection for now.  
-Mask support is **experiment**.  
+This project aims to convert the mmdetection model to tensorrt model end2end.
+Focus on object detection for now.
+Mask support is **experiment**.
 
 support:
 - fp16
@@ -68,7 +68,7 @@ sudo docker run --gpus all -it --rm -v ${your_data_path}:${bind_path} mmdet2trt_
 
 ## Usage
 
-how to create a tensorrt model from mmdet model (converting might take few minutes)(Might have some warning when converting.)  
+how to create a tensorrt model from mmdet model (converting might take few minutes)(Might have some warning when converting.)
 detail can be found in [getting_started.md](./docs/getting_started.md)
 
 ### CLI
@@ -110,7 +110,7 @@ with open(engine_path, mode='wb') as f:
 
 note that the bbox inference result did not divided by scale factor, divided by you self if needed.
 
-play demo in demo/inference.py  
+play demo in demo/inference.py
 
 [getting_started.md](./docs/getting_started.md) for more detail
 
@@ -173,6 +173,6 @@ read [this page](./docs/FAQ.md) if you meet any problem.
 
 ## Contact
 
-This repo is maintained by [@grimoire](https://github.com/grimoire)  
+This repo is maintained by [@grimoire](https://github.com/grimoire)
 
-Discuss group: QQ:1107959378  
+Discuss group: QQ:1107959378

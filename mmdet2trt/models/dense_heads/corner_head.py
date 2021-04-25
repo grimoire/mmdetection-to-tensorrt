@@ -1,13 +1,12 @@
 import torch
-from torch import nn
 import torch.nn.functional as F
-from mmdet2trt.models.builder import register_wraper, build_wraper
-import mmdet2trt.ops.util_ops as mm2trt_util
+from torch import nn
 
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from mmdet2trt.models.builder import register_wraper
 
 
-@register_wraper("mmdet.models.CornerHead")
+@register_wraper('mmdet.models.CornerHead')
 class CornerHeadWraper(nn.Module):
     def __init__(self, module):
         super(CornerHeadWraper, self).__init__()
@@ -20,7 +19,6 @@ class CornerHeadWraper(nn.Module):
                                    backgroundLabelId=-1)
 
     def forward(self, feat, x):
-        batch_size = x.size(0)
         module = self.module
         img_meta = {
             'pad_shape': (x.shape[2], x.shape[3], 3),
@@ -249,7 +247,8 @@ class CornerHeadWraper(nn.Module):
 
         score_neg_mask = cls_inds | width_inds | height_inds | dist_inds
         if with_centripetal_shift:
-            score_neg_mask = score_neg_mask | tl_ctx_inds | tl_cty_inds | br_ctx_inds | br_cty_inds
+            score_neg_mask = score_neg_mask | tl_ctx_inds | tl_cty_inds \
+                | br_ctx_inds | br_cty_inds
 
         score_neg_mask = score_neg_mask.int().type_as(scores)
         scores = (1 - score_neg_mask) * scores + score_neg_mask * (-1)
