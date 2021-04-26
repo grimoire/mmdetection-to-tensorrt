@@ -86,8 +86,8 @@ class YOLOV3HeadWraper(nn.Module):
         multi_lvl_cls_scores = torch.cat(multi_lvl_cls_scores, dim=1)
         multi_lvl_conf_scores = torch.cat(multi_lvl_conf_scores, dim=1)
 
-        multi_lvl_cls_scores = multi_lvl_cls_scores * multi_lvl_conf_scores.unsqueeze(
-            2)
+        multi_lvl_cls_scores = multi_lvl_cls_scores \
+            * multi_lvl_conf_scores.unsqueeze(2)
         multi_lvl_bboxes = multi_lvl_bboxes.unsqueeze(2)
         num_bboxes = multi_lvl_bboxes.shape[1]
         num_detected, proposals, scores, cls_id = self.rcnn_nms(

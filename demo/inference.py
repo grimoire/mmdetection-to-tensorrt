@@ -63,7 +63,7 @@ def main():
         scales = min(720 / image.shape[0], 1280 / image.shape[1])
         image = cv2.resize(image, (0, 0), fx=scales, fy=scales)
     cv2.imshow('image', image)
-    c = cv2.waitKey()
+    cv2.waitKey()
 
 
 if __name__ == '__main__':

@@ -1,11 +1,4 @@
-import torch
-import torch.nn.functional as F
-from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
-from torch import nn
-
-import mmdet2trt.ops.util_ops as mm2trt_util
-from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
-from mmdet2trt.models.builder import build_wraper, register_wraper
+from mmdet2trt.models.builder import register_wraper
 
 from .standard_roi_head import StandardRoIHeadWraper
 

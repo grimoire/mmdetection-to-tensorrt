@@ -1,5 +1,4 @@
 import argparse
-import os
 
 import mmcv
 import torch
@@ -28,7 +27,7 @@ class ModelWarper(nn.Module):
             result = list(result)
             result[1] = result[1] / scale_factor
 
-        return convert_to_mmdet_result(result, self.num_classes)  #[0]
+        return convert_to_mmdet_result(result, self.num_classes)
 
 
 def parse_args():
@@ -63,7 +62,6 @@ def main():
         print('\nwriting results to {}'.format(args.out))
     mmcv.dump(outputs, args.out)
     # outputs = mmcv.load(args.out)
-    import numpy as np
     print('eval bbox:')
     eval_result = dataset.evaluate(outputs, metric='bbox', classwise=False)
     print(eval_result)

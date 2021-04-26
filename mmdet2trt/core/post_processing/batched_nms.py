@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 from torch import nn
 from torchvision.ops import nms as tv_nms
@@ -51,7 +50,8 @@ class BatchedNMS(nn.Module):
                 # score[score < self.scoreThreshold] = 0.
 
                 nms_idx = tv_nms(bbox, score, self.iouThreshold)
-                # nms_idx = ops_nms(torch.cat([bbox,score.unsqueeze(1)], dim=1), self.iouThreshold)
+                # nms_idx = ops_nms(torch.cat([bbox,score.unsqueeze(1)], dim=1)
+                # , self.iouThreshold)
                 num_detection += nms_idx.shape[0]
                 bbox = bbox.index_select(0, nms_idx)
                 score = score.index_select(0, nms_idx)

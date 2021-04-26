@@ -1,9 +1,8 @@
 import numpy as np
 import torch
-from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
 from torch import nn
 
-from mmdet2trt.models.builder import build_wraper, register_wraper
+from mmdet2trt.models.builder import register_wraper
 
 
 def delta2bbox_custom_func(cls_scores,

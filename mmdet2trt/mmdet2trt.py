@@ -81,12 +81,16 @@ def mmdet2trt(config,
         int8_mode (bool): create int8 mode engine.
         int8_calib_dataset (object): dataset object used to do data calibrate
         int8_calib_alg (str): how to calibrate int8, ["minmax", "entropy"]
-        max_workspace_size (int): tensorrt workspace size. some tactic might need large workspace.
-        opt_shape_param (list[list[list[int]]]): the min/optimize/max shape of input tensor
-        trt_log_level (str): tensorrt log level, ["VERBOSE", "INFO", "WARNING", "ERROR"]
+        max_workspace_size (int): tensorrt workspace size.
+            some tactic might need large workspace.
+        opt_shape_param (list[list[list[int]]]): the min/optimize/max shape of
+            input tensor
+        trt_log_level (str): tensorrt log level,
+            options: ["VERBOSE", "INFO", "WARNING", "ERROR"]
         return_wrap_model (bool): return pytorch wrap model, used for debug
         output_names (str): the output names of tensorrt engine
-        enable_mask (bool): weither output the instance segmentation result(w/o postprocess)
+        enable_mask (bool): weither output the instance segmentation result
+            (w/o postprocess)
     """
 
     device = torch.device(device)
@@ -122,7 +126,7 @@ def mmdet2trt(config,
 
     logger.info('Model warmup')
     with torch.no_grad():
-        result = wrap_model(dummy_input)
+        wrap_model(dummy_input)
 
     logger.info('Converting model')
     start = time.time()
@@ -131,7 +135,8 @@ def mmdet2trt(config,
         if int8_calib_alg == 'minmax':
             int8_calib_algorithm = trt.CalibrationAlgoType.MINMAX_CALIBRATION
         elif int8_calib_alg == 'entropy':
-            int8_calib_algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
+            int8_calib_algorithm = \
+                trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
         trt_model = torch2trt_dynamic(
             wrap_model, [dummy_input],
             log_level=getattr(trt.Logger, trt_log_level),
@@ -166,7 +171,8 @@ def mask_processor2trt(max_width,
                        return_wrap_model=False,
                        output_names=None):
 
-    from mmdet2trt.models.roi_heads.mask_heads.fcn_mask_head import MaskProcessor
+    from mmdet2trt.models.roi_heads.mask_heads.fcn_mask_head \
+        import MaskProcessor
 
     logger.info('Wrapping MaskProcessor')
     wrap_model = MaskProcessor(max_width=max_width, max_height=max_height)
@@ -247,8 +253,8 @@ def main():
         '--save-engine',
         type=str2bool,
         default=False,
-        help=
-        "Enable saving TensorRT engine. (will be saved at Path(output).with_suffix('.engine')).",
+        help='Enable saving TensorRT engine. '
+        '(will be saved at Path(output).with_suffix(\'.engine\')).',
     )
     parser.add_argument('--device',
                         type=str,
@@ -266,8 +272,8 @@ def main():
         type=int,
         nargs=4,
         default=None,
-        help=
-        'Minimum input scale in [batch_size, channels, height, width] order.'
+        help='Minimum input scale in '
+        '[batch_size, channels, height, width] order.'
         ' Only used if all min-scale, opt-scale and max-scale are set.',
     )
     parser.add_argument(
@@ -275,8 +281,8 @@ def main():
         type=int,
         nargs=4,
         default=None,
-        help=
-        'Optimal input scale in [batch_size, channels, height, width] order.'
+        help='Optimal input scale in '
+        '[batch_size, channels, height, width] order.'
         ' Only used if all min-scale, opt-scale and max-scale are set.',
     )
     parser.add_argument(
@@ -284,8 +290,8 @@ def main():
         type=int,
         nargs=4,
         default=None,
-        help=
-        'Maximum input scale in [batch_size, channels, height, width] order.'
+        help='Maximum input scale in '
+        '[batch_size, channels, height, width] order.'
         ' Only used if all min-scale, opt-scale and max-scale are set.',
     )
     parser.add_argument(

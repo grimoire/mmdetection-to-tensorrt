@@ -1,11 +1,9 @@
 import torch
 import torch.nn.functional as F
 from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
-from torch import nn
 
 import mmdet2trt.ops.util_ops as mm2trt_util
 from mmdet2trt.core.post_processing import merge_aug_masks
-from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 from mmdet2trt.models.builder import build_wraper, register_wraper
 
 from .cascade_roi_head import CascadeRoIHeadWraper
@@ -93,7 +91,7 @@ class HybridTaskCascadeRoIHeadWraper(CascadeRoIHeadWraper):
 
         rois = torch.cat([rois_pad, rois], dim=1)
 
-        ### bbox_head.get_boxes
+        # bbox_head.get_boxes
         cls_score = bbox_results['cls_score']
         bbox_pred = bbox_results['bbox_pred']
         num_detections, det_boxes, det_scores, det_classes = self.bbox_head[
@@ -114,7 +112,8 @@ class HybridTaskCascadeRoIHeadWraper(CascadeRoIHeadWraper):
 
             mask_feats = mask_roi_extractor(
                 feat[:mask_roi_extractor.num_inputs], mask_rois)
-            if self.module.with_semantic and 'mask' in self.module.semantic_fusion:
+            if self.module.with_semantic and ('mask'
+                                              in self.module.semantic_fusion):
                 mask_semantic_feat = self.semantic_roi_extractor(
                     [semantic_feat], mask_rois)
                 mask_feats += mask_semantic_feat

@@ -1,11 +1,7 @@
 import torch
-import torch.nn.functional as F
-from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
-from torch import nn
 
 import mmdet2trt.ops.util_ops as mm2trt_util
 from mmdet2trt.core.bbox.transforms import bbox2roi
-from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 from mmdet2trt.models.builder import build_wraper, register_wraper
 
 from .standard_roi_head import StandardRoIHeadWraper
@@ -34,10 +30,13 @@ class GridRoIHeadWraper(StandardRoIHeadWraper):
         cls_score = bbox_results['cls_score']
         bbox_pred = bbox_results['bbox_pred']
 
-        num_detections, det_boxes, det_scores, det_classes = self.bbox_head.get_bboxes(
-            rois, cls_score, bbox_pred, img_shape, batch_size, num_proposals,
-            self.test_cfg)
+        bbox_head_outputs = self.bbox_head.get_bboxes(rois, cls_score,
+                                                      bbox_pred, img_shape,
+                                                      batch_size,
+                                                      num_proposals,
+                                                      self.test_cfg)
 
+        num_detections, det_boxes, det_scores, det_classes = bbox_head_outputs
         grid_rois = bbox2roi(det_boxes)
         grid_feats = self.grid_roi_extractor(
             feat[:len(self.grid_roi_extractor.featmap_strides)], grid_rois)

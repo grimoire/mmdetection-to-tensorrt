@@ -1,8 +1,8 @@
 import logging
 
-import mmcv.ops
-import mmdet
-from mmdet import models
+import mmcv.ops  # noqa: F401,F403
+import mmdet  # noqa: F401,F403
+from mmdet import models  # noqa: F401,F403
 
 WRAPER_DICT = {}
 
@@ -14,14 +14,15 @@ def register_wraper(module_name):
         def register_func(wrap_cls):
             if mmdet_module in WRAPER_DICT:
                 logging.warning(
-                    '{} is already registed. new wraper {} will cover current wraper {}.'
-                    .format(mmdet_module, wrap_cls, WRAPER_DICT[mmdet_module]))
+                    '{} is already registed.'.format(mmdet_module) +
+                    ' new wraper {} will cover current wraper {}.'.format(
+                        wrap_cls, WRAPER_DICT[mmdet_module]))
             WRAPER_DICT[mmdet_module] = wrap_cls
             return wrap_cls
 
         return register_func
 
-    except:
+    except Exception:
         logging.warn('module {} not exist.'.format(module_name))
 
         def register_func(wrap_cls):

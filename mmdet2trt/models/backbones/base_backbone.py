@@ -1,7 +1,6 @@
-import torch
 import torch.nn as nn
 
-from mmdet2trt.models.builder import build_wraper, register_wraper
+from mmdet2trt.models.builder import register_wraper
 
 
 @register_wraper('mmdet.models.backbones.ResNet')

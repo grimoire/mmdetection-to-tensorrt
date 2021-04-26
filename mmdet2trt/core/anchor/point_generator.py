@@ -1,9 +1,8 @@
 import torch
 from torch import nn
 
-# import mmdet2trt.ops.util_ops as mm2trt_util
 import mmdet2trt
-from mmdet2trt.models.builder import build_wraper, register_wraper
+from mmdet2trt.models.builder import register_wraper
 
 
 @register_wraper('mmdet.core.anchor.point_generator.PointGenerator')

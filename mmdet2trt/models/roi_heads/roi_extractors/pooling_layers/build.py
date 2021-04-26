@@ -1,7 +1,7 @@
 import logging
 
 from .deform_roi_pool_extractor import DeformRoiPoolExtractor
-from .roi_align_extractor import *
+from .roi_align_extractor import RoiAlignExtractor
 
 POOLING_DICT = {
     'RoIAlign': RoiAlignExtractor,

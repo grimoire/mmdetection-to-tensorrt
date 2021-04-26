@@ -3,8 +3,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from mmdet2trt.models.builder import build_wraper, register_wraper
-from mmdet2trt.ops import util_ops
+from mmdet2trt.models.builder import register_wraper
 
 from .transforms import bbox_rescale_batched
 

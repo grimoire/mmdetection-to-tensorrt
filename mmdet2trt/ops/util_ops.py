@@ -1,6 +1,5 @@
 import torch
 import torch.nn.functional as F
-from torch import nn
 
 
 def adaptive_max_pool2d_by_input(x, shape_wraper):

@@ -110,7 +110,8 @@ class CleanCommand(Command):
                 os.path.normpath(os.path.join(root_dir, path_spec)))
             for path in [str(p) for p in abs_paths]:
                 if not path.startswith(root_dir):
-                    # Die if path in CLEAN_FILES is absolute + outside this directory
+                    # Die if path in CLEAN_FILES is
+                    # absolute + outside this directory
                     raise ValueError('%s is not a path inside %s' %
                                      (path, root_dir))
                 print('Removing %s' % os.path.relpath(path))

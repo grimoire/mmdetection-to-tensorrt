@@ -1,8 +1,7 @@
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from mmdet2trt.models.builder import build_wraper, register_wraper
+from mmdet2trt.models.builder import register_wraper
 
 
 def pooling_wrap(pooling):

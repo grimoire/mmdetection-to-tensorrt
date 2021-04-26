@@ -1,8 +1,7 @@
 import torch
 from torch import nn
 
-from mmdet2trt.models.builder import build_wraper, register_wraper
-from mmdet2trt.ops import util_ops
+from mmdet2trt.models.builder import register_wraper
 
 
 def yolodecoder_batched(bboxes, pred_bboxes, stride):

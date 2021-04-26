@@ -2,8 +2,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
-from mmdet2trt.models.builder import build_wraper, register_wraper
+from mmdet2trt.models.builder import register_wraper
 
 
 @register_wraper('mmdet.models.roi_heads.mask_heads.fcn_mask_head.FCNMaskHead')

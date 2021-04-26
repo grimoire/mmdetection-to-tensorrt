@@ -1,8 +1,7 @@
 import torch
 import torch.nn.functional as F
-from torch import nn
 
-from mmdet2trt.models.builder import build_wraper, register_wraper
+from mmdet2trt.models.builder import register_wraper
 
 from .bbox_head import BBoxHeadWraper
 
@@ -13,8 +12,6 @@ class SABLHeadWraper(BBoxHeadWraper):
         super(SABLHeadWraper, self).__init__(module, test_cfg)
 
     def regress_by_class(self, rois, label, bbox_pred, img_shape):
-        module = self.module
-
         if rois.size(1) == 4:
             new_rois, _ = self.bbox_coder.decode(
                 rois.unsqueeze(0), [bb.unsqueeze(0) for bb in bbox_pred],
