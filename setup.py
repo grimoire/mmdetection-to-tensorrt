@@ -139,8 +139,11 @@ class CleanCommand(Command):
 
 setup(
     name='mmdet2trt',
-    version='0.3.0',
+    version='0.4.0',
+    author='q.yao',
+    author_email='streetyao@live.com',
     description='mmdetection to tensorrt converter',
+    url='https://github.com/grimoire/mmdetection-to-tensorrt',
     cmdclass={
         'install': InstallCommand,
         'clean': CleanCommand,
