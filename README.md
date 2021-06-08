@@ -20,13 +20,24 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Requirement
 
-- mmdet>=2.3.0
-- https://github.com/grimoire/torch2trt_dynamic
-- https://github.com/grimoire/amirstan_plugin
+- install mmdetection:
+    ```bash
+    # mim is so cool!
+    pip install openmim
+    mim install mmdet==2.10.0
+    ```
+
+- install [torch2trt_dynamic](https://github.com/grimoire/torch2trt_dynamic):
+    ```bash
+    git clone https://github.com/grimoire/torch2trt_dynamic.git torch2trt_dynamic
+    cd torch2trt_dynamic
+    python setup.py develop
+    ```
+- install [amirstan_plugin](https://github.com/grimoire/amirstan_plugin):
 
 ### Important!
 
-Set the envoirment variable(in ~/.bashrc):
+**DON'T FORGET** setting the envoirment variable(in ~/.bashrc):
 
 ```shell
 export AMIRSTAN_LIBRARY_PATH=${amirstan_plugin_root}/build/lib
