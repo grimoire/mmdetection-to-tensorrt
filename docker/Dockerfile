@@ -21,6 +21,7 @@ RUN mkdir ~/space &&\
 RUN pip3 install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION}
 
 ### install mmcv
+RUN pip3 install pytest-runner
 RUN pip3 install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu${CUDA//./}/torch${TORCH_VERSION}/index.html
 
 ### git mmdetection

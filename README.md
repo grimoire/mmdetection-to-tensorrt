@@ -1,10 +1,11 @@
-# MMDet to tensorrt
+# MMDet to TensorRT
 
-This project aims to convert the mmdetection model to tensorrt model end2end.
+This project aims to convert the mmdetection model to TensorRT model end2end.
 Focus on object detection for now.
 Mask support is **experiment**.
 
 support:
+
 - fp16
 - int8(experiment)
 - batched input
@@ -21,10 +22,10 @@ This project is released under the [Apache 2.0 license](LICENSE).
 ## Requirement
 
 - mmdet>=2.3.0
-- https://github.com/grimoire/torch2trt_dynamic
-- https://github.com/grimoire/amirstan_plugin
+- [torch2trt_dynamic](https://github.com/grimoire/torch2trt_dynamic)
+- [amirstan_plugin](https://github.com/grimoire/amirstan_plugin)
 
-### Important!
+### Important
 
 Set the envoirment variable(in ~/.bashrc):
 
@@ -35,6 +36,7 @@ export AMIRSTAN_LIBRARY_PATH=${amirstan_plugin_root}/build/lib
 ## Installation
 
 ### Host
+
 ```shell
 git clone https://github.com/grimoire/mmdetection-to-tensorrt.git
 cd mmdetection-to-tensorrt
@@ -43,17 +45,18 @@ python setup.py develop
 
 ### Docker
 
-Build docker image(Note that TensorRT7.0 might have memory leak, better to upgrade to 7.1+)
+Build docker image
+
 ```shell
-# cuda11.1 tensorrt7.0 pytorch1.6
+# cuda11.1 TensorRT7.1 pytorch1.6
 sudo docker build -t mmdet2trt_docker:v1.0 docker/
 ```
 
 You can also specify CUDA, Pytorch and Torchvision versions with docker build args by:
 
 ```shell
-# cuda10.2 tensorrt7.0 pytorch1.6
-sudo docker build -t mmdet2trt_docker:v1.0 --build-arg CUDA=10.2 --build-arg TORCH_VERSION=1.6.0 --build-arg TORCHVISION_VERSION=0.7.0 --docker/
+# cuda11.1 TensorRT7.1 pytorch1.6
+sudo docker build -t mmdet2trt_docker:v1.0 --build-arg TORCH_VERSION=1.6.0 --build-arg TORCHVISION_VERSION=0.7.0 docker/
 ```
 
 Run (will show the help for the CLI entrypoint)
@@ -63,19 +66,20 @@ sudo docker run --gpus all -it --rm -v ${your_data_path}:${bind_path} mmdet2trt_
 ```
 
 Or if you want to open a terminal inside de container:
+
 ```shell
 sudo docker run --gpus all -it --rm -v ${your_data_path}:${bind_path} --entrypoint bash mmdet2trt_docker:v1.0
 ```
 
 Example conversion:
+
 ```shell
 sudo docker run --gpus all -it --rm -v ${your_data_path}:${bind_path} mmdet2trt_docker:v1.0 ${bind_path}/config.py ${bind_path}/checkpoint.pth ${bind_path}/output.trt
 ```
 
-
 ## Usage
 
-how to create a tensorrt model from mmdet model (converting might take few minutes)(Might have some warning when converting.)
+how to create a TensorRT model from mmdet model (converting might take few minutes)(Might have some warning when converting.)
 detail can be found in [getting_started.md](./docs/getting_started.md)
 
 ### CLI
@@ -108,22 +112,23 @@ trt_model = init_detector(save_path)
 num_detections, trt_bbox, trt_score, trt_cls = inference_detector(trt_model, image_path, cfg_path, "cuda:0")
 ```
 
-how to save the tensorrt engine
+how to save the TensorRT engine
 
 ```python
 with open(engine_path, mode='wb') as f:
     f.write(model_trt.state_dict()['engine'])
 ```
 
-note that the bbox inference result did not divided by scale factor, divided by you self if needed.
+Note that the bbox inference result did not divided by scale factor, divided by youself if needed.
 
 play demo in demo/inference.py
 
 [getting_started.md](./docs/getting_started.md) for more detail
 
 ## How does it works?
+
 Most other project use pytorch=>ONNX=>tensorRT route, This repo convert pytorch=>tensorRT directly, avoid unnecessary ONNX IR.
-read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
+Read [how-does-it-work](https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work) for detail.
 
 ## Support Model/Module
 
@@ -164,15 +169,15 @@ read https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work for detail.
 - [x] Cascade RPN
 - [x] DETR
 
-
 Tested on:
+
 - torch=1.6.0
 - tensorrt=7.1.3.4
 - mmdetection=2.10.0
 - cuda=10.2
 - cudnn=8.0.2.39
 
-If you find any error, please report in the issue.
+If you find any error, please report it in the issue.
 
 ## FAQ
 
