@@ -79,8 +79,8 @@ sudo docker build -t mmdet2trt_docker:v1.0 docker/
 You can also specify CUDA, Pytorch and Torchvision versions with docker build args by:
 
 ```bash
-# cuda10.2 tensorrt7.0 pytorch1.6
-sudo docker build -t mmdet2trt_docker:v1.0 --build-arg CUDA=10.2 --build-arg TORCH_VERSION=1.6.0 --build-arg TORCHVISION_VERSION=0.7.0 --docker/
+# cuda11.1 tensorrt7.1 pytorch1.6
+sudo docker build -t mmdet2trt_docker:v1.0 --build-arg TORCH_VERSION=1.6.0 --build-arg TORCHVISION_VERSION=0.7.0 --docker/
 ```
 
 Run (will show the help for the CLI entrypoint)
