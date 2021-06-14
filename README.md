@@ -21,23 +21,47 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Requirement
 
-- mmdet>=2.3.0
-- [torch2trt_dynamic](https://github.com/grimoire/torch2trt_dynamic)
-- [amirstan_plugin](https://github.com/grimoire/amirstan_plugin)
+- install mmdetection:
 
-### Important
+    ```bash
+    # mim is so cool!
+    pip install openmim
+    mim install mmdet==2.10.0
+    ```
 
-Set the envoirment variable(in ~/.bashrc):
+- install [torch2trt_dynamic](https://github.com/grimoire/torch2trt_dynamic):
 
-```shell
-export AMIRSTAN_LIBRARY_PATH=${amirstan_plugin_root}/build/lib
-```
+    ```bash
+    git clone https://github.com/grimoire/torch2trt_dynamic.git torch2trt_dynamic
+    cd torch2trt_dynamic
+    python setup.py develop
+    ```
+
+- install [amirstan_plugin](https://github.com/grimoire/amirstan_plugin):
+  - Install tensorrt7: [TensorRT](https://developer.nvidia.com/tensorrt)
+  - clone repo and build plugin
+
+    ```bash
+    git clone --depth=1 https://github.com/grimoire/amirstan_plugin.git
+    cd amirstan_plugin
+    git submodule update --init --progress --depth=1
+    mkdir build
+    cd build
+    cmake -DTENSORRT_DIR=${TENSORRT_DIR} ..
+    make -j10
+    ```
+
+  - **DON'T FORGET** setting the envoirment variable(in ~/.bashrc):
+
+    ```bash
+    export AMIRSTAN_LIBRARY_PATH=${amirstan_plugin_root}/build/lib
+    ```
 
 ## Installation
 
 ### Host
 
-```shell
+```bash
 git clone https://github.com/grimoire/mmdetection-to-tensorrt.git
 cd mmdetection-to-tensorrt
 python setup.py develop
@@ -47,33 +71,33 @@ python setup.py develop
 
 Build docker image
 
-```shell
+```bash
 # cuda11.1 TensorRT7.1 pytorch1.6
 sudo docker build -t mmdet2trt_docker:v1.0 docker/
 ```
 
 You can also specify CUDA, Pytorch and Torchvision versions with docker build args by:
 
-```shell
-# cuda11.1 TensorRT7.1 pytorch1.6
-sudo docker build -t mmdet2trt_docker:v1.0 --build-arg TORCH_VERSION=1.6.0 --build-arg TORCHVISION_VERSION=0.7.0 docker/
+```bash
+# cuda10.2 tensorrt7.0 pytorch1.6
+sudo docker build -t mmdet2trt_docker:v1.0 --build-arg CUDA=10.2 --build-arg TORCH_VERSION=1.6.0 --build-arg TORCHVISION_VERSION=0.7.0 --docker/
 ```
 
 Run (will show the help for the CLI entrypoint)
 
-```shell
+```bash
 sudo docker run --gpus all -it --rm -v ${your_data_path}:${bind_path} mmdet2trt_docker:v1.0
 ```
 
 Or if you want to open a terminal inside de container:
 
-```shell
+```bash
 sudo docker run --gpus all -it --rm -v ${your_data_path}:${bind_path} --entrypoint bash mmdet2trt_docker:v1.0
 ```
 
 Example conversion:
 
-```shell
+```bash
 sudo docker run --gpus all -it --rm -v ${your_data_path}:${bind_path} mmdet2trt_docker:v1.0 ${bind_path}/config.py ${bind_path}/checkpoint.pth ${bind_path}/output.trt
 ```
 
