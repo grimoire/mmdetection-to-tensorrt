@@ -29,8 +29,8 @@ def convert_DeformPool(ctx):
                                            sampling_ratio, gamma)
 
     if offset_trt is None:
-        custom_layer = ctx.network.add_plugin_v2(inputs=[input_trt, rois_trt],
-                                                 plugin=plugin)
+        custom_layer = ctx.network.add_plugin_v2(
+            inputs=[input_trt, rois_trt], plugin=plugin)
     else:
         custom_layer = ctx.network.add_plugin_v2(
             inputs=[input_trt, rois_trt, offset_trt], plugin=plugin)

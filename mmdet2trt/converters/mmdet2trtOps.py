@@ -15,13 +15,13 @@ def convert_adaptive_max_pool2d_by_input(ctx):
     input_trt = trt_(ctx.network, input)
     wrapshape_trt = trt_(ctx.network, shape_wraper)
 
-    plugin = create_adaptivepool_plugin('adaptive_max_pool2d_by_input_' +
-                                        str(id(input)),
-                                        output_size=output_size,
-                                        pooling_type=trt.PoolingType.MAX)
+    plugin = create_adaptivepool_plugin(
+        'adaptive_max_pool2d_by_input_' + str(id(input)),
+        output_size=output_size,
+        pooling_type=trt.PoolingType.MAX)
 
-    layer = ctx.network.add_plugin_v2(inputs=[input_trt, wrapshape_trt],
-                                      plugin=plugin)
+    layer = ctx.network.add_plugin_v2(
+        inputs=[input_trt, wrapshape_trt], plugin=plugin)
 
     output._trt = layer.get_output(0)
 
@@ -39,11 +39,12 @@ def convert_arange_gridmesh(ctx):
     slice_length = len(starts)
     slice_dims = list(range(len(input_shape) - slice_length, len(input_shape)))
 
-    plugin = create_meshgrid_plugin('arange_gridmesh_' + str(id(input)),
-                                    num_inputs,
-                                    slice_dims=slice_dims,
-                                    starts=starts,
-                                    strides=strides)
+    plugin = create_meshgrid_plugin(
+        'arange_gridmesh_' + str(id(input)),
+        num_inputs,
+        slice_dims=slice_dims,
+        starts=starts,
+        strides=strides)
 
     layer = ctx.network.add_plugin_v2(inputs=[input_trt], plugin=plugin)
 
@@ -65,11 +66,12 @@ def convert_arange_by_input(ctx):
     starts = [start]
     strides = [stride]
 
-    plugin = create_meshgrid_plugin('arange_by_input_' + str(id(input)),
-                                    num_inputs,
-                                    slice_dims=slice_dims,
-                                    starts=starts,
-                                    strides=strides)
+    plugin = create_meshgrid_plugin(
+        'arange_by_input_' + str(id(input)),
+        num_inputs,
+        slice_dims=slice_dims,
+        starts=starts,
+        strides=strides)
 
     layer = ctx.network.add_plugin_v2(inputs=[input_trt], plugin=plugin)
 

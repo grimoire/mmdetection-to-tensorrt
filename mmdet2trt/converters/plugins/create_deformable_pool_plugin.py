@@ -21,8 +21,8 @@ def create_deformable_pool_plugin(layer_name, out_size, spatial_scale,
 
     pfc = trt.PluginFieldCollection()
 
-    pf_out_size = trt.PluginField('out_size', np.array(out_size,
-                                                       dtype=np.int32),
+    pf_out_size = trt.PluginField('out_size',
+                                  np.array(out_size, dtype=np.int32),
                                   trt.PluginFieldType.INT32)
     pfc.append(pf_out_size)
 

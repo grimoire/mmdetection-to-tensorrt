@@ -1,13 +1,13 @@
-import torch
-from torch import nn
-
 import mmdet2trt.ops.util_ops as mm2trt_util
+import torch
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 from mmdet2trt.models.builder import build_wraper, register_wraper
+from torch import nn
 
 
 @register_wraper('mmdet.models.dense_heads.YOLOV3Head')
 class YOLOV3HeadWraper(nn.Module):
+
     def __init__(self, module):
         super(YOLOV3HeadWraper, self).__init__()
         self.module = module
@@ -24,9 +24,8 @@ class YOLOV3HeadWraper(nn.Module):
 
         self.test_cfg = module.test_cfg
         self.num_classes = self.module.num_classes
-        self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr,
-                                   iou_thr,
-                                   backgroundLabelId=-1)
+        self.rcnn_nms = BatchedNMS(
+            module.test_cfg.score_thr, iou_thr, backgroundLabelId=-1)
 
     def forward(self, feats, x):
 

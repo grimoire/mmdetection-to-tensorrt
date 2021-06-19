@@ -1,6 +1,5 @@
-import torch
-
 import mmdet2trt.ops.util_ops as mm2trt_util
+import torch
 from mmdet2trt.core.bbox.transforms import bbox2roi
 from mmdet2trt.models.builder import build_wraper, register_wraper
 
@@ -9,12 +8,13 @@ from .standard_roi_head import StandardRoIHeadWraper
 
 @register_wraper('mmdet.models.roi_heads.grid_roi_head.GridRoIHead')
 class GridRoIHeadWraper(StandardRoIHeadWraper):
+
     def __init__(self, module, wrap_config):
         super(GridRoIHeadWraper, self).__init__(module, wrap_config)
 
         self.grid_roi_extractor = build_wraper(module.grid_roi_extractor)
-        self.grid_head = build_wraper(module.grid_head,
-                                      test_cfg=module.test_cfg)
+        self.grid_head = build_wraper(
+            module.grid_head, test_cfg=module.test_cfg)
 
     def forward(self, feat, proposals, img_shape):
         batch_size = proposals.shape[0]

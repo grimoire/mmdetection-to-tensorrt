@@ -1,14 +1,15 @@
-import mmcv.ops
 import torch
+from mmdet2trt.models.builder import build_wraper, register_wraper
 from torch import nn
 
-from mmdet2trt.models.builder import build_wraper, register_wraper
+import mmcv.ops
 
 deformable_roi_pool_wrap = mmcv.ops.deform_roi_pool
 
 
 @register_wraper('mmcv.ops.DeformRoIPoolPack')
 class DeformRoIPoolPackWraper(nn.Module):
+
     def __init__(self, module):
         super(DeformRoIPoolPackWraper, self).__init__()
         self.module = module
@@ -33,6 +34,7 @@ class DeformRoIPoolPackWraper(nn.Module):
 
 @register_wraper('mmcv.ops.ModulatedDeformRoIPoolPack')
 class ModulatedDeformRoIPoolPackWraper(nn.Module):
+
     def __init__(self, module):
         super(ModulatedDeformRoIPoolPackWraper, self).__init__()
         self.module = module
@@ -59,6 +61,7 @@ class ModulatedDeformRoIPoolPackWraper(nn.Module):
 
 
 class DeformRoiPoolExtractor(nn.Module):
+
     def __init__(self, module):
         super(DeformRoiPoolExtractor, self).__init__()
         self.module = module

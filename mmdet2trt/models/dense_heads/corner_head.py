@@ -1,22 +1,23 @@
 import torch
 import torch.nn.functional as F
-from torch import nn
-
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 from mmdet2trt.models.builder import register_wraper
+from torch import nn
 
 
 @register_wraper('mmdet.models.CornerHead')
 class CornerHeadWraper(nn.Module):
+
     def __init__(self, module):
         super(CornerHeadWraper, self).__init__()
         self.module = module
         self.num_classes = module.num_classes
         self.test_cfg = module.test_cfg
 
-        self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr,
-                                   module.test_cfg.nms_cfg.iou_threshold,
-                                   backgroundLabelId=-1)
+        self.rcnn_nms = BatchedNMS(
+            module.test_cfg.score_thr,
+            module.test_cfg.nms_cfg.iou_threshold,
+            backgroundLabelId=-1)
 
     def forward(self, feat, x):
         module = self.module
@@ -98,8 +99,9 @@ class CornerHeadWraper(nn.Module):
                        distance_threshold=0.5,
                        num_dets=1000):
         with_embedding = tl_emb is not None and br_emb is not None
-        with_centripetal_shift = (tl_centripetal_shift is not None
-                                  and br_centripetal_shift is not None)
+        with_centripetal_shift = (
+            tl_centripetal_shift is not None
+            and br_centripetal_shift is not None)
         assert with_embedding + with_centripetal_shift == 1
         batch, _, height, width = tl_heat.size()
         inp_h, inp_w, _ = img_meta['pad_shape']

@@ -1,11 +1,10 @@
 import math
 
+import mmdet2trt
 import numpy as np
 import torch
 import torch.nn.functional as F
 from torch2trt_dynamic.torch2trt_dynamic import tensorrt_converter
-
-import mmdet2trt
 
 
 def get_position_embedding(self,
@@ -48,8 +47,8 @@ def get_position_embedding(self,
     return embedding_x, embedding_y
 
 
-@tensorrt_converter('mmcv.cnn.bricks.GeneralizedAttention.forward',
-                    is_real=False)
+@tensorrt_converter(
+    'mmcv.cnn.bricks.GeneralizedAttention.forward', is_real=False)
 def convert_GeneralizeAttention(ctx):
     self = ctx.method_args[0]
     x_input = ctx.method_args[1]
@@ -217,10 +216,8 @@ def convert_GeneralizeAttention(ctx):
 
     # output is downsampled, upsample back to input size
     if self.q_downsample is not None:
-        out = F.interpolate(out,
-                            size=x_input.shape[2:],
-                            mode='bilinear',
-                            align_corners=False)
+        out = F.interpolate(
+            out, size=x_input.shape[2:], mode='bilinear', align_corners=False)
 
     out = self.gamma * out + x_input
 

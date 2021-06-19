@@ -1,14 +1,14 @@
-import torch
-from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
-from torch import nn
-
 import mmdet2trt.ops.util_ops as mm2trt_util
+import torch
 from mmdet2trt.core.post_processing import merge_aug_masks
 from mmdet2trt.models.builder import build_wraper, register_wraper
+from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
+from torch import nn
 
 
 @register_wraper('mmdet.models.roi_heads.CascadeRoIHead')
 class CascadeRoIHeadWraper(nn.Module):
+
     def __init__(self, module, wrap_config):
         super(CascadeRoIHeadWraper, self).__init__()
         self.module = module
@@ -57,9 +57,8 @@ class CascadeRoIHeadWraper(nn.Module):
         roi_feats = bbox_roi_extractor(x[:bbox_roi_extractor.num_inputs], rois)
         cls_score, bbox_pred = bbox_head(roi_feats)
 
-        bbox_results = dict(cls_score=cls_score,
-                            bbox_pred=bbox_pred,
-                            bbox_feats=roi_feats)
+        bbox_results = dict(
+            cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=roi_feats)
         return bbox_results
 
     def _mask_forward(self, stage, x, rois):
@@ -143,9 +142,8 @@ class CascadeRoIHeadWraper(nn.Module):
                 det_index = det_index + 1
                 mask_pad = mask_pred[:, :, 0:1, ...] * 0
                 mask_pred = torch.cat([mask_pad, mask_pred], dim=2)
-                mask_pred = mm2trt_util.gather_topk(mask_pred,
-                                                    dim=2,
-                                                    index=det_index)
+                mask_pred = mm2trt_util.gather_topk(
+                    mask_pred, dim=2, index=det_index)
                 mask_pred = mask_pred.squeeze(2)
 
             result += [mask_pred]

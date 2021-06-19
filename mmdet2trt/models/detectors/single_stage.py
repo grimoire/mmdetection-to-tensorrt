@@ -1,8 +1,7 @@
-from torch import nn
-
 from mmdet2trt.models.backbones import BaseBackboneWraper
 from mmdet2trt.models.builder import build_wraper, register_wraper
 from mmdet2trt.models.necks import BaseNeckWraper
+from torch import nn
 
 
 @register_wraper('mmdet.models.GFL')
@@ -19,6 +18,7 @@ from mmdet2trt.models.necks import BaseNeckWraper
 @register_wraper('mmdet.models.VFNet')
 @register_wraper('mmdet.models.DETR')
 class SingleStageDetectorWraper(nn.Module):
+
     def __init__(self, model, wrap_config={}):
         super(SingleStageDetectorWraper, self).__init__()
         self.model = model

@@ -5,6 +5,7 @@ from .standard_roi_head import StandardRoIHeadWraper
 
 @register_wraper('mmdet.models.roi_heads.double_roi_head.DoubleHeadRoIHead')
 class DoubleHeadRoIHeadWraper(StandardRoIHeadWraper):
+
     def __init__(self, module, wrap_config):
         super(DoubleHeadRoIHeadWraper, self).__init__(module, wrap_config)
 
@@ -25,7 +26,8 @@ class DoubleHeadRoIHeadWraper(StandardRoIHeadWraper):
         # rcnn
         cls_score, bbox_pred = self.bbox_head(bbox_cls_feats, bbox_reg_feats)
 
-        bbox_results = dict(cls_score=cls_score,
-                            bbox_pred=bbox_pred,
-                            bbox_feats=bbox_cls_feats)
+        bbox_results = dict(
+            cls_score=cls_score,
+            bbox_pred=bbox_pred,
+            bbox_feats=bbox_cls_feats)
         return bbox_results

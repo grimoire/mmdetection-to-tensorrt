@@ -1,14 +1,14 @@
-import torch
-from torch import nn
-
 import mmdet2trt.ops.util_ops as mm2trt_util
+import torch
 from mmdet2trt.models.builder import build_wraper, register_wraper
+from torch import nn
 
 from .rpn_head import RPNHeadWraper
 
 
 @register_wraper('mmdet.models.dense_heads.StageCascadeRPNHead')
 class StageCascadeRPNHeadWraper(RPNHeadWraper):
+
     def __init__(self, module):
         super(StageCascadeRPNHeadWraper, self).__init__(module)
 
@@ -28,6 +28,7 @@ class StageCascadeRPNHeadWraper(RPNHeadWraper):
         return self.anchor_generator(featmaps, device=device)
 
     def anchor_offset(self, anchor_list, anchor_strides, featmap_sizes):
+
         def _shape_offset(anchors, stride, ks=3, dilation=1):
             # currently support kernel_size=3 and dilation=1
             assert ks == 3 and dilation == 1
@@ -91,9 +92,8 @@ class StageCascadeRPNHeadWraper(RPNHeadWraper):
             bbox_pred = bbox_preds[i]
             bbox_pred = bbox_pred.permute(0, 2, 3,
                                           1).reshape(batch_size, -1, 4)
-            bboxes = self.bbox_coder.decode(anchor_list[i].unsqueeze(0),
-                                            bbox_pred,
-                                            max_shape=img_shape)
+            bboxes = self.bbox_coder.decode(
+                anchor_list[i].unsqueeze(0), bbox_pred, max_shape=img_shape)
             mlvl_anchors.append(bboxes)
         return mlvl_anchors
 
@@ -138,6 +138,7 @@ class StageCascadeRPNHeadWraper(RPNHeadWraper):
 
 @register_wraper('mmdet.models.dense_heads.CascadeRPNHead')
 class CascadeRPNHeadWraper(nn.Module):
+
     def __init__(self, module):
         super(CascadeRPNHeadWraper, self).__init__()
         self.module = module

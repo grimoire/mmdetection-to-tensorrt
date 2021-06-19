@@ -1,6 +1,5 @@
-import torch
-
 import mmdet2trt.ops.util_ops as mm2trt_util
+import torch
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 from mmdet2trt.models.builder import register_wraper
 
@@ -9,6 +8,7 @@ from .guided_anchor_head import GuidedAnchorHeadWraper
 
 @register_wraper('mmdet.models.GARPNHead')
 class GARPNHeadWraper(GuidedAnchorHeadWraper):
+
     def __init__(self, module):
         super(GARPNHeadWraper, self).__init__(module)
 
@@ -26,10 +26,8 @@ class GARPNHeadWraper(GuidedAnchorHeadWraper):
 
         cls_scores, bbox_preds, shape_preds, loc_preds = module(feat)
 
-        _, guided_anchors, loc_masks = self.get_anchors(cls_scores,
-                                                        shape_preds,
-                                                        loc_preds,
-                                                        use_loc_filter=True)
+        _, guided_anchors, loc_masks = self.get_anchors(
+            cls_scores, shape_preds, loc_preds, use_loc_filter=True)
 
         mlvl_scores = []
         mlvl_proposals = []
@@ -69,9 +67,8 @@ class GARPNHeadWraper(GuidedAnchorHeadWraper):
                 bbox_pred = mm2trt_util.gather_topk(bbox_pred, 1, topk_inds)
                 scores = mm2trt_util.gather_topk(scores, 1, topk_inds)
 
-            proposals = self.bbox_coder.decode(anchors,
-                                               bbox_pred,
-                                               max_shape=img_shape)
+            proposals = self.bbox_coder.decode(
+                anchors, bbox_pred, max_shape=img_shape)
 
             scores = scores.unsqueeze(-1)
             proposals = proposals.unsqueeze(2)

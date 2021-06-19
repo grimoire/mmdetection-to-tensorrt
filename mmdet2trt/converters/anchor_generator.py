@@ -21,8 +21,8 @@ def convert_AnchorGeneratorDynamic(ctx):
         # base_anchors = base_anchors.view(-1).cpu().numpy()
         base_anchors_trt = trt_(ctx.network, base_anchors.float())
 
-        plugin = create_gridanchordynamic_plugin('ag_' + str(id(module)),
-                                                 stride=stride)
+        plugin = create_gridanchordynamic_plugin(
+            'ag_' + str(id(module)), stride=stride)
     else:
         print('no base_anchors in {}'.format(ag.generator))
         # scales = ag.scales.detach().cpu().numpy().astype(np.float32)

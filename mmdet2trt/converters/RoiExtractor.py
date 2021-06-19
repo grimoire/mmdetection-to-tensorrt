@@ -24,15 +24,16 @@ def convert_roiextractor(ctx):
     rois_trt = trt_(ctx.network, rois)
     output = ctx.method_return
 
-    plugin = create_roiextractor_plugin('roiextractor_' + str(id(module)),
-                                        out_size,
-                                        sample_num,
-                                        featmap_strides,
-                                        roi_scale_factor,
-                                        finest_scale,
-                                        aligned=1)
+    plugin = create_roiextractor_plugin(
+        'roiextractor_' + str(id(module)),
+        out_size,
+        sample_num,
+        featmap_strides,
+        roi_scale_factor,
+        finest_scale,
+        aligned=1)
 
-    custom_layer = ctx.network.add_plugin_v2(inputs=[rois_trt] + feats_trt,
-                                             plugin=plugin)
+    custom_layer = ctx.network.add_plugin_v2(
+        inputs=[rois_trt] + feats_trt, plugin=plugin)
 
     output._trt = custom_layer.get_output(0)

@@ -1,13 +1,13 @@
 import torch
-from torch import nn
-from torch.nn import functional as F
-
 from mmdet2trt.core.bbox.transforms import batched_bbox_cxcywh_to_xyxy
 from mmdet2trt.models.builder import register_wraper
+from torch import nn
+from torch.nn import functional as F
 
 
 @register_wraper('mmdet.models.dense_heads.TransformerHead')
 class TransformerHeadWraper(nn.Module):
+
     def __init__(self, module):
         super(TransformerHeadWraper, self).__init__()
         self.module = module
@@ -22,9 +22,9 @@ class TransformerHeadWraper(nn.Module):
         bbox_preds = []
         for feat in feats:
             feat = module.input_proj(feat)
-            masks_interp = F.interpolate(masks.unsqueeze(1),
-                                         size=feat.shape[-2:]).to(
-                                             torch.bool).squeeze(1)
+            masks_interp = F.interpolate(
+                masks.unsqueeze(1),
+                size=feat.shape[-2:]).to(torch.bool).squeeze(1)
             pos_embed = module.positional_encoding(
                 masks_interp)  # [bs, embed_dim, h, w]
             # outs_dec: [nb_dec, bs, num_query, embed_dim]

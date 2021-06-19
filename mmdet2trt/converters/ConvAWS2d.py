@@ -21,14 +21,15 @@ def convert_ConvAWS2d(ctx):
     bias = module.bias
     need_bias = True if bias is not None else False
 
-    new_module = torch.nn.Conv2d(in_channels=in_channels,
-                                 out_channels=out_channels,
-                                 kernel_size=kernel_size,
-                                 stride=stride,
-                                 padding=padding,
-                                 dilation=dilation,
-                                 groups=groups,
-                                 bias=need_bias)
+    new_module = torch.nn.Conv2d(
+        in_channels=in_channels,
+        out_channels=out_channels,
+        kernel_size=kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation,
+        groups=groups,
+        bias=need_bias)
     new_module.weight = weight
     new_module.bias = bias
 

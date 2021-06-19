@@ -1,8 +1,9 @@
-import mmcv.cnn
-import mmcv.ops
 import torch
 import torch.nn.functional as F
 from torch2trt_dynamic.torch2trt_dynamic import tensorrt_converter
+
+import mmcv.cnn
+import mmcv.ops
 
 
 @tensorrt_converter('mmcv.ops.saconv.SAConv2d.forward', is_real=False)

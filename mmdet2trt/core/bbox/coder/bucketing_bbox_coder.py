@@ -1,9 +1,8 @@
 import numpy as np
 import torch
+from mmdet2trt.models.builder import register_wraper
 from torch import nn
 from torch.nn import functional as F
-
-from mmdet2trt.models.builder import register_wraper
 
 from .transforms import bbox_rescale_batched
 
@@ -80,6 +79,7 @@ def bucket2bbox_batched(proposals,
 
 @register_wraper('mmdet.core.bbox.coder.BucketingBBoxCoder')
 class BucketingBBoxCoderWraper(nn.Module):
+
     def __init__(self, module):
         super(BucketingBBoxCoderWraper, self).__init__()
         self.module = module

@@ -4,16 +4,16 @@ import time
 from argparse import ArgumentParser
 from pathlib import Path
 
-import mmcv
 import tensorrt as trt
 import torch
+from mmdet2trt.models.builder import build_wraper
+from mmdet2trt.models.detectors import TwoStageDetectorWraper
 from mmdet.apis import init_detector
 from mmdet.apis.inference import LoadImage
 from mmdet.datasets.pipelines import Compose
 from torch2trt_dynamic import torch2trt_dynamic
 
-from mmdet2trt.models.builder import build_wraper
-from mmdet2trt.models.detectors import TwoStageDetectorWraper
+import mmcv
 
 logger = logging.getLogger('mmdet2trt')
 
@@ -23,6 +23,7 @@ class Int8CalibDataset():
     datas used to calibrate int8 model
     feed to int8_calib_dataset
     """
+
     def __init__(self, image_paths, config, opt_shape_param):
         r"""
         datas used to calibrate int8 model
@@ -105,9 +106,8 @@ def mmdet2trt(config,
                        'but get output_names=' + str(output_names))
         output_names = None
     wrap_config = {'enable_mask': enable_mask}
-    wrap_model = build_wraper(torch_model,
-                              TwoStageDetectorWraper,
-                              wrap_config=wrap_config)
+    wrap_model = build_wraper(
+        torch_model, TwoStageDetectorWraper, wrap_config=wrap_config)
 
     if opt_shape_param is None:
         img_scale = cfg.test_pipeline[1]['img_scale']
@@ -239,16 +239,15 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('config', help='Path to a mmdet Config file')
     parser.add_argument('checkpoint', help='Path to a mmdet Checkpoint file')
-    parser.add_argument('output',
-                        help='Path where tensorrt model will be saved')
-    parser.add_argument('--fp16',
-                        type=str2bool,
-                        default=False,
-                        help='Enable fp16 inference')
-    parser.add_argument('--enable-mask',
-                        type=str2bool,
-                        default=False,
-                        help='Enable mask output')
+    parser.add_argument(
+        'output', help='Path where tensorrt model will be saved')
+    parser.add_argument(
+        '--fp16', type=str2bool, default=False, help='Enable fp16 inference')
+    parser.add_argument(
+        '--enable-mask',
+        type=str2bool,
+        default=False,
+        help='Enable mask output')
     parser.add_argument(
         '--save-engine',
         type=str2bool,
@@ -256,10 +255,11 @@ def main():
         help='Enable saving TensorRT engine. '
         '(will be saved at Path(output).with_suffix(\'.engine\')).',
     )
-    parser.add_argument('--device',
-                        type=str,
-                        default='cuda:0',
-                        help='Device used for conversion.')
+    parser.add_argument(
+        '--device',
+        type=str,
+        default='cuda:0',
+        help='Device used for conversion.')
     parser.add_argument(
         '--max-workspace-gb',
         type=float,
@@ -324,15 +324,16 @@ def main():
     else:
         opt_shape_param = None
 
-    trt_model = mmdet2trt(args.config,
-                          args.checkpoint,
-                          device=args.device,
-                          fp16_mode=args.fp16,
-                          max_workspace_size=int(args.max_workspace_gb * 1e9),
-                          opt_shape_param=opt_shape_param,
-                          trt_log_level=args.trt_log_level,
-                          output_names=args.output_names,
-                          enable_mask=args.enable_mask)
+    trt_model = mmdet2trt(
+        args.config,
+        args.checkpoint,
+        device=args.device,
+        fp16_mode=args.fp16,
+        max_workspace_size=int(args.max_workspace_gb * 1e9),
+        opt_shape_param=opt_shape_param,
+        trt_log_level=args.trt_log_level,
+        output_names=args.output_names,
+        enable_mask=args.enable_mask)
 
     logger.info('Saving TRT model to: {}'.format(args.output))
     torch.save(trt_model.state_dict(), args.output)

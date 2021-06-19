@@ -26,19 +26,20 @@ def convert_batchednms(ctx):
     bboxes_trt = trt_(ctx.network, bboxes)
     output = ctx.method_return
 
-    plugin = create_batchednms_plugin('batchednms_' + str(id(module)),
-                                      scoreThreshold,
-                                      iouThreshold,
-                                      topK,
-                                      keepTopK,
-                                      numClasses,
-                                      backgroundLabelId,
-                                      shareLocation=shareLocation,
-                                      isNormalized=False,
-                                      clipBoxes=False)
+    plugin = create_batchednms_plugin(
+        'batchednms_' + str(id(module)),
+        scoreThreshold,
+        iouThreshold,
+        topK,
+        keepTopK,
+        numClasses,
+        backgroundLabelId,
+        shareLocation=shareLocation,
+        isNormalized=False,
+        clipBoxes=False)
 
-    custom_layer = ctx.network.add_plugin_v2(inputs=[bboxes_trt, scores_trt],
-                                             plugin=plugin)
+    custom_layer = ctx.network.add_plugin_v2(
+        inputs=[bboxes_trt, scores_trt], plugin=plugin)
 
     if isinstance(output, torch.Tensor):
         output._trt = custom_layer.get_output(0)

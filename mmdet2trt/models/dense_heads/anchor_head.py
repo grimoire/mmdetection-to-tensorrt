@@ -1,9 +1,8 @@
-import torch
-from torch import nn
-
 import mmdet2trt.ops.util_ops as mm2trt_util
+import torch
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 from mmdet2trt.models.builder import build_wraper, register_wraper
+from torch import nn
 
 
 @register_wraper('mmdet.models.dense_heads.FSAFHead')
@@ -13,6 +12,7 @@ from mmdet2trt.models.builder import build_wraper, register_wraper
 @register_wraper('mmdet.models.SSDHead')
 @register_wraper('mmdet.models.AnchorHead')
 class AnchorHeadWraper(nn.Module):
+
     def __init__(self, module):
         super(AnchorHeadWraper, self).__init__()
         self.module = module
@@ -22,17 +22,18 @@ class AnchorHeadWraper(nn.Module):
         self.test_cfg = module.test_cfg
         self.num_classes = self.module.num_classes
         self.use_sigmoid_cls = self.module.use_sigmoid_cls
-        self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr,
-                                   module.test_cfg.nms.iou_threshold,
-                                   backgroundLabelId=self.num_classes)
+        self.rcnn_nms = BatchedNMS(
+            module.test_cfg.score_thr,
+            module.test_cfg.nms.iou_threshold,
+            backgroundLabelId=self.num_classes)
 
     def forward(self, feat, x):
         module = self.module
 
         cls_scores, bbox_preds = module(feat)
 
-        mlvl_anchors = self.anchor_generator(cls_scores,
-                                             device=cls_scores[0].device)
+        mlvl_anchors = self.anchor_generator(
+            cls_scores, device=cls_scores[0].device)
 
         mlvl_scores = []
         mlvl_proposals = []
@@ -74,8 +75,8 @@ class AnchorHeadWraper(nn.Module):
             max_scores, _ = mlvl_scores[:, :, :mlvl_scores.shape[2] -
                                         1].max(dim=2)
         topk_pre = max(1000, nms_pre)
-        _, topk_inds = max_scores.topk(min(topk_pre, mlvl_scores.shape[1]),
-                                       dim=1)
+        _, topk_inds = max_scores.topk(
+            min(topk_pre, mlvl_scores.shape[1]), dim=1)
         mlvl_proposals = mm2trt_util.gather_topk(mlvl_proposals, 1, topk_inds)
         mlvl_scores = mm2trt_util.gather_topk(mlvl_scores, 1, topk_inds)
 

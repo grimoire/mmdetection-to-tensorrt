@@ -1,6 +1,5 @@
 import torch
 import torch.nn.functional as F
-
 from mmdet2trt.models.builder import register_wraper
 
 from .bbox_head import BBoxHeadWraper
@@ -8,6 +7,7 @@ from .bbox_head import BBoxHeadWraper
 
 @register_wraper('mmdet.models.roi_heads.bbox_heads.sabl_head.SABLHead')
 class SABLHeadWraper(BBoxHeadWraper):
+
     def __init__(self, module, test_cfg):
         super(SABLHeadWraper, self).__init__(module, test_cfg)
 
@@ -18,8 +18,8 @@ class SABLHeadWraper(BBoxHeadWraper):
                 max_shape=img_shape)
         else:
             bboxes, _ = self.bbox_coder.decode(
-                rois[:,
-                     1:].unsqueeze(0), [bb.unsqueeze(0) for bb in bbox_pred],
+                rois[:, 1:].unsqueeze(0),
+                [bb.unsqueeze(0) for bb in bbox_pred],
                 max_shape=img_shape)
             new_rois = torch.cat((rois[:, 0:1], bboxes), dim=2)
 
@@ -39,8 +39,8 @@ class SABLHeadWraper(BBoxHeadWraper):
                 max_shape=img_shape)
         else:
             bboxes, confids = self.bbox_coder.decode(
-                rois[:,
-                     1:].unsqueeze(0), [bb.unsqueeze(0) for bb in bbox_pred],
+                rois[:, 1:].unsqueeze(0),
+                [bb.unsqueeze(0) for bb in bbox_pred],
                 max_shape=img_shape)
         bboxes = bboxes.squeeze(0)
         confids = confids.squeeze(0)

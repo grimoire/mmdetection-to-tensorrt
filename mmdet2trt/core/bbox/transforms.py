@@ -1,6 +1,5 @@
-import torch
-
 import mmdet2trt.ops.util_ops as mm2trt_util
+import torch
 
 
 def batched_distance2bbox(points, distance, max_shape=None):

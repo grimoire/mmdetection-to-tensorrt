@@ -1,8 +1,7 @@
-import torch
-from torch import nn
-
 import mmdet2trt.ops.util_ops as mm2trt_util
+import torch
 from mmdet2trt.models.builder import build_wraper, register_wraper
+from torch import nn
 
 
 @register_wraper(
@@ -10,6 +9,7 @@ from mmdet2trt.models.builder import build_wraper, register_wraper
 @register_wraper('mmdet.models.roi_heads.dynamic_roi_head.DynamicRoIHead')
 @register_wraper('mmdet.models.roi_heads.standard_roi_head.StandardRoIHead')
 class StandardRoIHeadWraper(nn.Module):
+
     def __init__(self, module, wrap_config={}):
         super(StandardRoIHeadWraper, self).__init__()
         self.module = module
@@ -17,8 +17,8 @@ class StandardRoIHeadWraper(nn.Module):
 
         self.bbox_roi_extractor = build_wraper(module.bbox_roi_extractor)
 
-        self.bbox_head = build_wraper(module.bbox_head,
-                                      test_cfg=module.test_cfg)
+        self.bbox_head = build_wraper(
+            module.bbox_head, test_cfg=module.test_cfg)
         if module.with_shared_head:
             self.shared_head = module.shared_head
         else:
@@ -45,9 +45,8 @@ class StandardRoIHeadWraper(nn.Module):
         # rcnn
         cls_score, bbox_pred = self.bbox_head(bbox_feats)
 
-        bbox_results = dict(cls_score=cls_score,
-                            bbox_pred=bbox_pred,
-                            bbox_feats=bbox_feats)
+        bbox_results = dict(
+            cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=bbox_feats)
         return bbox_results
 
     def _mask_forward(self, x, rois):
@@ -101,9 +100,8 @@ class StandardRoIHeadWraper(nn.Module):
                 det_index = det_index + 1
                 mask_pad = mask_pred[:, :, 0:1, ...] * 0
                 mask_pred = torch.cat([mask_pad, mask_pred], dim=2)
-                mask_pred = mm2trt_util.gather_topk(mask_pred,
-                                                    dim=2,
-                                                    index=det_index)
+                mask_pred = mm2trt_util.gather_topk(
+                    mask_pred, dim=2, index=det_index)
                 mask_pred = mask_pred.squeeze(2)
 
             result += [mask_pred]

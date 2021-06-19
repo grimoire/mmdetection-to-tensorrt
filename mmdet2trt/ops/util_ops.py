@@ -20,10 +20,9 @@ def arange_gridmesh(x, starts=[0, 0], strides=[1, 1]):
 
 
 def arange_by_input(x, dim, start=0, stride=1):
-    lin = torch.linspace(start,
-                         start + stride * (x.size(dim) - 1),
-                         x.size(dim),
-                         dtype=x.dtype).to(x.device)
+    lin = torch.linspace(
+        start, start + stride * (x.size(dim) - 1), x.size(dim),
+        dtype=x.dtype).to(x.device)
     return lin
 
 

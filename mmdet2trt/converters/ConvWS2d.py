@@ -27,14 +27,15 @@ def convert_ConvWS2d(ctx):
     weight = (weight - mean) / (std + eps)
     weight = torch.nn.Parameter(weight)
 
-    new_module = torch.nn.Conv2d(in_channels=in_channels,
-                                 out_channels=out_channels,
-                                 kernel_size=kernel_size,
-                                 stride=stride,
-                                 padding=padding,
-                                 dilation=dilation,
-                                 groups=groups,
-                                 bias=need_bias)
+    new_module = torch.nn.Conv2d(
+        in_channels=in_channels,
+        out_channels=out_channels,
+        kernel_size=kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation,
+        groups=groups,
+        bias=need_bias)
     new_module.weight = weight
     new_module.bias = bias
 

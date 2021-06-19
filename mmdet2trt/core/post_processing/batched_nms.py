@@ -4,6 +4,7 @@ from torchvision.ops import nms as tv_nms
 
 
 class BatchedNMS(nn.Module):
+
     def __init__(self, scoreThreshold, iouThreshold, backgroundLabelId=-1):
         super(BatchedNMS, self).__init__()
         self.scoreThreshold = scoreThreshold
@@ -81,21 +82,21 @@ class BatchedNMS(nn.Module):
                 nmsed_class = nmsed_class.index_select(0, topk_inds)
 
             if num_nms < keepTopK:
-                nmsed_bbox = torch.nn.functional.pad(nmsed_bbox,
-                                                     pad=(0, 0, 0,
-                                                          keepTopK - num_nms),
-                                                     mode='constant',
-                                                     value=0)
-                nmsed_score = torch.nn.functional.pad(nmsed_score,
-                                                      pad=(0,
-                                                           keepTopK - num_nms),
-                                                      mode='constant',
-                                                      value=0)
-                nmsed_class = torch.nn.functional.pad(nmsed_class,
-                                                      pad=(0,
-                                                           keepTopK - num_nms),
-                                                      mode='constant',
-                                                      value=-1)
+                nmsed_bbox = torch.nn.functional.pad(
+                    nmsed_bbox,
+                    pad=(0, 0, 0, keepTopK - num_nms),
+                    mode='constant',
+                    value=0)
+                nmsed_score = torch.nn.functional.pad(
+                    nmsed_score,
+                    pad=(0, keepTopK - num_nms),
+                    mode='constant',
+                    value=0)
+                nmsed_class = torch.nn.functional.pad(
+                    nmsed_class,
+                    pad=(0, keepTopK - num_nms),
+                    mode='constant',
+                    value=-1)
             else:
                 if num_detection > keepTopK:
                     num_detection = num_detection.new_tensor([keepTopK])

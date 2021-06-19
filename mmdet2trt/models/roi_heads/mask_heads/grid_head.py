@@ -1,11 +1,11 @@
 import torch
-from torch import nn
-
 from mmdet2trt.models.builder import register_wraper
+from torch import nn
 
 
 @register_wraper('mmdet.models.roi_heads.mask_heads.grid_head.GridHead')
 class GridHeadWraper(nn.Module):
+
     def __init__(self, module, test_cfg):
         super(GridHeadWraper, self).__init__()
         self.module = module
@@ -65,17 +65,17 @@ class GridHeadWraper(nn.Module):
 
         # voting of all grid points on some boundary
         bboxes_x1 = (abs_xs[:, x1_inds] * pred_scores[:, x1_inds]).sum(
-            dim=1, keepdim=True) / (pred_scores[:, x1_inds].sum(dim=1,
-                                                                keepdim=True))
+            dim=1, keepdim=True) / (
+                pred_scores[:, x1_inds].sum(dim=1, keepdim=True))
         bboxes_y1 = (abs_ys[:, y1_inds] * pred_scores[:, y1_inds]).sum(
-            dim=1, keepdim=True) / (pred_scores[:, y1_inds].sum(dim=1,
-                                                                keepdim=True))
+            dim=1, keepdim=True) / (
+                pred_scores[:, y1_inds].sum(dim=1, keepdim=True))
         bboxes_x2 = (abs_xs[:, x2_inds] * pred_scores[:, x2_inds]).sum(
-            dim=1, keepdim=True) / (pred_scores[:, x2_inds].sum(dim=1,
-                                                                keepdim=True))
+            dim=1, keepdim=True) / (
+                pred_scores[:, x2_inds].sum(dim=1, keepdim=True))
         bboxes_y2 = (abs_ys[:, y2_inds] * pred_scores[:, y2_inds]).sum(
-            dim=1, keepdim=True) / (pred_scores[:, y2_inds].sum(dim=1,
-                                                                keepdim=True))
+            dim=1, keepdim=True) / (
+                pred_scores[:, y2_inds].sum(dim=1, keepdim=True))
 
         if img_shape is not None:
             bboxes_x1 = bboxes_x1.clamp(min=0, max=img_shape[1])

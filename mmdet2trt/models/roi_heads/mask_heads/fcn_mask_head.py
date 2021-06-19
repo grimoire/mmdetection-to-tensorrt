@@ -1,12 +1,12 @@
 import torch
 import torch.nn.functional as F
-from torch import nn
-
 from mmdet2trt.models.builder import register_wraper
+from torch import nn
 
 
 @register_wraper('mmdet.models.roi_heads.mask_heads.fcn_mask_head.FCNMaskHead')
 class FCNMaskHeadWraper(nn.Module):
+
     def __init__(self, module, test_cfg):
         super(FCNMaskHeadWraper, self).__init__()
 
@@ -18,6 +18,7 @@ class FCNMaskHeadWraper(nn.Module):
 
 
 class MaskProcessor(nn.Module):
+
     def __init__(self, max_width, max_height):
         super(MaskProcessor, self).__init__()
         self.max_height = max_height
@@ -52,9 +53,8 @@ class MaskProcessor(nn.Module):
         gy = img_y[:, :, None].expand_as(expand_shape)
         grid = torch.stack([gx, gy], dim=3)
 
-        img_masks = F.grid_sample(masks.to(dtype=torch.float32),
-                                  grid,
-                                  align_corners=False)
+        img_masks = F.grid_sample(
+            masks.to(dtype=torch.float32), grid, align_corners=False)
 
         mask_h = img_masks.shape[2]
         mask_w = img_masks.shape[3]

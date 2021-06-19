@@ -1,10 +1,9 @@
-from torch import nn
-
 from mmdet2trt.models.backbones import BaseBackboneWraper
 from mmdet2trt.models.builder import build_wraper, register_wraper
 from mmdet2trt.models.dense_heads import RPNHeadWraper
 from mmdet2trt.models.necks import BaseNeckWraper
 from mmdet2trt.models.roi_heads import StandardRoIHeadWraper
+from torch import nn
 
 
 @register_wraper('mmdet.models.MaskScoringRCNN')
@@ -15,6 +14,7 @@ from mmdet2trt.models.roi_heads import StandardRoIHeadWraper
 @register_wraper('mmdet.models.FasterRCNN')
 @register_wraper('mmdet.models.TwoStageDetector')
 class TwoStageDetectorWraper(nn.Module):
+
     def __init__(self, model, wrap_config={}):
         super(TwoStageDetectorWraper, self).__init__()
         self.model = model
@@ -30,9 +30,8 @@ class TwoStageDetectorWraper(nn.Module):
         self.rpn_head_wraper = build_wraper(mmdet_rpn_head, RPNHeadWraper)
 
         mmdet_roi_head = self.model.roi_head
-        self.roi_head_wraper = build_wraper(mmdet_roi_head,
-                                            StandardRoIHeadWraper,
-                                            wrap_config=wrap_config)
+        self.roi_head_wraper = build_wraper(
+            mmdet_roi_head, StandardRoIHeadWraper, wrap_config=wrap_config)
 
     def extract_feat(self, img):
         x = self.backbone_wraper(img)

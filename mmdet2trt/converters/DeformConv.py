@@ -31,12 +31,13 @@ def convert_DeformConv(ctx):
     if not isinstance(dilation, tuple):
         dilation = (dilation, ) * 2
 
-    plugin = create_dcn_plugin('dcn_' + str(id(input)),
-                               stride=stride,
-                               padding=padding,
-                               dilation=dilation,
-                               deformable_group=deform_groups,
-                               group=groups)
+    plugin = create_dcn_plugin(
+        'dcn_' + str(id(input)),
+        stride=stride,
+        padding=padding,
+        dilation=dilation,
+        deformable_group=deform_groups,
+        group=groups)
 
     custom_layer = ctx.network.add_plugin_v2(
         inputs=[input_trt, offset_trt, weight_trt], plugin=plugin)
@@ -76,17 +77,18 @@ def convert_ModulatedDeformConv(ctx):
     if not isinstance(dilation, tuple):
         dilation = (dilation, ) * 2
 
-    plugin = create_dcnv2_plugin('dcn_' + str(id(input)),
-                                 stride=stride,
-                                 padding=padding,
-                                 dilation=dilation,
-                                 deformable_group=deform_groups,
-                                 group=groups)
+    plugin = create_dcnv2_plugin(
+        'dcn_' + str(id(input)),
+        stride=stride,
+        padding=padding,
+        dilation=dilation,
+        deformable_group=deform_groups,
+        group=groups)
 
     layer_inputs = [input_trt, offset_trt, mask_trt, weight_trt]
     if bias is not None:
         layer_inputs += [bias_trt]
-    custom_layer = ctx.network.add_plugin_v2(inputs=layer_inputs,
-                                             plugin=plugin)
+    custom_layer = ctx.network.add_plugin_v2(
+        inputs=layer_inputs, plugin=plugin)
 
     output._trt = custom_layer.get_output(0)

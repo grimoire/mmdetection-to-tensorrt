@@ -1,12 +1,12 @@
-import torch
-from torch import nn
-
 import mmdet2trt
+import torch
 from mmdet2trt.models.builder import register_wraper
+from torch import nn
 
 
 @register_wraper('mmdet.core.anchor.point_generator.PointGenerator')
 class PointGeneratorWraper(nn.Module):
+
     def __init__(self, module):
         super(PointGeneratorWraper, self).__init__()
 

@@ -1,8 +1,7 @@
 import torch
-from torch import nn
-
 from mmdet2trt.models.builder import register_wraper
 from mmdet2trt.ops import util_ops
+from torch import nn
 
 
 def batched_blr2bboxes(priors,
@@ -37,6 +36,7 @@ def batched_blr2bboxes(priors,
 
 @register_wraper('mmdet.core.bbox.coder.TBLRBBoxCoder')
 class TBLRBBoxCoderWraper(nn.Module):
+
     def __init__(self, module):
         super(TBLRBBoxCoderWraper, self).__init__()
         self.normalizer = module.normalizer
@@ -63,10 +63,11 @@ class TBLRBBoxCoderWraper(nn.Module):
         anchors = anchors.unsqueeze(0)
 
         max_shape = None if input_x is None else input_x.shape[2:]
-        proposals = batched_blr2bboxes(anchors,
-                                       bbox_preds,
-                                       normalizer=self.normalizer,
-                                       max_shape=max_shape)
+        proposals = batched_blr2bboxes(
+            anchors,
+            bbox_preds,
+            normalizer=self.normalizer,
+            max_shape=max_shape)
         if min_num_bboxes > 0:
             scores = util_ops.pad_with_value(scores, 1, min_num_bboxes, 0)
             proposals = util_ops.pad_with_value(proposals, 1, min_num_bboxes)

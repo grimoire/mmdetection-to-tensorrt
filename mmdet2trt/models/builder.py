@@ -1,8 +1,9 @@
 import logging
 
-import mmcv.ops  # noqa: F401,F403
 import mmdet  # noqa: F401,F403
 from mmdet import models  # noqa: F401,F403
+
+import mmcv.ops  # noqa: F401,F403
 
 WRAPER_DICT = {}
 

@@ -26,8 +26,8 @@ def convert_carafe_feature_reassemble(ctx):
         'carafefeaturereassemble_' + str(id(module)), scale_factor, up_kernel,
         up_group)
 
-    custom_layer = ctx.network.add_plugin_v2(inputs=[x_trt, mask_trt],
-                                             plugin=plugin)
+    custom_layer = ctx.network.add_plugin_v2(
+        inputs=[x_trt, mask_trt], plugin=plugin)
 
     output._trt = custom_layer.get_output(0)
 

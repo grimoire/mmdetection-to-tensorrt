@@ -1,8 +1,9 @@
-import mmcv
 import numpy as np
 import torch
 from mmdet.datasets.pipelines import Compose
 from torch2trt_dynamic import TRTModule
+
+import mmcv
 
 
 def init_detector(trt_model_path):
@@ -40,9 +41,8 @@ def inference_detector(model, img, cfg, device):
     tensor = tensor.unsqueeze(0).to(device)
     img_metas = data['img_metas']
     scale_factor = img_metas[0].data['scale_factor']
-    scale_factor = torch.tensor(scale_factor,
-                                dtype=torch.float32,
-                                device=device)
+    scale_factor = torch.tensor(
+        scale_factor, dtype=torch.float32, device=device)
 
     with torch.no_grad():
         result = model(tensor)

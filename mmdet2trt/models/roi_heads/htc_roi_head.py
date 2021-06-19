@@ -1,16 +1,16 @@
+import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
 import torch.nn.functional as F
-from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
-
-import mmdet2trt.ops.util_ops as mm2trt_util
 from mmdet2trt.core.post_processing import merge_aug_masks
 from mmdet2trt.models.builder import build_wraper, register_wraper
+from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
 
 from .cascade_roi_head import CascadeRoIHeadWraper
 
 
 @register_wraper('mmdet.models.roi_heads.HybridTaskCascadeRoIHead')
 class HybridTaskCascadeRoIHeadWraper(CascadeRoIHeadWraper):
+
     def __init__(self, module, wrap_config):
         super(HybridTaskCascadeRoIHeadWraper,
               self).__init__(module, wrap_config)
@@ -41,9 +41,8 @@ class HybridTaskCascadeRoIHeadWraper(CascadeRoIHeadWraper):
                     bbox_semantic_feat, roi_feats.shape[-2:])
         cls_score, bbox_pred = bbox_head(roi_feats)
 
-        bbox_results = dict(cls_score=cls_score,
-                            bbox_pred=bbox_pred,
-                            bbox_feats=roi_feats)
+        bbox_results = dict(
+            cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=roi_feats)
         return bbox_results
 
     def regress_by_class(self, stage, rois, label, bbox_pred):
@@ -76,11 +75,11 @@ class HybridTaskCascadeRoIHeadWraper(CascadeRoIHeadWraper):
             semantic_feat = None
 
         for i in range(self.num_stages):
-            bbox_results = self._bbox_forward(i,
-                                              feat,
-                                              torch.cat([rois_pad, rois],
-                                                        dim=1),
-                                              semantic_feat=semantic_feat)
+            bbox_results = self._bbox_forward(
+                i,
+                feat,
+                torch.cat([rois_pad, rois], dim=1),
+                semantic_feat=semantic_feat)
             ms_scores.append(bbox_results['cls_score'])
             bbox_pred = bbox_results['bbox_pred']
 
@@ -138,9 +137,8 @@ class HybridTaskCascadeRoIHeadWraper(CascadeRoIHeadWraper):
                 det_index = det_index + 1
                 mask_pad = mask_pred[:, :, 0:1, ...] * 0
                 mask_pred = torch.cat([mask_pad, mask_pred], dim=2)
-                mask_pred = mm2trt_util.gather_topk(mask_pred,
-                                                    dim=2,
-                                                    index=det_index)
+                mask_pred = mm2trt_util.gather_topk(
+                    mask_pred, dim=2, index=det_index)
                 mask_pred = mask_pred.squeeze(2)
 
             result += [mask_pred]

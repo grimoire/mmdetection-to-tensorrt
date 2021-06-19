@@ -1,9 +1,9 @@
-from torch import nn
-
 from mmdet2trt.models.builder import register_wraper
+from torch import nn
 
 
 class AnchorGeneratorSingle(nn.Module):
+
     def __init__(self, module, index):
         super(AnchorGeneratorSingle, self).__init__()
         self.generator = module
@@ -34,6 +34,7 @@ class AnchorGeneratorSingle(nn.Module):
 @register_wraper('mmdet.core.anchor.anchor_generator.YOLOAnchorGenerator')
 @register_wraper('mmdet.core.AnchorGenerator')
 class AnchorGeneratorWraper(nn.Module):
+
     def __init__(self, module):
         super(AnchorGeneratorWraper, self).__init__()
         self.generator = module
@@ -65,6 +66,7 @@ class AnchorGeneratorWraper(nn.Module):
 
 @register_wraper('mmdet.core.anchor.anchor_generator.SSDAnchorGenerator')
 class SSDAnchorGeneratorWraper(nn.Module):
+
     def __init__(self, module):
         super(SSDAnchorGeneratorWraper, self).__init__()
         self.generator = module
@@ -77,8 +79,8 @@ class SSDAnchorGeneratorWraper(nn.Module):
                 feat_list[i].shape[-2:] for i in range(num_levels)
             ]
 
-            mlvl_anchors = self.generator.grid_anchors(featmap_sizes,
-                                                       device=device)
+            mlvl_anchors = self.generator.grid_anchors(
+                featmap_sizes, device=device)
             self.mlvl_anchors = mlvl_anchors
 
         return self.mlvl_anchors

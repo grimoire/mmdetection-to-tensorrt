@@ -1,6 +1,5 @@
-import torch
-
 import mmdet2trt.ops.util_ops as mm2trt_util
+import torch
 from mmdet2trt.models.builder import register_wraper
 
 from .anchor_head import AnchorHeadWraper
@@ -8,6 +7,7 @@ from .anchor_head import AnchorHeadWraper
 
 @register_wraper('mmdet.models.dense_heads.ATSSHead')
 class ATSSHeadWraper(AnchorHeadWraper):
+
     def __init__(self, module):
         super(ATSSHeadWraper, self).__init__(module)
 
@@ -16,8 +16,8 @@ class ATSSHeadWraper(AnchorHeadWraper):
 
         cls_scores, bbox_preds, centernesses = module(feat)
 
-        mlvl_anchors = self.anchor_generator(cls_scores,
-                                             device=cls_scores[0].device)
+        mlvl_anchors = self.anchor_generator(
+            cls_scores, device=cls_scores[0].device)
 
         mlvl_scores = []
         mlvl_proposals = []
@@ -59,8 +59,8 @@ class ATSSHeadWraper(AnchorHeadWraper):
         # mlvl_scores = mlvl_scores*mlvl_centerness[:, :, None]
         max_scores, _ = mlvl_scores.max(dim=2)
         topk_pre = max(1000, nms_pre)
-        _, topk_inds = max_scores.topk(min(topk_pre, mlvl_scores.shape[1]),
-                                       dim=1)
+        _, topk_inds = max_scores.topk(
+            min(topk_pre, mlvl_scores.shape[1]), dim=1)
         mlvl_proposals = mm2trt_util.gather_topk(mlvl_proposals, 1, topk_inds)
         mlvl_scores = mm2trt_util.gather_topk(mlvl_scores, 1, topk_inds)
 

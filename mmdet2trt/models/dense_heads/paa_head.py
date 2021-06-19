@@ -1,6 +1,5 @@
-import torch
-
 import mmdet2trt.ops.util_ops as mm2trt_util
+import torch
 from mmdet2trt.core.bbox.iou_calculators import bbox_overlaps_batched
 from mmdet2trt.models.builder import register_wraper
 
@@ -9,6 +8,7 @@ from .anchor_head import AnchorHeadWraper
 
 @register_wraper('mmdet.models.dense_heads.paa_head.PAAHead')
 class PPAHeadWraper(AnchorHeadWraper):
+
     def __init__(self, module):
         super(PPAHeadWraper, self).__init__(module)
 
@@ -17,8 +17,8 @@ class PPAHeadWraper(AnchorHeadWraper):
 
         cls_scores, bbox_preds, iou_preds = module(feat)
 
-        mlvl_anchors = self.anchor_generator(cls_scores,
-                                             device=cls_scores[0].device)
+        mlvl_anchors = self.anchor_generator(
+            cls_scores, device=cls_scores[0].device)
 
         mlvl_scores = []
         mlvl_proposals = []
@@ -61,8 +61,8 @@ class PPAHeadWraper(AnchorHeadWraper):
         mlvl_scores = (mlvl_scores * mlvl_iou_preds[:, :, None]).sqrt()
         max_scores, _ = mlvl_scores.max(dim=2)
         topk_pre = max(1000, nms_pre)
-        _, topk_inds = max_scores.topk(min(topk_pre, mlvl_scores.shape[1]),
-                                       dim=1)
+        _, topk_inds = max_scores.topk(
+            min(topk_pre, mlvl_scores.shape[1]), dim=1)
         mlvl_proposals = mm2trt_util.gather_topk(mlvl_proposals, 1, topk_inds)
         mlvl_scores = mm2trt_util.gather_topk(mlvl_scores, 1, topk_inds)
 
@@ -95,9 +95,8 @@ class PPAHeadWraper(AnchorHeadWraper):
         candidate_cls_bboxes = mlvl_bboxes
         det_cls_bboxes = proposals
 
-        det_candidate_ious = bbox_overlaps_batched(det_cls_bboxes,
-                                                   candidate_cls_bboxes,
-                                                   eps=eps)
+        det_candidate_ious = bbox_overlaps_batched(
+            det_cls_bboxes, candidate_cls_bboxes, eps=eps)
         pos_ious = det_candidate_ious
 
         cls_id_new = cls_id_new.unsqueeze(-1).expand_as(pos_ious).permute(
@@ -108,8 +107,9 @@ class PPAHeadWraper(AnchorHeadWraper):
 
         pis = (torch.exp(-(1 - pos_ious)**2 / 0.025) *
                candidate_cls_scores).unsqueeze(-1)
-        voted_bbox = torch.sum(pis * candidate_cls_bboxes.unsqueeze(1),
-                               dim=2) / (torch.sum(pis, dim=2) + 1e-10)
+        voted_bbox = torch.sum(
+            pis * candidate_cls_bboxes.unsqueeze(1), dim=2) / (
+                torch.sum(pis, dim=2) + 1e-10)
         proposals_voted = voted_bbox
         scores_voted = scores
         cls_id_voted = cls_id

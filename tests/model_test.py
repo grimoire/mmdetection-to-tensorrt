@@ -6,7 +6,6 @@ from argparse import ArgumentParser
 import cv2
 import torch
 import tqdm
-
 from mmdet2trt import mmdet2trt
 from mmdet2trt.apis import inference_detector, init_detector
 
@@ -23,13 +22,14 @@ def convert_test(cfg_path,
                  fp16=True,
                  enable_mask=False):
     logger.info('creating {} trt model.'.format(cfg_path))
-    trt_model = mmdet2trt(cfg_path,
-                          checkpoint,
-                          opt_shape_param=opt_shape_param,
-                          max_workspace_size=int(max_workspace_size),
-                          fp16_mode=fp16,
-                          device=device,
-                          enable_mask=enable_mask)
+    trt_model = mmdet2trt(
+        cfg_path,
+        checkpoint,
+        opt_shape_param=opt_shape_param,
+        max_workspace_size=int(max_workspace_size),
+        fp16_mode=fp16,
+        device=device,
+        enable_mask=enable_mask)
     logger.info('finish, save trt_model in {}'.format(trt_model_path))
     torch.save(trt_model.state_dict(), trt_model_path)
     return trt_model
@@ -84,34 +84,30 @@ def main():
     parser.add_argument(
         'save_folder',
         help='tensorrt model and test images results save folder')
-    parser.add_argument('--trt_model_path',
-                        default='',
-                        help='save and inference model. '
-                        'default [save_folder]/trt_model.pth')
+    parser.add_argument(
+        '--trt_model_path',
+        default='',
+        help='save and inference model. '
+        'default [save_folder]/trt_model.pth')
     parser.add_argument(
         '--opt_shape_param',
         default='[ [ [1,3,800,800], [1,3,800,1344], [1,3,1344,1344] ] ]',
         help='min/opt/max shape of input')
-    parser.add_argument('--max_workspace_size',
-                        default=1 << 30,
-                        help='max workspace size')
-    parser.add_argument('--device',
-                        default='cuda:0',
-                        help='Device used for inference')
-    parser.add_argument('--score-thr',
-                        type=float,
-                        default=0.3,
-                        help='bbox score threshold')
-    parser.add_argument('--fp16',
-                        action='store_true',
-                        help='enable fp16 inference')
-    parser.add_argument('--enable_mask',
-                        action='store_true',
-                        help='enable mask output')
-    parser.add_argument('--test-mode',
-                        default='all',
-                        help='what to do in the test',
-                        choices=['convert', 'inference', 'all'])
+    parser.add_argument(
+        '--max_workspace_size', default=1 << 30, help='max workspace size')
+    parser.add_argument(
+        '--device', default='cuda:0', help='Device used for inference')
+    parser.add_argument(
+        '--score-thr', type=float, default=0.3, help='bbox score threshold')
+    parser.add_argument(
+        '--fp16', action='store_true', help='enable fp16 inference')
+    parser.add_argument(
+        '--enable_mask', action='store_true', help='enable mask output')
+    parser.add_argument(
+        '--test-mode',
+        default='all',
+        help='what to do in the test',
+        choices=['convert', 'inference', 'all'])
     args = parser.parse_args()
 
     trt_model_path = args.trt_model_path
@@ -124,24 +120,26 @@ def main():
     test_mode = TEST_MODE_DICT[args.test_mode]
 
     if test_mode & TEST_MODE_DICT['convert'] > 0:
-        convert_test(args.config,
-                     args.checkpoint,
-                     trt_model_path,
-                     opt_shape_param=eval(args.opt_shape_param),
-                     max_workspace_size=args.max_workspace_size,
-                     device=args.device,
-                     fp16=args.fp16)
+        convert_test(
+            args.config,
+            args.checkpoint,
+            trt_model_path,
+            opt_shape_param=eval(args.opt_shape_param),
+            max_workspace_size=args.max_workspace_size,
+            device=args.device,
+            fp16=args.fp16)
         trt_model = init_detector(trt_model_path)
     else:
         trt_model = init_detector(trt_model_path)
 
     if test_mode & TEST_MODE_DICT['inference'] > 0:
-        inference_test(trt_model,
-                       args.config,
-                       args.device,
-                       args.test_folder,
-                       args.save_folder,
-                       score_thr=args.score_thr)
+        inference_test(
+            trt_model,
+            args.config,
+            args.device,
+            args.test_folder,
+            args.save_folder,
+            score_thr=args.score_thr)
 
 
 if __name__ == '__main__':

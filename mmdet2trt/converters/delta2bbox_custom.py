@@ -26,13 +26,13 @@ def convert_delta2bbox(ctx):
         input_x_shape_trt = ctx.network.add_shape(input_x_trt).get_output(0)
     output = ctx.method_return
 
-    plugin = create_delta2bbox_custom_plugin('delta2bbox_custom_' +
-                                             str(id(cls_scores)),
-                                             use_sigmoid_cls=use_sigmoid_cls,
-                                             min_num_bbox=min_num_bboxes,
-                                             num_classes=num_classes,
-                                             target_means=target_mean,
-                                             target_stds=target_std)
+    plugin = create_delta2bbox_custom_plugin(
+        'delta2bbox_custom_' + str(id(cls_scores)),
+        use_sigmoid_cls=use_sigmoid_cls,
+        min_num_bbox=min_num_bboxes,
+        num_classes=num_classes,
+        target_means=target_mean,
+        target_stds=target_std)
 
     layer_input = [scores_trt, preds_trt, anchors_trt]
     if input_x is not None:

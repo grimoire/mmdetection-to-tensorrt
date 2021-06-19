@@ -13,12 +13,12 @@ def bbox_overlaps_batched(bboxes1,
 
         wh = (rb - lt).clamp(min=0)  # [rows, 2]
         overlap = wh[:, :, 0] * wh[:, :, 1]
-        area1 = (bboxes1[:, :, 2] - bboxes1[:, :, 0]) * (bboxes1[:, :, 3] -
-                                                         bboxes1[:, :, 1])
+        area1 = (bboxes1[:, :, 2] - bboxes1[:, :, 0]) * (
+            bboxes1[:, :, 3] - bboxes1[:, :, 1])
 
         if mode == 'iou':
-            area2 = (bboxes2[:, :, 2] - bboxes2[:, :, 0]) * (bboxes2[:, :, 3] -
-                                                             bboxes2[:, :, 1])
+            area2 = (bboxes2[:, :, 2] - bboxes2[:, :, 0]) * (
+                bboxes2[:, :, 3] - bboxes2[:, :, 1])
             union = area1 + area2 - overlap
         else:
             union = area1
@@ -34,12 +34,12 @@ def bbox_overlaps_batched(bboxes1,
 
         wh = (rb - lt).clamp(min=0)  # [rows, cols, 2]
         overlap = wh[:, :, :, 0] * wh[:, :, :, 1]
-        area1 = (bboxes1[:, :, 2] - bboxes1[:, :, 0]) * (bboxes1[:, :, 3] -
-                                                         bboxes1[:, :, 1])
+        area1 = (bboxes1[:, :, 2] - bboxes1[:, :, 0]) * (
+            bboxes1[:, :, 3] - bboxes1[:, :, 1])
 
         if mode == 'iou':
-            area2 = (bboxes2[:, :, 2] - bboxes2[:, :, 0]) * (bboxes2[:, :, 3] -
-                                                             bboxes2[:, :, 1])
+            area2 = (bboxes2[:, :, 2] - bboxes2[:, :, 0]) * (
+                bboxes2[:, :, 3] - bboxes2[:, :, 1])
             union = area1.unsqueeze(-1) + area2.unsqueeze(1) - overlap
         else:
             union = area1.unsqueeze(-1)

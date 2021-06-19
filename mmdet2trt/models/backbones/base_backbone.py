@@ -1,5 +1,4 @@
 import torch.nn as nn
-
 from mmdet2trt.models.builder import register_wraper
 
 
@@ -11,6 +10,7 @@ from mmdet2trt.models.builder import register_wraper
 @register_wraper('mmdet.models.backbones.HourglassNet')
 @register_wraper('mmdet.models.backbones.resnext.ResNeXt')
 class BaseBackboneWraper(nn.Module):
+
     def __init__(self, module):
         super(BaseBackboneWraper, self).__init__()
         self.module = module

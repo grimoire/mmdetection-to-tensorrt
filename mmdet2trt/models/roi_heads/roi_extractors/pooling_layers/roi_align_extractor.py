@@ -2,6 +2,7 @@ from torch import nn
 
 
 class RoiAlignExtractor(nn.Module):
+
     def __init__(self, module):
         super(RoiAlignExtractor, self).__init__()
         self.module = module
@@ -15,8 +16,8 @@ class RoiAlignExtractor(nn.Module):
         module = self.module
         out_size = module.roi_layers[0].output_size
         num_levels = len(feats)
-        roi_feats = feats[0].new_zeros(rois.size(0), module.out_channels,
-                                       *out_size)
+        roi_feats = feats[0].new_zeros(
+            rois.size(0), module.out_channels, *out_size)
 
         target_lvls = module.map_roi_levels(rois, num_levels)
         if roi_scale_factor is not None:

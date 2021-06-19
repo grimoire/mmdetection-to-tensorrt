@@ -1,12 +1,12 @@
-import torch
-
 import mmdet2trt.ops.util_ops as mm2trt_util
+import torch
 from mmdet2trt.models.builder import register_wraper
 from mmdet2trt.models.dense_heads.anchor_free_head import AnchorFreeHeadWraper
 
 
 @register_wraper('mmdet.models.FoveaHead')
 class FoveaHeadWraper(AnchorFreeHeadWraper):
+
     def __init__(self, module):
         super(FoveaHeadWraper, self).__init__(module)
 
@@ -67,8 +67,8 @@ class FoveaHeadWraper(AnchorFreeHeadWraper):
 
         max_scores, _ = mlvl_scores.max(dim=2)
         topk_pre = max(1000, nms_pre)
-        _, topk_inds = max_scores.topk(min(topk_pre, mlvl_scores.shape[1]),
-                                       dim=1)
+        _, topk_inds = max_scores.topk(
+            min(topk_pre, mlvl_scores.shape[1]), dim=1)
         mlvl_proposals = mm2trt_util.gather_topk(mlvl_proposals, 1, topk_inds)
         mlvl_scores = mm2trt_util.gather_topk(mlvl_scores, 1, topk_inds)
 

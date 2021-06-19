@@ -1,13 +1,13 @@
-import torch
-from torch import nn
-
 import mmdet2trt.ops.util_ops as mm2trt_util
+import torch
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 from mmdet2trt.models.builder import build_wraper, register_wraper
+from torch import nn
 
 
 @register_wraper('mmdet.models.GARetinaHead')
 class GuidedAnchorHeadWraper(nn.Module):
+
     def __init__(self, module):
         super(GuidedAnchorHeadWraper, self).__init__()
         self.module = module
@@ -24,9 +24,10 @@ class GuidedAnchorHeadWraper(nn.Module):
         if ('score_thr' in module.test_cfg) and (
                 'nms' in module.test_cfg) and ('iou_threshold'
                                                in module.test_cfg.nms):
-            self.rcnn_nms = BatchedNMS(module.test_cfg.score_thr,
-                                       module.test_cfg.nms.iou_threshold,
-                                       backgroundLabelId=self.num_classes)
+            self.rcnn_nms = BatchedNMS(
+                module.test_cfg.score_thr,
+                module.test_cfg.nms.iou_threshold,
+                backgroundLabelId=self.num_classes)
 
     def get_anchors(self,
                     cls_scores,
@@ -71,9 +72,8 @@ class GuidedAnchorHeadWraper(nn.Module):
             shape_pred.shape[0], -1, 2)
         zeros = anchor_deltas[:, :, :2] * 0.
         bbox_deltas = torch.cat([zeros, anchor_deltas], dim=2)
-        guided_anchors = self.anchor_coder.decode(squares,
-                                                  bbox_deltas,
-                                                  wh_ratio_clip=1e-6)
+        guided_anchors = self.anchor_coder.decode(
+            squares, bbox_deltas, wh_ratio_clip=1e-6)
 
         return guided_anchors, mask
 
@@ -84,10 +84,8 @@ class GuidedAnchorHeadWraper(nn.Module):
 
         cls_scores, bbox_preds, shape_preds, loc_preds = module(feat)
 
-        _, mlvl_anchors, mlvl_masks = self.get_anchors(cls_scores,
-                                                       shape_preds,
-                                                       loc_preds,
-                                                       use_loc_filter=True)
+        _, mlvl_anchors, mlvl_masks = self.get_anchors(
+            cls_scores, shape_preds, loc_preds, use_loc_filter=True)
 
         mlvl_scores = []
         mlvl_proposals = []
@@ -121,9 +119,8 @@ class GuidedAnchorHeadWraper(nn.Module):
                 scores = mm2trt_util.gather_topk(scores, 1, topk_inds)
                 anchors = mm2trt_util.gather_topk(anchors, 1, topk_inds)
 
-            proposals = self.bbox_coder.decode(anchors,
-                                               bbox_pred,
-                                               max_shape=img_shape)
+            proposals = self.bbox_coder.decode(
+                anchors, bbox_pred, max_shape=img_shape)
 
             mlvl_scores.append(scores)
             mlvl_proposals.append(proposals)
@@ -134,8 +131,8 @@ class GuidedAnchorHeadWraper(nn.Module):
 
         max_scores, _ = mlvl_scores.max(dim=2)
         topk_pre = max(1000, nms_pre)
-        _, topk_inds = max_scores.topk(min(topk_pre, mlvl_scores.shape[1]),
-                                       dim=1)
+        _, topk_inds = max_scores.topk(
+            min(topk_pre, mlvl_scores.shape[1]), dim=1)
         mlvl_scores = mm2trt_util.gather_topk(mlvl_scores, 1, topk_inds)
         mlvl_proposals = mm2trt_util.gather_topk(mlvl_proposals, 1, topk_inds)
 

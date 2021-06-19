@@ -1,16 +1,17 @@
 import argparse
 
-import mmcv
 import torch
+from mmdet2trt.apis import init_detector
+from mmdet2trt.apis.test import convert_to_mmdet_result
 from mmdet.apis import single_gpu_test
 from mmdet.datasets import build_dataloader, build_dataset
 from torch import nn
 
-from mmdet2trt.apis import init_detector
-from mmdet2trt.apis.test import convert_to_mmdet_result
+import mmcv
 
 
 class ModelWarper(nn.Module):
+
     def __init__(self, model, num_classes=80, device='cuda:0'):
         super(ModelWarper, self).__init__()
         self.model = model
@@ -50,11 +51,12 @@ def main():
 
     # create dataset and dataloader
     dataset = build_dataset(cfg.data.test)
-    data_loader = build_dataloader(dataset,
-                                   samples_per_gpu=1,
-                                   workers_per_gpu=cfg.data.workers_per_gpu,
-                                   dist=False,
-                                   shuffle=False)
+    data_loader = build_dataloader(
+        dataset,
+        samples_per_gpu=1,
+        workers_per_gpu=cfg.data.workers_per_gpu,
+        dist=False,
+        shuffle=False)
     model = ModelWarper(trt_model, num_classes=len(dataset.CLASSES))
 
     outputs = single_gpu_test(model, data_loader)

@@ -1,7 +1,6 @@
+import mmdet2trt.ops as mmdet2trt_ops
 import torch.nn.functional as F
 from torch2trt_dynamic.torch2trt_dynamic import tensorrt_converter
-
-import mmdet2trt.ops as mmdet2trt_ops
 
 
 @tensorrt_converter('mmdet.models.necks.BFP.forward', is_real=False)
@@ -19,9 +18,8 @@ def convert_BFP(ctx):
             gathered = mmdet2trt_ops.adaptive_max_pool2d_by_input(
                 inputs[i], gather_shapewarper)
         else:
-            gathered = F.interpolate(inputs[i],
-                                     size=gather_size,
-                                     mode='nearest')
+            gathered = F.interpolate(
+                inputs[i], size=gather_size, mode='nearest')
         feats.append(gathered)
 
     bsf = sum(feats) / len(feats)
