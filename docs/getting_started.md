@@ -127,6 +127,7 @@ in the same config file, set the plugin and parse function
 [property]
 ...
 parse-bbox-func-name=NvDsInferParseMmdet                # parse funtion name(amirstan plugin buildin)
+output-bbox-name=boxes                                  # output name of the bounding box
 output-blob-names=num_detections;boxes;scores;classes   # output blob names, same as convert output_names
 custom-lib-path=libamirstan_plugin.so                   # amirstan plugin lib path
 ...
