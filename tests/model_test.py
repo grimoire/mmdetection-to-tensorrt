@@ -44,8 +44,8 @@ def inference_test(trt_model,
     file_list = os.listdir(test_folder)
 
     for file_name in tqdm.tqdm(file_list):
-        if not file_name.lower().endswith('.jpg') or file_name.lower(
-        ).endswith('.png'):
+        if not (file_name.lower().endswith('.jpg')
+                or file_name.lower().endswith('.png')):
             continue
 
         image_path = osp.join(test_folder, file_name)
