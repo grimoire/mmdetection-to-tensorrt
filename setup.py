@@ -33,23 +33,6 @@ def initialize_plugins_options(cmd_obj):
     cmd_obj.trt_lib_dir = None
 
 
-# def run_plugins_compilation(cmd_obj):
-#     if cmd_obj.plugins:
-#         build_args = {}
-#         if cmd_obj.cuda_dir:
-#             build_args['cuda_dir'] = cmd_obj.cuda_dir
-#         if cmd_obj.torch_dir:
-#             build_args['torch_dir'] = cmd_obj.torch_dir
-#         if cmd_obj.trt_inc_dir:
-#             build_args['trt_inc_dir'] = cmd_obj.trt_inc_dir
-#         if cmd_obj.trt_lib_dir:
-#             build_args['trt_lib_dir'] = cmd_obj.trt_lib_dir
-
-#         print('Building in plugin support')
-#         build(**build_args)
-#         package_data['torch2trt'] = ['libtorch2trt.so']
-
-
 class DevelopCommand(develop):
     description = 'Builds the package and symlinks it into the PYTHONPATH'
     user_options = develop.user_options + plugins_user_options
@@ -139,7 +122,7 @@ class CleanCommand(Command):
 
 setup(
     name='mmdet2trt',
-    version='0.4.0',
+    version='0.4.1',
     author='q.yao',
     author_email='streetyao@live.com',
     description='mmdetection to tensorrt converter',
