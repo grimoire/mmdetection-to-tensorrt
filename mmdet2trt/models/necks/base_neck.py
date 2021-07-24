@@ -8,6 +8,7 @@ from mmdet2trt.models.builder import register_wraper
 @register_wraper('mmdet.models.necks.NASFPN')
 @register_wraper('mmdet.models.necks.RFP')
 @register_wraper('mmdet.models.necks.YOLOV3Neck')
+@register_wraper('mmdet.models.necks.SSDNeck')
 class BaseNeckWraper(nn.Module):
 
     def __init__(self, module):

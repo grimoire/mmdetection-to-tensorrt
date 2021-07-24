@@ -10,10 +10,14 @@ class RepPointsHeadWraper(AnchorFreeHeadWraper):
     def __init__(self, module):
         super(RepPointsHeadWraper, self).__init__(module)
 
-        self.point_generators = [
-            build_wraper(generator)
-            for generator in self.module.point_generators
-        ]
+        if hasattr(self.module, 'point_generators'):
+            # mmdet 2.10
+            self.point_generators = [
+                build_wraper(generator)
+                for generator in self.module.point_generators
+            ]
+        else:
+            self.point_generator = build_wraper(self.module.point_generator)
 
     def forward(self, feat, x):
         img_shape = x.shape[2:]
@@ -27,11 +31,20 @@ class RepPointsHeadWraper(AnchorFreeHeadWraper):
             for pts_pred_refine in pts_preds_refine
         ]
 
-        num_levels = len(cls_scores)
-        mlvl_points = [
-            self.point_generators[i](cls_scores[i], module.point_strides[i])
-            for i in range(num_levels)
-        ]
+        if hasattr(self.module, 'point_generators'):
+            # mmdet 2.10
+            num_levels = len(cls_scores)
+            mlvl_points = [
+                self.point_generators[i](cls_scores[i],
+                                         module.point_strides[i])
+                for i in range(num_levels)
+            ]
+        else:
+            featmap_sizes = [
+                cls_scores[i].size()[-2:] for i in range(len(cls_scores))
+            ]
+            mlvl_points = self.point_generator.forward(featmap_sizes,
+                                                       cls_scores[0].device)
 
         mlvl_bboxes = []
         mlvl_scores = []

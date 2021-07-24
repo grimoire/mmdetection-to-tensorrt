@@ -26,7 +26,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
     ```bash
     # mim is so cool!
     pip install openmim
-    mim install mmdet==2.10.0
+    mim install mmdet==2.14.0
     ```
 
 - install [torch2trt_dynamic](https://github.com/grimoire/torch2trt_dynamic):
@@ -126,28 +126,44 @@ opt_shape_param=[
 ]
 max_workspace_size=1<<30    # some module and tactic need large workspace.
 trt_model = mmdet2trt(cfg_path, weight_path, opt_shape_param=opt_shape_param, fp16_mode=True, max_workspace_size=max_workspace_size)
-torch.save(trt_model.state_dict(), save_path)
+
+# save converted model
+torch.save(trt_model.state_dict(), save_model_path)
+
+# save engine if you want to use it in c++ api
+with open(save_engine_path, mode='wb') as f:
+    f.write(trt_model.state_dict()['engine'])
 ```
+
+**Note**:
+- The input of the engine is the tensor after preprocess.
+- The output of the engine is `num_dets, bboxes, scores, class_ids`. if you enable the `enable_mask` flag, there will be another output `mask`.
+- The bboxes output of the engine did not divided by `scale factor`.
 
 how to use the converted model
 
 ```python
-trt_model = init_detector(save_path)
-num_detections, trt_bbox, trt_score, trt_cls = inference_detector(trt_model, image_path, cfg_path, "cuda:0")
+from mmdet.apis import inference_detector
+from mmdet2trt.apis import create_wrap_detector
+
+# create wrap detector
+trt_detector = create_wrap_detector(trt_model, cfg_path, device_id)
+
+# result share same format as mmdetection
+result = inference_detector(trt_detector, image_path)
+
+# visualize
+trt_detector.show_result(
+    image_path,
+    result,
+    score_thr=score_thr,
+    win_name='mmdet2trt',
+    show=True)
 ```
 
-how to save the TensorRT engine
+Try demo in `demo/inference.py`, or `demo/cpp` if you want to do inference with c++ api.
 
-```python
-with open(engine_path, mode='wb') as f:
-    f.write(model_trt.state_dict()['engine'])
-```
-
-Note that the bbox inference result did not divided by scale factor, divided by youself if needed.
-
-play demo in demo/inference.py
-
-[getting_started.md](./docs/getting_started.md) for more detail
+Read [getting_started.md](./docs/getting_started.md) for more details.
 
 ## How does it works?
 
@@ -195,9 +211,9 @@ Read [how-does-it-work](https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-w
 
 Tested on:
 
-- torch=1.6.0
-- tensorrt=7.1.3.4
-- mmdetection=2.10.0
+- torch=1.8.1
+- tensorrt=7.2.1.6
+- mmdetection=2.14.0
 - cuda=10.2
 - cudnn=8.0.2.39
 

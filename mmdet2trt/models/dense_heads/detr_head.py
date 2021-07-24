@@ -1,17 +1,18 @@
 import torch
 from mmdet2trt.core.bbox.transforms import batched_bbox_cxcywh_to_xyxy
-from mmdet2trt.models.builder import register_wraper
+from mmdet2trt.models.builder import build_wraper, register_wraper
 from torch import nn
 from torch.nn import functional as F
 
 
-@register_wraper('mmdet.models.dense_heads.TransformerHead')
-class TransformerHeadWraper(nn.Module):
+@register_wraper('mmdet.models.dense_heads.DETRHead')
+class DETRHeadWraper(nn.Module):
 
     def __init__(self, module):
-        super(TransformerHeadWraper, self).__init__()
+        super(DETRHeadWraper, self).__init__()
         self.module = module
         self.test_cfg = module.test_cfg
+        self.positional_encoding = build_wraper(module.positional_encoding)
 
     def module_forward(self, feats, x):
         module = self.module
@@ -24,8 +25,8 @@ class TransformerHeadWraper(nn.Module):
             feat = module.input_proj(feat)
             masks_interp = F.interpolate(
                 masks.unsqueeze(1),
-                size=feat.shape[-2:]).to(torch.bool).squeeze(1)
-            pos_embed = module.positional_encoding(
+                size=feat.shape[-2:]).squeeze(1).to(torch.bool)
+            pos_embed = self.positional_encoding(
                 masks_interp)  # [bs, embed_dim, h, w]
             # outs_dec: [nb_dec, bs, num_query, embed_dim]
             outs_dec, _ = module.transformer(feat, masks_interp,
@@ -45,7 +46,6 @@ class TransformerHeadWraper(nn.Module):
         img_shape = x.shape[2:]
 
         cls_scores, bbox_preds = self.module_forward(feats, x)
-
         cls_score = cls_scores[-1][0]
         bbox_pred = bbox_preds[-1][0]
 

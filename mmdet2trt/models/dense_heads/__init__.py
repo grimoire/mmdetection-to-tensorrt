@@ -4,6 +4,7 @@ from .atss_head import ATSSHeadWraper
 from .cascade_rpn_head import CascadeRPNHeadWraper, StageCascadeRPNHeadWraper
 from .centripetal_head import CentripetalHeadWraper
 from .corner_head import CornerHeadWraper
+from .detr_head import DETRHeadWraper
 from .fcos_head import FCOSHeadWraper
 from .fovea_head import FoveaHeadWraper
 from .ga_rpn_head import GARPNHeadWraper
@@ -13,7 +14,6 @@ from .paa_head import PPAHeadWraper
 from .reppoints_head import RepPointsHeadWraper
 from .rpn_head import RPNHeadWraper
 from .sabl_retina_head import SABLRetinaHeadWraper
-from .transformer_head import TransformerHeadWraper
 from .vfnet_head import VFNetHeadWraper
 from .yolo_head import YOLOV3HeadWraper
 
@@ -23,6 +23,6 @@ __all__ = [
     'CentripetalHeadWraper', 'CornerHeadWraper', 'FCOSHeadWraper',
     'FoveaHeadWraper', 'GARPNHeadWraper', 'GFLHeadWraper',
     'GuidedAnchorHeadWraper', 'PPAHeadWraper', 'RepPointsHeadWraper',
-    'RPNHeadWraper', 'SABLRetinaHeadWraper', 'TransformerHeadWraper',
+    'RPNHeadWraper', 'SABLRetinaHeadWraper', 'DETRHeadWraper',
     'VFNetHeadWraper', 'YOLOV3HeadWraper'
 ]

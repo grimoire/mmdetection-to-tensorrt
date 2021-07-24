@@ -7,7 +7,8 @@ import cv2
 import torch
 import tqdm
 from mmdet2trt import mmdet2trt
-from mmdet2trt.apis import inference_detector, init_detector
+from mmdet2trt.apis import create_wrap_detector
+from mmdet.apis import inference_detector
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('mmdet2trt')
@@ -43,34 +44,24 @@ def inference_test(trt_model,
                    score_thr=0.3):
     file_list = os.listdir(test_folder)
 
+    wrap_model = create_wrap_detector(trt_model, cfg_path, device)
+
     for file_name in tqdm.tqdm(file_list):
         if not file_name.lower().endswith('.jpg') or file_name.lower(
         ).endswith('.png'):
             continue
 
         image_path = osp.join(test_folder, file_name)
-
-        result = inference_detector(trt_model, image_path, cfg_path, device)
-
-        num_detections = result[0].item()
-        trt_bbox = result[1][0]
-        trt_score = result[2][0]
-        trt_cls = result[3][0]
-
         image = cv2.imread(image_path)
-        for i in range(num_detections):
-            scores = trt_score[i].item()
-            classes = int(trt_cls[i].item())
-            if scores < score_thr:
-                continue
-            bbox = tuple(trt_bbox[i])
-            bbox = tuple(int(v) for v in bbox)
 
-            color = ((classes >> 2 & 1) * 128 + (classes >> 5 & 1) * 128,
-                     (classes >> 1 & 1) * 128 + (classes >> 4 & 1) * 128,
-                     (classes >> 0 & 1) * 128 + (classes >> 3 & 1) * 128)
-            cv2.rectangle(image, bbox[:2], bbox[2:], color, thickness=5)
-        cv2.imwrite(osp.join(save_folder, file_name), image)
+        result = inference_detector(wrap_model, image)
+
+        wrap_model.show_result(
+            image,
+            result,
+            score_thr=score_thr,
+            show=False,
+            out_file=osp.join(save_folder, file_name))
 
 
 TEST_MODE_DICT = {'convert': 1, 'inference': 1 << 1, 'all': 0b11}
@@ -128,13 +119,10 @@ def main():
             max_workspace_size=args.max_workspace_size,
             device=args.device,
             fp16=args.fp16)
-        trt_model = init_detector(trt_model_path)
-    else:
-        trt_model = init_detector(trt_model_path)
 
     if test_mode & TEST_MODE_DICT['inference'] > 0:
         inference_test(
-            trt_model,
+            trt_model_path,
             args.config,
             args.device,
             args.test_folder,

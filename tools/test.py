@@ -1,34 +1,11 @@
 import argparse
 
-import torch
-from mmdet2trt.apis import init_detector
-from mmdet2trt.apis.test import convert_to_mmdet_result
+from mmdet2trt.apis import create_wrap_detector
 from mmdet.apis import single_gpu_test
 from mmdet.datasets import build_dataloader, build_dataset
-from torch import nn
 
 import mmcv
-
-
-class ModelWarper(nn.Module):
-
-    def __init__(self, model, num_classes=80, device='cuda:0'):
-        super(ModelWarper, self).__init__()
-        self.model = model
-        self.device = torch.device(device)
-        self.num_classes = num_classes
-
-    def forward(self, **kwargs):
-        tensor = kwargs['img'][0].to(self.device)
-        scale_factor = kwargs['img_metas'][0].data[0][0]['scale_factor']
-        scale_factor = tensor.new_tensor(scale_factor)
-
-        with torch.no_grad():
-            result = self.model(tensor)
-            result = list(result)
-            result[1] = result[1] / scale_factor
-
-        return convert_to_mmdet_result(result, self.num_classes)
+from mmcv.parallel import MMDataParallel
 
 
 def parse_args():
@@ -47,7 +24,6 @@ def main():
 
     cfg = mmcv.Config.fromfile(args.config)
     cfg.data.test.test_mode = True
-    trt_model = init_detector(args.trt_model_path)
 
     # create dataset and dataloader
     dataset = build_dataset(cfg.data.test)
@@ -57,7 +33,7 @@ def main():
         workers_per_gpu=cfg.data.workers_per_gpu,
         dist=False,
         shuffle=False)
-    model = ModelWarper(trt_model, num_classes=len(dataset.CLASSES))
+    model = MMDataParallel(create_wrap_detector(args.trt_model_path, cfg))
 
     outputs = single_gpu_test(model, data_loader)
     if args.out:
