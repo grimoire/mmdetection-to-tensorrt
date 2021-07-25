@@ -47,8 +47,8 @@ class GridHeadWraper(nn.Module):
         # get expanded pos_bboxes
         widths = (det_bboxes[:, 2] - det_bboxes[:, 0]).unsqueeze(-1)
         heights = (det_bboxes[:, 3] - det_bboxes[:, 1]).unsqueeze(-1)
-        x1 = (det_bboxes[:, 0, None] - widths / 2)
-        y1 = (det_bboxes[:, 1, None] - heights / 2)
+        x1 = (det_bboxes[:, [0]] - widths / 2)
+        y1 = (det_bboxes[:, [1]] - heights / 2)
 
         # map the grid point to the absolute coordinates
         abs_xs = (xs.float() + 0.5) / (w * 1.0) * widths + x1
