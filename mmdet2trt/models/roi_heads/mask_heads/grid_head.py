@@ -23,7 +23,6 @@ class GridHeadWraper(nn.Module):
 
         grid_pred = grid_pred.view(R, c, h * w)
         pred_scores, pred_position = grid_pred.max(dim=2)
-        pred_scores = pred_scores.view(-1)
         xs = pred_position % w
         ys = pred_position // w
 

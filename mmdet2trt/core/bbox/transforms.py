@@ -18,9 +18,9 @@ def batched_distance2bbox(points, distance, max_shape=None):
 def bbox2roi(proposals):
     num_proposals = proposals.shape[1]
     rois_pad = mm2trt_util.arange_by_input(proposals, 0).unsqueeze(1)
-    rois_pad = rois_pad.repeat(1, num_proposals).view(-1, 1)
-    proposals = proposals.view(-1, 4)
-    rois = torch.cat([rois_pad, proposals], dim=1)
+    rois_pad = rois_pad.repeat(1, num_proposals).unsqueeze(-1)
+    rois = torch.cat([rois_pad, proposals], dim=2)
+    rois = rois.view(-1, 5)
     return rois
 
 
