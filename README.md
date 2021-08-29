@@ -38,7 +38,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
     ```
 
 - install [amirstan_plugin](https://github.com/grimoire/amirstan_plugin):
-  - Install tensorrt7: [TensorRT](https://developer.nvidia.com/tensorrt)
+  - Install tensorrt: [TensorRT](https://developer.nvidia.com/tensorrt)
   - clone repo and build plugin
 
     ```bash
@@ -51,7 +51,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
     make -j10
     ```
 
-  - **DON'T FORGET** setting the envoirment variable(in ~/.bashrc):
+  - **DON'T FORGET** setting the envoirment variable(in `~/.bashrc`):
 
     ```bash
     export AMIRSTAN_LIBRARY_PATH=${amirstan_plugin_root}/build/lib
@@ -136,7 +136,7 @@ with open(save_engine_path, mode='wb') as f:
 ```
 
 **Note**:
-- The input of the engine is the tensor after preprocess.
+- The input of the engine is the tensor **after preprocess**.
 - The output of the engine is `num_dets, bboxes, scores, class_ids`. if you enable the `enable_mask` flag, there will be another output `mask`.
 - The bboxes output of the engine did not divided by `scale factor`.
 
@@ -212,10 +212,9 @@ Read [how-does-it-work](https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-w
 Tested on:
 
 - torch=1.8.1
-- tensorrt=7.2.1.6
+- tensorrt=8.0.1.6
 - mmdetection=2.14.0
-- cuda=10.2
-- cudnn=8.0.2.39
+- cuda=11.1
 
 If you find any error, please report it in the issue.
 
