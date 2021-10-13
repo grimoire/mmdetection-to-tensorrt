@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import torch
 from mmdet.core import bbox2result
@@ -59,7 +61,15 @@ def get_classes_from_config(model_cfg):
     if isinstance(model_cfg, str):
         model_cfg = mmcv.Config.fromfile(model_cfg)
 
-    from mmdet.datasets import DATASETS
+    from mmdet.datasets import DATASETS, build_dataset
+
+    try:
+        dataset = build_dataset(model_cfg)
+        return dataset.CLASSES
+    except Exception:
+        logging.warn(
+            'Can not load dataset from config. Use default CLASSES instead.')
+
     module_dict = DATASETS.module_dict
     data_cfg = model_cfg.data
 
@@ -68,16 +78,20 @@ def get_classes_from_config(model_cfg):
             train_val_cfg = train_val_cfg.dataset
         return module_dict[train_val_cfg.type]
 
-    if 'train' in data_cfg:
-        module = get_module_from_train_val(data_cfg.train)
-    elif 'val' in data_cfg:
-        module = get_module_from_train_val(data_cfg.val)
-    elif 'test' in data_cfg:
-        module = get_module_from_train_val(data_cfg.test)
-    else:
-        raise RuntimeError(f'No dataset config found in: {model_cfg_str}')
+    data_cfg_type_list = ['train', 'val', 'test']
 
-    return module.CLASSES
+    MODULE = None
+    for data_cfg_type in data_cfg_type_list:
+        if data_cfg_type in data_cfg:
+            tmp_data_cfg = data_cfg.get(data_cfg_type)
+            MODULE = get_module_from_train_val(tmp_data_cfg)
+            if 'classes' in tmp_data_cfg:
+                return MODULE.get_classes(tmp_data_cfg.classes)
+            break
+
+    assert MODULE is not None, f'No dataset config found in: {model_cfg_str}'
+
+    return MODULE.CLASSES
 
 
 class TRTDetector(BaseDetector):
