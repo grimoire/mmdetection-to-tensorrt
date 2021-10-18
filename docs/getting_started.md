@@ -1,6 +1,6 @@
 # Getting Started
 
-This page provide details about mmdet2trt.
+This page provides details about mmdet2trt.
 
 - [Getting Started](#getting-started)
   - [dynamic shape/batched input](#dynamic-shapebatched-input)
@@ -8,7 +8,7 @@ This page provide details about mmdet2trt.
   - [int8 support](#int8-support)
   - [max workspace size](#max-workspace-size)
   - [use in c++](#use-in-c)
-  - [deepstream support](#deepstream-support)
+  - [DeepStream support](#deepstream-support)
   - [instance segmentation support(experimentation)](#instance-segmentation-supportexperimentation)
 
 ## dynamic shape/batched input
@@ -18,9 +18,9 @@ This page provide details about mmdet2trt.
 ```python
 opt_shape_param=[
     [
-        [1,3,320,320],
-        [2,3,800,1312],
-        [4,3,1344,1344],
+        [1,3,320,320],      # min shape
+        [2,3,800,1312],     # opt shape
+        [4,3,1344,1344],    # max shape
     ]
 ]
 trt_model = mmdet2trt(  ...,
@@ -28,15 +28,15 @@ trt_model = mmdet2trt(  ...,
                         ...)
 ```
 
-this config will give you input tensor size between (320, 320) to (1344, 1344), max batch_size=4
+This config will give you input tensor size between (320, 320) to (1344, 1344), max batch_size=4
 
-**warning:**
+**Warning:**
+
 Dynamic input shape and batch support might need more memory. Use fixed shape to avoid unnecessary memory usage(min=optimize=max).
 
 ## fp16 support
 
-**fp16 mode** can easily accelerate the model, just set the `fp16_mode=True` to enable it.
-
+**fp16 mode** can accelerate the inference. Set the `fp16_mode=True` to enable it.
 
 ```python
 trt_model = mmdet2trt(  ...,
@@ -46,10 +46,11 @@ trt_model = mmdet2trt(  ...,
 
 ## int8 support
 
-**int8 mode** need more configs.
+**int8 mode** needs more configs.
+
 - set `input8_mode=True`.
 - provide calibrate dataset, the `__getitem__()` method of dataset should return a list of tensor with shape (C,H,W), the shape **must** be the same as `opt_shape_param[0][1][1:]` (optimize shape). The tensor should do the same preprocess as the model. There is a default dataset, you can also set your custom one.
-- set the calibrate algrithm, support `entropy` and `minmax`.
+- set the calibrate algorithm, support `entropy` and `minmax`.
 
 ```python
 from mmdet2trt import mmdet2trt, Int8CalibDataset
@@ -71,16 +72,17 @@ trt_model = mmdet2trt(cfg_path, model_path,
                     int8_calib_alg="entropy")
 ```
 
-**warning:**
-Not all model support int8 mode. If it doesn't works, try fix shape/batch size.
+**Warning:**
+
+Not all models support int8 mode.
 
 ## max workspace size
 
-Some layer need extra gpu memory. Any some optimize tactic also need more space. enlarge `max_workspace_size` may potentially accelerate your model with the cost of more memory.
+Some layers need extra GPU memory. Any some optimization tactics also need more space. Please enlarge `max_workspace_size` may potentially accelerate your model with the cost of more memory.
 
 ## use in c++
 
-The converted model is a python warp on engine.
+The converted model is a python warp of TensorRT engine.
 first, get the serialized engine from trt_model:
 
 ```python
@@ -88,14 +90,15 @@ with open(engine_path, mode='wb') as f:
     f.write(model_trt.state_dict()['engine'])
 ```
 
-Link the `${AMIRSTAN_PLUGIN_DIR}/build/lib/libamirstan_plugin.so` in your project. compile and load the engine. enjoy.
+Link the `${AMIRSTAN_PLUGIN_DIR}/build/lib/libamirstan_plugin.so` in your project (or you can load it in runtime). Compile and load the engine.
 
-**warning:**
-might need to invode `initLibAmirstanInferPlugins()` in [amirInferPlugin.h](https://github.com/grimoire/amirstan_plugin/blob/master/include/plugin/amirInferPlugin.h) to load the plugins.
+**Warning:**
 
-The engine only contain inference forward. Preprocess(resize, normalize) and postprocess(divid scale factor) should be done in your project.
+might need to invoke `initLibAmirstanInferPlugins()` in [amirInferPlugin.h](https://github.com/grimoire/amirstan_plugin/blob/master/include/plugin/amirInferPlugin.h) to load the plugins.
 
-## deepstream support
+The engine only contains inference forward. Preprocess(resize, normalize) and postprocess (divide scale factor) should be done in your project.
+
+## DeepStream support
 
 when converting model, set the output names:
 
@@ -106,12 +109,14 @@ trt_model = mmdet2trt(  ...,
 ```
 
 Create engine file:
+
 ```python
 with open(engine_path, mode='wb') as f:
     f.write(model_trt.state_dict()['engine'])
 ```
 
-in the deepstream model config file, set some config
+In the DeepStream model config file, set some config
+
 ```
 [property]
 ...
@@ -122,7 +127,8 @@ labelfile-path=labels.txt       # label file
 ...
 ```
 
-in the same config file, set the plugin and parse function
+In the same config file, set the plugin and parse function
+
 ```
 [property]
 ...
@@ -134,6 +140,7 @@ custom-lib-path=libamirstan_plugin.so                   # amirstan plugin lib pa
 ```
 
 you might also need to set `group_threshold=0` (not sure why, please tell me if you know.)
+
 ```
 [class-attrs-all]
 ...
@@ -141,10 +148,10 @@ group-threshold=0
 ...
 ```
 
-enjoy the model in deepstream.
+Enjoy the model in DeepStream.
 
-**warning:**
-I am not so familiar with deepstream, if you find any thing wrong with above, please let me know.
+**Warning:**
+I am not so familiar with DeepStream. If you find anything wrong above, please let me know.
 
 ## instance segmentation support(experimentation)
 
@@ -155,13 +162,13 @@ set flag `enable_mask` to True
 trt_model = mmdet2trt(... , enable_mask = True)
 ```
 
-inference with trt_model will return 5 tensors
+The result contain 5 output:
 
 ```python
 num_detections, bboxes, scores, class_ids, masks = trt_model(input_tensor)
 ```
 
-convert and do postprocess if you needed.
+Convert and do postprocess (this is just an example, please do the postprocess by yourself).
 
 ```python
 # convert post process
