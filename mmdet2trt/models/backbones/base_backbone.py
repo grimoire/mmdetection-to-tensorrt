@@ -2,6 +2,7 @@ import torch.nn as nn
 from mmdet2trt.models.builder import register_wraper
 
 
+@register_wraper('mmdet.models.backbones.CSPDarknet')
 @register_wraper('mmdet.models.backbones.MobileNetV2')
 @register_wraper('mmdet.models.backbones.ResNet')
 @register_wraper('mmdet.models.backbones.SSDVGG')

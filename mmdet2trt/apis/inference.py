@@ -74,7 +74,8 @@ def get_classes_from_config(model_cfg):
     data_cfg = model_cfg.data
 
     def get_module_from_train_val(train_val_cfg):
-        while train_val_cfg.type == 'RepeatDataset':
+        while train_val_cfg.type == 'RepeatDataset' or \
+         train_val_cfg.type == 'MultiImageMixDataset':
             train_val_cfg = train_val_cfg.dataset
         return module_dict[train_val_cfg.type]
 

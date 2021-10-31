@@ -208,12 +208,13 @@ Read [how-does-it-work](https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-w
 - [x] Cascade Mask R-CNN(experiment)
 - [x] Cascade RPN
 - [x] DETR
+- [x] YOLOX
 
 Tested on:
 
 - torch=1.8.1
 - tensorrt=8.0.1.6
-- mmdetection=2.14.0
+- mmdetection=2.18.0
 - cuda=11.1
 
 If you find any error, please report it in the issue.

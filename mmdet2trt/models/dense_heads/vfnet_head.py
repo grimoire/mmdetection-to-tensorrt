@@ -31,7 +31,15 @@ class VFNetHeadWraper(AnchorFreeHeadWraper):
     def forward(self, feat, x):
         module = self.module
         cfg = self.test_cfg
-        cls_scores, bbox_preds, bbox_preds_refine = module(feat)
+        dense_outputs = module(feat)
+
+        if len(dense_outputs) == 3:
+            # old
+            cls_scores, _, bbox_preds_refine = dense_outputs
+        else:
+            # new
+            cls_scores, bbox_preds_refine = dense_outputs
+
         mlvl_points = self.get_points(cls_scores)
 
         mlvl_bboxes = []

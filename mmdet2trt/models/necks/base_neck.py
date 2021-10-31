@@ -2,6 +2,7 @@ import torch.nn as nn
 from mmdet2trt.models.builder import register_wraper
 
 
+@register_wraper('mmdet.models.necks.YOLOXPAFPN')
 @register_wraper('mmdet.models.necks.FPN')
 @register_wraper('mmdet.models.necks.BFP')
 @register_wraper('mmdet.models.necks.FPN_CARAFE')
