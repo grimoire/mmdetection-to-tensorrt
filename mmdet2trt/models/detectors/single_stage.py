@@ -4,6 +4,7 @@ from mmdet2trt.models.necks import BaseNeckWraper
 from torch import nn
 
 
+@register_wraper('mmdet.models.YOLOX')
 @register_wraper('mmdet.models.GFL')
 @register_wraper('mmdet.models.CornerNet')
 @register_wraper('mmdet.models.PAA')

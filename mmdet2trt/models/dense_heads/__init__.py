@@ -16,6 +16,7 @@ from .rpn_head import RPNHeadWraper
 from .sabl_retina_head import SABLRetinaHeadWraper
 from .vfnet_head import VFNetHeadWraper
 from .yolo_head import YOLOV3HeadWraper
+from .yolox_head import YOLOXHeadWraper
 
 __all__ = [
     'AnchorFreeHeadWraper', 'AnchorHeadWraper', 'ATSSHeadWraper',
@@ -24,5 +25,5 @@ __all__ = [
     'FoveaHeadWraper', 'GARPNHeadWraper', 'GFLHeadWraper',
     'GuidedAnchorHeadWraper', 'PPAHeadWraper', 'RepPointsHeadWraper',
     'RPNHeadWraper', 'SABLRetinaHeadWraper', 'DETRHeadWraper',
-    'VFNetHeadWraper', 'YOLOV3HeadWraper'
+    'VFNetHeadWraper', 'YOLOV3HeadWraper', 'YOLOXHeadWraper'
 ]

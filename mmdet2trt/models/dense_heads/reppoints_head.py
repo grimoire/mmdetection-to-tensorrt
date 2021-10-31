@@ -10,7 +10,10 @@ class RepPointsHeadWraper(AnchorFreeHeadWraper):
     def __init__(self, module):
         super(RepPointsHeadWraper, self).__init__(module)
 
-        if hasattr(self.module, 'point_generators'):
+        if hasattr(self.module, 'prior_generator'):
+            # mmdet 2.18
+            self.prior_generator = build_wraper(self.module.prior_generator)
+        elif hasattr(self.module, 'point_generators'):
             # mmdet 2.10
             self.point_generators = [
                 build_wraper(generator)
@@ -24,14 +27,28 @@ class RepPointsHeadWraper(AnchorFreeHeadWraper):
         module = self.module
         cfg = self.test_cfg
 
-        cls_scores, _, pts_preds_refine = module(feat)
+        dense_outputs = module(feat)
+
+        if len(dense_outputs) == 3:
+            # old
+            cls_scores, _, pts_preds_refine = dense_outputs
+        else:
+            # mmdet 2.18+
+            cls_scores, pts_preds_refine = dense_outputs
 
         bbox_preds_refine = [
             module.points2bbox(pts_pred_refine)
             for pts_pred_refine in pts_preds_refine
         ]
 
-        if hasattr(self.module, 'point_generators'):
+        if hasattr(self.module, 'prior_generator'):
+            # mmdet 2.18
+            featmap_sizes = [
+                cls_scores[i].size()[-2:] for i in range(len(cls_scores))
+            ]
+            mlvl_points = self.prior_generator.forward(featmap_sizes,
+                                                       cls_scores[0].device)
+        elif hasattr(self.module, 'point_generators'):
             # mmdet 2.10
             num_levels = len(cls_scores)
             mlvl_points = [
