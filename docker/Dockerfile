@@ -1,8 +1,8 @@
 FROM nvcr.io/nvidia/tensorrt:20.12-py3
 
 ARG CUDA=11.1
-ARG TORCH_VERSION=1.6.0
-ARG TORCHVISION_VERSION=0.7.0
+ARG TORCH_VERSION=1.8.0
+ARG TORCHVISION_VERSION=0.9.0
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -18,7 +18,8 @@ RUN mkdir ~/space &&\
 # COPY ./pip.conf /root/.pip
 
 ### pytorch
-RUN pip3 install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION}
+RUN pip3 install torch==${TORCH_VERSION}+cu${CUDA//./} torchvision==${TORCHVISION_VERSION}+cu${CUDA//./} -f https://download.pytorch.org/whl/torch_stable.html
+
 
 ### install mmcv
 RUN pip3 install pytest-runner
