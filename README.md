@@ -229,4 +229,4 @@ This repo is maintained by [@grimoire](https://github.com/grimoire)
 
 Discuss group: QQ:1107959378
 
-And send your resume to my e-mail if you want to join @OpenMMLab.
+And send your resume to my e-mail if you want to join @OpenMMLab. Please read the JD for detail: [link](https://mp.weixin.qq.com/s/CzrOqITFZX-T_Kcor0hs2g)
