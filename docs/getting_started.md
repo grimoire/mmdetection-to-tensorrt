@@ -162,23 +162,4 @@ set flag `enable_mask` to True
 trt_model = mmdet2trt(... , enable_mask = True)
 ```
 
-The result contain 5 output:
-
-```python
-num_detections, bboxes, scores, class_ids, masks = trt_model(input_tensor)
-```
-
-Convert and do postprocess (this is just an example, please do the postprocess by yourself).
-
-```python
-# convert post process
-mask_postprocessor = mask_processor2trt(max_width = max_width,
-                                        max_height = max_height,
-                                        max_batch_size = 1,
-                                        max_box_per_batch = 10,
-                                        mask_size = [28, 28]
-                                        )
-
-# do postprocess
-final_masks = mask_postprocessor(masks[0:1, :10, ...], bboxes[0:1, :10, ...])
-```
+**Note**: the mask output is of shape `[batch_size, num_boxes, 28, 28]`, the post-process of masks have not been included in the model. Please implement it by yourself if you want to integrate the converted engine into your own project.
