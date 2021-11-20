@@ -2,9 +2,11 @@ import logging
 
 import numpy as np
 import torch
+from addict import Addict
 from mmdet.core import bbox2result
 from mmdet.datasets.pipelines import Compose
 from mmdet.models import BaseDetector
+from mmdet.models.roi_heads.mask_heads import FCNMaskHead
 from torch2trt_dynamic import TRTModule
 
 import mmcv
@@ -151,6 +153,8 @@ class TRTDetector(BaseDetector):
         for i in range(batch_size):
             num_dets = batch_num_dets[i]
             dets, labels = batch_dets[i][:num_dets], batch_labels[i][:num_dets]
+            old_dets = dets.clone()
+            labels = labels.int()
             if rescale:
                 scale_factor = img_metas[i]['scale_factor']
 
@@ -173,21 +177,23 @@ class TRTDetector(BaseDetector):
             dets_results = bbox2result(dets, labels, len(self.CLASSES))
 
             if batch_masks is not None:
-                masks = batch_masks[i]
-                img_h, img_w = img_metas[i]['img_shape'][:2]
-                ori_h, ori_w = img_metas[i]['ori_shape'][:2]
-                masks = masks[:, :img_h, :img_w]
-                if rescale:
-                    masks = masks.astype(np.float32)
-                    masks = torch.from_numpy(masks)
-                    masks = torch.nn.functional.interpolate(
-                        masks.unsqueeze(0), size=(ori_h, ori_w))
-                    masks = masks.squeeze(0).detach().numpy()
-                if masks.dtype != np.bool:
-                    masks = masks >= 0.5
-                segms_results = [[] for _ in range(len(self.CLASSES))]
-                for j in range(len(dets)):
-                    segms_results[labels[j]].append(masks[j])
+                masks = batch_masks[i][:num_dets].unsqueeze(1)
+                masks = masks.detach().cpu().numpy()
+                num_classes = len(self.CLASSES)
+                class_agnostic = True
+                segms_results = []
+                for i in range(batch_size):
+                    segms_results = FCNMaskHead.get_seg_masks(
+                        Addict(
+                            num_classes=num_classes,
+                            class_agnostic=class_agnostic),
+                        masks,
+                        old_dets,
+                        labels,
+                        rcnn_test_cfg=Addict(mask_thr_binary=0.5),
+                        ori_shape=img_metas[i]['ori_shape'],
+                        scale_factor=scale_factor,
+                        rescale=rescale)
                 results.append((dets_results, segms_results))
             else:
                 results.append(dets_results)
