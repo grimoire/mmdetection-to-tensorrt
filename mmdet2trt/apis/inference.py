@@ -11,6 +11,8 @@ from torch2trt_dynamic import TRTModule
 
 import mmcv
 
+logger = logging.getLogger('mmdet2trt')
+
 
 def init_trt_model(trt_model_path):
     model_trt = TRTModule()
@@ -69,7 +71,7 @@ def get_classes_from_config(model_cfg):
         dataset = build_dataset(model_cfg)
         return dataset.CLASSES
     except Exception:
-        logging.warn(
+        logger.warning(
             'Can not load dataset from config. Use default CLASSES instead.')
 
     module_dict = DATASETS.module_dict

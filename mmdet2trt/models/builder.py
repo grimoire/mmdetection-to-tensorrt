@@ -7,6 +7,8 @@ import mmcv.ops  # noqa: F401,F403
 
 WRAPER_DICT = {}
 
+logger = logging.getLogger('mmdet2trt')
+
 
 def register_wraper(module_name):
     try:
@@ -14,7 +16,7 @@ def register_wraper(module_name):
 
         def register_func(wrap_cls):
             if mmdet_module in WRAPER_DICT:
-                logging.warning(
+                logger.warning(
                     '{} is already registed.'.format(mmdet_module) +
                     ' new wraper {} will cover current wraper {}.'.format(
                         wrap_cls, WRAPER_DICT[mmdet_module]))
@@ -24,7 +26,7 @@ def register_wraper(module_name):
         return register_func
 
     except Exception:
-        logging.warn('module {} not exist.'.format(module_name))
+        logger.warning('module {} not exist.'.format(module_name))
 
         def register_func(wrap_cls):
             return wrap_cls
@@ -37,10 +39,10 @@ def build_wraper(module, default_wraper=None, **kwargs):
 
     wrap_model = None
     if model_type in WRAPER_DICT:
-        logging.debug('find module type:{}'.format(str(model_type)))
+        logger.debug('find module type:{}'.format(str(model_type)))
         wrap_model = WRAPER_DICT[model_type](module, **kwargs)
     else:
-        logging.warning(
+        logger.warning(
             "can't find wrap module for type:{}, use {} instead.".format(
                 str(model_type), default_wraper))
         if default_wraper is not None:
