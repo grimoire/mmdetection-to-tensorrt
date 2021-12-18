@@ -1,9 +1,9 @@
 import logging
 
-logger = logging.getLogger('mmdet2trt')
-
 from .deform_roi_pool_extractor import DeformRoiPoolExtractor
 from .roi_align_extractor import RoiAlignExtractor
+
+logger = logging.getLogger('mmdet2trt')
 
 POOLING_DICT = {
     'RoIAlign': RoiAlignExtractor,
