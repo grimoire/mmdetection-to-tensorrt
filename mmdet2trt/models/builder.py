@@ -16,10 +16,9 @@ def register_wraper(module_name):
 
         def register_func(wrap_cls):
             if mmdet_module in WRAPER_DICT:
-                logger.warning(
-                    '{} is already registed.'.format(mmdet_module) +
-                    ' new wraper {} will cover current wraper {}.'.format(
-                        wrap_cls, WRAPER_DICT[mmdet_module]))
+                logger.warning('{} is already registed.'.format(mmdet_module) +
+                               ' new wraper {} will cover current wraper {}.'.
+                               format(wrap_cls, WRAPER_DICT[mmdet_module]))
             WRAPER_DICT[mmdet_module] = wrap_cls
             return wrap_cls
 
