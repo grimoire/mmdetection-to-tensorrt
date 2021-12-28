@@ -18,7 +18,7 @@
 //  Some required utilities
 class Logger : public nvinfer1::ILogger {
 public:
-    void log(Severity severity, const char* msg) override {
+    void log(Severity severity, const char* msg) noexcept override {
         // remove this 'if' if you need more logged info
         if ((severity == Severity::kERROR) || (severity == Severity::kINTERNAL_ERROR)) {
             std::cout << msg << std::endl;
