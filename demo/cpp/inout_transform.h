@@ -37,7 +37,7 @@ class ImageTransformer {
         //  1. Resize before normalization - smaller image takes less time to be transformed
         cv::Size2d scale_factor = resize_keep_aspect_ratio(input_image, dst_size, output_image);
         //  2. To RGB, FP32
-        cv::cvtColor(output_image, output_image, CV_BGR2RGB);
+        cv::cvtColor(output_image, output_image, cv::COLOR_BGR2RGB);
         //  3. To FP32 and normalize
         output_image.convertTo(output_image, CV_32FC3);
         cv::Mat rgb[3];

@@ -14,11 +14,18 @@
 #include "data.h"
 #include "inout_transform.h"
 
+#include "NvInferVersion.h"
+
+#if NV_TENSORRT_MAJOR > 7
+#define PLUGIN_NOEXCEPT noexcept
+#else
+#define PLUGIN_NOEXCEPT
+#endif
 
 //  Some required utilities
 class Logger : public nvinfer1::ILogger {
 public:
-    void log(Severity severity, const char* msg) override {
+    void log(Severity severity, const char* msg) PLUGIN_NOEXCEPT override {
         // remove this 'if' if you need more logged info
         if ((severity == Severity::kERROR) || (severity == Severity::kINTERNAL_ERROR)) {
             std::cout << msg << std::endl;
