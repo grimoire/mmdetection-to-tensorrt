@@ -1,8 +1,8 @@
+import mmcv.ops
 import torch
-from mmdet2trt.models.builder import build_wraper, register_wraper
 from torch import nn
 
-import mmcv.ops
+from mmdet2trt.models.builder import build_wraper, register_wraper
 
 deformable_roi_pool_wrap = mmcv.ops.deform_roi_pool
 

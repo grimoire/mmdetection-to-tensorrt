@@ -4,16 +4,16 @@ import time
 from argparse import ArgumentParser
 from pathlib import Path
 
+import mmcv
 import tensorrt as trt
 import torch
-from mmdet2trt.models.builder import build_wraper
-from mmdet2trt.models.detectors import TwoStageDetectorWraper
 from mmdet.apis import init_detector
 from mmdet.apis.inference import LoadImage
 from mmdet.datasets.pipelines import Compose
 from torch2trt_dynamic import torch2trt_dynamic
 
-import mmcv
+from mmdet2trt.models.builder import build_wraper
+from mmdet2trt.models.detectors import TwoStageDetectorWraper
 
 logger = logging.getLogger('mmdet2trt')
 
@@ -171,8 +171,8 @@ def mask_processor2trt(max_width,
                        return_wrap_model=False,
                        output_names=None):
 
-    from mmdet2trt.models.roi_heads.mask_heads.fcn_mask_head \
-        import MaskProcessor
+    from mmdet2trt.models.roi_heads.mask_heads.fcn_mask_head import \
+        MaskProcessor
 
     logger.info('Wrapping MaskProcessor')
     wrap_model = MaskProcessor(max_width=max_width, max_height=max_height)

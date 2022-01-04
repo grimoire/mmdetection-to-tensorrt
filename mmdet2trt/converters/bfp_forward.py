@@ -1,6 +1,7 @@
-import mmdet2trt.ops as mmdet2trt_ops
 import torch.nn.functional as F
 from torch2trt_dynamic.torch2trt_dynamic import tensorrt_converter
+
+import mmdet2trt.ops as mmdet2trt_ops
 
 
 @tensorrt_converter('mmdet.models.necks.BFP.forward', is_real=False)

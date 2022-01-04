@@ -1,5 +1,6 @@
 import logging
 
+import mmcv
 import numpy as np
 import torch
 from addict import Addict
@@ -8,8 +9,6 @@ from mmdet.datasets.pipelines import Compose
 from mmdet.models import BaseDetector
 from mmdet.models.roi_heads.mask_heads import FCNMaskHead
 from torch2trt_dynamic import TRTModule
-
-import mmcv
 
 logger = logging.getLogger('mmdet2trt')
 

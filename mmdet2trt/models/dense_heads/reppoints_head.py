@@ -1,5 +1,6 @@
-import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
+
+import mmdet2trt.ops.util_ops as mm2trt_util
 from mmdet2trt.models.builder import build_wraper, register_wraper
 from mmdet2trt.models.dense_heads.anchor_free_head import AnchorFreeHeadWraper
 

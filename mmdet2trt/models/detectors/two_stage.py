@@ -1,9 +1,10 @@
+from torch import nn
+
 from mmdet2trt.models.backbones import BaseBackboneWraper
 from mmdet2trt.models.builder import build_wraper, register_wraper
 from mmdet2trt.models.dense_heads import RPNHeadWraper
 from mmdet2trt.models.necks import BaseNeckWraper
 from mmdet2trt.models.roi_heads import StandardRoIHeadWraper
-from torch import nn
 
 
 @register_wraper('mmdet.models.MaskScoringRCNN')

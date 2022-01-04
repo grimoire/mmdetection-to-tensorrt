@@ -1,7 +1,8 @@
 import torch
+from torch import nn
+
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 from mmdet2trt.models.builder import build_wraper, register_wraper
-from torch import nn
 
 
 @register_wraper('mmdet.models.dense_heads.YOLOXHead')

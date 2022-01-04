@@ -6,9 +6,10 @@ from argparse import ArgumentParser
 import cv2
 import torch
 import tqdm
+from mmdet.apis import inference_detector
+
 from mmdet2trt import mmdet2trt
 from mmdet2trt.apis import create_wrap_detector
-from mmdet.apis import inference_detector
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('mmdet2trt')
