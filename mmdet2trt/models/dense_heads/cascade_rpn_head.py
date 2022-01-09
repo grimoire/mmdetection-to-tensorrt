@@ -1,7 +1,8 @@
-import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
-from mmdet2trt.models.builder import build_wraper, register_wraper
 from torch import nn
+
+import mmdet2trt.ops.util_ops as mm2trt_util
+from mmdet2trt.models.builder import build_wraper, register_wraper
 
 from .rpn_head import RPNHeadWraper
 

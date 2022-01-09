@@ -1,5 +1,6 @@
-import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
+
+import mmdet2trt.ops.util_ops as mm2trt_util
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 from mmdet2trt.models.builder import register_wraper
 

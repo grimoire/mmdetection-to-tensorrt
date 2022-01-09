@@ -1,8 +1,9 @@
 import torch
 import torch.nn.functional as F
+from torch import nn
+
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 from mmdet2trt.models.builder import register_wraper
-from torch import nn
 
 
 @register_wraper('mmdet.models.CornerHead')

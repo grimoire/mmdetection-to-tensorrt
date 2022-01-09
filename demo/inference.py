@@ -1,9 +1,10 @@
 from argparse import ArgumentParser
 
 import torch
+from mmdet.apis import inference_detector
+
 from mmdet2trt import mmdet2trt
 from mmdet2trt.apis import create_wrap_detector
-from mmdet.apis import inference_detector
 
 
 def main():

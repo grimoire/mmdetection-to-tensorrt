@@ -1,7 +1,8 @@
 import torch
 import torch.nn.functional as F
-from mmdet2trt.models.builder import register_wraper
 from torch import nn
+
+from mmdet2trt.models.builder import register_wraper
 
 
 @register_wraper('mmdet.models.roi_heads.mask_heads.fcn_mask_head.FCNMaskHead')

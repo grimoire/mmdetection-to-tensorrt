@@ -1,5 +1,6 @@
-import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
+
+import mmdet2trt.ops.util_ops as mm2trt_util
 from mmdet2trt.models.builder import build_wraper, register_wraper
 from mmdet2trt.models.dense_heads.anchor_free_head import AnchorFreeHeadWraper
 
@@ -32,14 +33,15 @@ class RepPointsHeadWraper(AnchorFreeHeadWraper):
         if len(dense_outputs) == 3:
             # old
             cls_scores, _, pts_preds_refine = dense_outputs
+            bbox_preds_refine = [
+                module.points2bbox(pts_pred_refine)
+                for pts_pred_refine in pts_preds_refine
+            ]
         else:
             # mmdet 2.18+
             cls_scores, pts_preds_refine = dense_outputs
 
-        bbox_preds_refine = [
-            module.points2bbox(pts_pred_refine)
-            for pts_pred_refine in pts_preds_refine
-        ]
+        bbox_preds_refine = pts_preds_refine
 
         if hasattr(self.module, 'prior_generator'):
             # mmdet 2.18

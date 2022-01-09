@@ -1,5 +1,6 @@
-from mmdet2trt.models.builder import register_wraper
 from torch import nn
+
+from mmdet2trt.models.builder import register_wraper
 
 
 class AnchorGeneratorSingle(nn.Module):

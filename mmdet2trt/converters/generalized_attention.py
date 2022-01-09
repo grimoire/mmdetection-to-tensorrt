@@ -1,10 +1,11 @@
 import math
 
-import mmdet2trt
 import numpy as np
 import torch
 import torch.nn.functional as F
 from torch2trt_dynamic.torch2trt_dynamic import tensorrt_converter
+
+import mmdet2trt
 
 
 def get_position_embedding(self,

@@ -1,5 +1,6 @@
-from mmdet2trt.models.builder import register_wraper
 from torch import nn
+
+from mmdet2trt.models.builder import register_wraper
 
 
 @register_wraper('mmdet.models.roi_heads.roi_extractors'
