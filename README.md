@@ -1,5 +1,11 @@
 # MMDet to TensorRT
 
+## News
+
+OpenMMLab has release [MMDeploy](https://github.com/open-mmlab/mmdeploy) which support more inference engine and repos. PRs and advices are welcome !
+
+## Introduction
+
 This project aims to convert the mmdetection model to TensorRT model end2end.
 Focus on object detection for now.
 Mask support is **experiment**.
@@ -227,6 +233,9 @@ read [this page](./docs/FAQ.md) if you meet any problem.
 
 This repo is maintained by [@grimoire](https://github.com/grimoire)
 
-Discuss group: QQ:1107959378
+QQ discuss group:
+
+- mmdetection-to-tensorrt: 1107959378
+- mmdeploy: 670870748
 
 And send your resume to my e-mail if you want to join @OpenMMLab. Please read the JD for detail: [link](https://mp.weixin.qq.com/s/CzrOqITFZX-T_Kcor0hs2g)
