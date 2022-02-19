@@ -5,21 +5,20 @@ def bbox_rescale_batched(bboxes, scale_factor=1.0):
 
     if bboxes.size(2) == 5:
         bboxes_ = bboxes[:, :, 1:]
-        inds_ = bboxes[:, :, 0]
+        inds_ = bboxes[:, :, :1]
     else:
         bboxes_ = bboxes
-    cx = (bboxes_[:, :, 0] + bboxes_[:, :, 2]) * 0.5
-    cy = (bboxes_[:, :, 1] + bboxes_[:, :, 3]) * 0.5
-    w = bboxes_[:, :, 2] - bboxes_[:, :, 0]
-    h = bboxes_[:, :, 3] - bboxes_[:, :, 1]
-    w = w * scale_factor
-    h = h * scale_factor
-    x1 = cx - 0.5 * w
-    x2 = cx + 0.5 * w
-    y1 = cy - 0.5 * h
-    y2 = cy + 0.5 * h
+
+    p1 = bboxes_[:, :, :2]
+    p2 = bboxes_[:, :, 2:]
+    cxy = (p1 + p2) * 0.5
+    half_wh = (p2 - p1) * scale_factor * 0.5
+
+    new_p1 = cxy - half_wh
+    new_p2 = cxy + half_wh
+
     if bboxes.size(2) == 5:
-        rescaled_bboxes = torch.stack([inds_, x1, y1, x2, y2], dim=-1)
+        rescaled_bboxes = torch.cat([inds_, new_p1, new_p2], dim=-1)
     else:
-        rescaled_bboxes = torch.stack([x1, y1, x2, y2], dim=-1)
+        rescaled_bboxes = torch.cat([new_p1, new_p2], dim=-1)
     return rescaled_bboxes
