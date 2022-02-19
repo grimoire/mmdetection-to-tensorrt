@@ -57,38 +57,49 @@ def delta2bbox_batched(rois,
                        means=(0., 0., 0., 0.),
                        stds=(1., 1., 1., 1.),
                        max_shape=None,
-                       wh_ratio_clip=16 / 1000):
+                       wh_ratio_clip=16 / 1000,
+                       clip_border=True,
+                       add_ctr_clamp=False,
+                       ctr_clamp=32):
 
-    means = deltas.new_tensor(means).repeat(1,
-                                            deltas.size(2) // 4).unsqueeze(0)
-    stds = deltas.new_tensor(stds).repeat(1, deltas.size(2) // 4).unsqueeze(0)
-    denorm_deltas = deltas * stds + means
-    dx = denorm_deltas[:, :, 0::4]
-    dy = denorm_deltas[:, :, 1::4]
-    dw = denorm_deltas[:, :, 2::4]
-    dh = denorm_deltas[:, :, 3::4]
+    means = deltas.new_tensor(means).view(1, -1)
+    stds = deltas.new_tensor(stds).view(1, -1)
+    delta_shape = deltas.shape
+    reshaped_deltas = deltas.view(delta_shape[:-1] + (-1, 4))
+    denorm_deltas = reshaped_deltas * stds + means
+
+    dxy = denorm_deltas[..., :2]
+    dwh = denorm_deltas[..., 2:]
+
+    xy1 = rois[..., None, :2]
+    xy2 = rois[..., None, 2:]
+
+    pxy = (xy1 + xy2) * 0.5
+    pwh = xy2 - xy1
+    dxy_wh = pwh * dxy
+
     max_ratio = np.abs(np.log(wh_ratio_clip))
-    dw = dw.clamp(min=-max_ratio, max=max_ratio)
-    dh = dh.clamp(min=-max_ratio, max=max_ratio)
+    if add_ctr_clamp:
+        dxy_wh = torch.clamp(dxy_wh, max=ctr_clamp, min=-ctr_clamp)
+        dwh = torch.clamp(dwh, max=max_ratio)
+    else:
+        dwh = dwh.clamp(min=-max_ratio, max=max_ratio)
 
-    px = ((rois[:, :, 0:1] + rois[:, :, 2:3]) * 0.5).expand_as(dx)
-    py = ((rois[:, :, 1:2] + rois[:, :, 3:4]) * 0.5).expand_as(dy)
-    # Compute width/height of each roi
-    pw = (rois[:, :, 2:3] - rois[:, :, 0:1]).expand_as(dw)
-    ph = (rois[:, :, 3:4] - rois[:, :, 1:2]).expand_as(dh)
     # Use exp(network energy) to enlarge/shrink each roi
-    gw = pw * dw.exp()
-    gh = ph * dh.exp()
-
+    half_gwh = pwh * dwh.exp() * 0.5
     # Use network energy to shift the center of each roi
-    gx = px + pw * dx
-    gy = py + ph * dy
+    gxy = pxy + dxy_wh
+
     # Convert center-xy/width/height to top-left, bottom-right
-    x1 = gx - gw * 0.5
-    y1 = gy - gh * 0.5
-    x2 = gx + gw * 0.5
-    y2 = gy + gh * 0.5
-    if max_shape is not None:
+    xy1 = gxy - half_gwh
+    xy2 = gxy + half_gwh
+
+    x1 = xy1[..., 0]
+    y1 = xy1[..., 1]
+    x2 = xy2[..., 0]
+    y2 = xy2[..., 1]
+
+    if clip_border and max_shape is not None:
         x1 = x1.clamp(min=0, max=max_shape[1] - 1)
         y1 = y1.clamp(min=0, max=max_shape[0] - 1)
         x2 = x2.clamp(min=0, max=max_shape[1] - 1)

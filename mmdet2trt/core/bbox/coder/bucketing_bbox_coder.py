@@ -24,41 +24,33 @@ def bucket2bbox_batched(proposals,
 
     rescaled_proposals = bbox_rescale_batched(proposals, scale_factor)
 
-    pw = rescaled_proposals[..., 2] - rescaled_proposals[..., 0]
-    ph = rescaled_proposals[..., 3] - rescaled_proposals[..., 1]
-    px1 = rescaled_proposals[..., 0]
-    py1 = rescaled_proposals[..., 1]
-    px2 = rescaled_proposals[..., 2]
-    py2 = rescaled_proposals[..., 3]
+    pxy1 = rescaled_proposals[..., :2]
+    pxy2 = rescaled_proposals[..., 2:]
 
-    bucket_w = pw / num_buckets
-    bucket_h = ph / num_buckets
+    pwh = pxy2 - pxy1
+    bucket_wh = pwh / num_buckets
 
-    score_inds_l = score_label[:, 0::4, 0]
-    score_inds_r = score_label[:, 1::4, 0]
-    score_inds_t = score_label[:, 2::4, 0]
-    score_inds_d = score_label[:, 3::4, 0]
+    score_label_reshaped = score_label[..., 0].reshape((batch_size, -1, 4))
+    score_inds_lt = score_label_reshaped[:, :, ::2]
+    score_inds_rd = score_label_reshaped[:, :, 1::2]
 
-    l_buckets = px1 + (0.5 + score_inds_l.float()) * bucket_w
-    r_buckets = px2 - (0.5 + score_inds_r.float()) * bucket_w
-    t_buckets = py1 + (0.5 + score_inds_t.float()) * bucket_h
-    d_buckets = py2 - (0.5 + score_inds_d.float()) * bucket_h
+    lt_buckets = pxy1 + (0.5 + score_inds_lt.float()) * bucket_wh
+    rd_buckets = pxy2 - (0.5 + score_inds_rd.float()) * bucket_wh
 
     offsets = offset_preds.view(batch_size, -1, 4, side_num)
 
-    l_offsets = offsets[:, :,
-                        0, :].gather(2, score_inds_l.unsqueeze(2)).squeeze(2)
-    r_offsets = offsets[:, :,
-                        1, :].gather(2, score_inds_r.unsqueeze(2)).squeeze(2)
-    t_offsets = offsets[:, :,
-                        2, :].gather(2, score_inds_t.unsqueeze(2)).squeeze(2)
-    d_offsets = offsets[:, :,
-                        3, :].gather(2, score_inds_d.unsqueeze(2)).squeeze(2)
+    lt_offsets = offsets[:, :, ::2, :].gather(
+        3, score_inds_lt.unsqueeze(-1)).squeeze(-1)
+    rd_offsets = offsets[:, :, 1::2, :].gather(
+        3, score_inds_rd.unsqueeze(-1)).squeeze(-1)
 
-    x1 = l_buckets - l_offsets * bucket_w
-    x2 = r_buckets - r_offsets * bucket_w
-    y1 = t_buckets - t_offsets * bucket_h
-    y2 = d_buckets - d_offsets * bucket_h
+    xy1 = lt_buckets - lt_offsets * bucket_wh
+    xy2 = rd_buckets - rd_offsets * bucket_wh
+
+    x1 = xy1[..., 0]
+    y1 = xy1[..., 1]
+    x2 = xy2[..., 0]
+    y2 = xy2[..., 1]
 
     if max_shape is not None:
         x1 = x1.clamp(min=0, max=max_shape[1] - 1)
