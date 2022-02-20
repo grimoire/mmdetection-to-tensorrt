@@ -9,38 +9,14 @@ def delta2bbox_custom_func(cls_scores,
                            bbox_preds,
                            anchors,
                            min_num_bboxes,
-                           num_classes,
-                           use_sigmoid_cls,
                            target_mean,
                            target_std,
-                           input_x=None):
+                           max_shape=None):
 
-    batch_size = cls_scores.shape[0]
-    rpn_cls_score = cls_scores
-    rpn_bbox_pred = bbox_preds
-    if len(anchors.shape) == 2:
-        anchors = anchors.unsqueeze(0)
-    rpn_cls_score = rpn_cls_score.permute(0, 2, 3, 1)
-    rpn_cls_score = rpn_cls_score.reshape(batch_size, -1, num_classes)
-    if use_sigmoid_cls:
-        scores = rpn_cls_score.sigmoid()
-    else:
-        scores = rpn_cls_score.softmax(dim=2)
-
-    rpn_bbox_pred = rpn_bbox_pred.permute(0, 2, 3,
-                                          1).reshape(batch_size, -1, 4)
-
-    # anchors = mlvl_anchors[idx]
-    max_shape = None
-    if input_x is not None:
-        height, width = input_x.shape[2:]
-        max_shape = (height, width)
-    proposals = delta2bbox_batched(anchors, rpn_bbox_pred, target_mean,
+    proposals = delta2bbox_batched(anchors, bbox_preds, target_mean,
                                    target_std, max_shape)
 
-    # scores = scores.contiguous().view(1,-1, num_classes)
-    # proposals = proposals.view(1, -1, 4)
-
+    scores = cls_scores
     if scores.shape[1] < min_num_bboxes:
         pad_size = min_num_bboxes - scores.shape[1]
         scores = torch.nn.functional.pad(
@@ -48,7 +24,6 @@ def delta2bbox_custom_func(cls_scores,
         proposals = torch.nn.functional.pad(
             proposals, [0, 0, 0, pad_size, 0, 0], mode='constant', value=0)
 
-    proposals = proposals.view(batch_size, -1, 1, 4)
     return scores, proposals
 
 
@@ -123,14 +98,27 @@ class DeltaXYWHBBoxCoderWraper(nn.Module):
                 min_num_bboxes,
                 num_classes,
                 use_sigmoid_cls,
-                input_x=None):
+                max_shape=None):
         target_mean = self.means
         target_std = self.stds
 
-        return delta2bbox_custom_func(cls_scores, bbox_preds, anchors,
-                                      min_num_bboxes, num_classes,
-                                      use_sigmoid_cls, target_mean, target_std,
-                                      input_x)
+        batch_size = cls_scores.shape[0]
+        if len(anchors.shape) == 2:
+            anchors = anchors.unsqueeze(0)
+        cls_scores = cls_scores.permute(0, 2, 3, 1)
+        cls_scores = cls_scores.reshape(batch_size, -1, num_classes)
+        if use_sigmoid_cls:
+            cls_scores = cls_scores.sigmoid()
+        else:
+            cls_scores = cls_scores.softmax(dim=2)
+
+        bbox_preds = bbox_preds.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
+        scores, proposals = delta2bbox_custom_func(cls_scores, bbox_preds,
+                                                   anchors, min_num_bboxes,
+                                                   target_mean, target_std,
+                                                   max_shape)
+        proposals = proposals.view(batch_size, -1, 1, 4)
+        return scores, proposals
 
     def decode(self,
                bboxes,

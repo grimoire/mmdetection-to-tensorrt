@@ -49,7 +49,7 @@ class TBLRBBoxCoderWraper(nn.Module):
                 min_num_bboxes,
                 num_classes,
                 use_sigmoid_cls,
-                input_x=None):
+                max_shape=None):
         cls_scores = cls_scores.permute(0, 2, 3,
                                         1).reshape(cls_scores.shape[0], -1,
                                                    num_classes)
@@ -63,7 +63,6 @@ class TBLRBBoxCoderWraper(nn.Module):
                                         1).reshape(bbox_preds.shape[0], -1, 4)
         anchors = anchors.unsqueeze(0)
 
-        max_shape = None if input_x is None else input_x.shape[2:]
         proposals = batched_blr2bboxes(
             anchors,
             bbox_preds,

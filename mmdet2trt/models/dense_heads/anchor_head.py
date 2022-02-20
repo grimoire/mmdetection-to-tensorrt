@@ -51,8 +51,7 @@ class AnchorHeadWraper(nn.Module):
                 num_classes=rpn_cls_score.shape[1] * 4 //
                 rpn_bbox_pred.shape[1],
                 use_sigmoid_cls=self.use_sigmoid_cls,
-                input_x=x)
-
+                max_shape=x.shape[2:])
             if nms_pre > 0:
                 if self.use_sigmoid_cls:
                     max_scores, _ = scores.max(dim=2)

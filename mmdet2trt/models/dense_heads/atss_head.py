@@ -36,7 +36,7 @@ class ATSSHeadWraper(AnchorHeadWraper):
                 min_num_bboxes=-1,
                 num_classes=cls_score.shape[1] * 4 // bbox_pred.shape[1],
                 use_sigmoid_cls=True,
-                input_x=x)
+                max_shape=x.shape[2:])
 
             if nms_pre > 0:
                 scores = mm2trt_util.pad_with_value(scores, 1, nms_pre, 0.)

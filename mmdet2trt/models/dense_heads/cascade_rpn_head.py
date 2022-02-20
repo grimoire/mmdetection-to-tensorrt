@@ -119,7 +119,7 @@ class StageCascadeRPNHeadWraper(RPNHeadWraper):
                 min_num_bboxes=nms_pre,
                 num_classes=1,
                 use_sigmoid_cls=use_sigmoid_cls,
-                input_x=x)
+                max_shape=x.shape[2:])
             if nms_pre > 0:
                 _, topk_inds = scores.squeeze(2).topk(nms_pre, dim=1)
                 proposals = mm2trt_util.gather_topk(proposals, 1, topk_inds)
