@@ -77,9 +77,11 @@ def get_classes_from_config(model_cfg):
     data_cfg = model_cfg.data
 
     def get_module_from_train_val(train_val_cfg):
-        while train_val_cfg.type == 'RepeatDataset' or \
-         train_val_cfg.type == 'MultiImageMixDataset':
-            train_val_cfg = train_val_cfg.dataset
+        while train_val_cfg.type in ('RepeatDataset', 
+                                     'MultiImageMixDataset',
+                                     'ConcatDataset'):
+            train_val_cfg = train_val_cfg.datasets[0] if hasattr(
+                train_val_cfg, 'datasets') else train_val_cfg.dataset
         return module_dict[train_val_cfg.type]
 
     data_cfg_type_list = ['train', 'val', 'test']
