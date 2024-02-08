@@ -1,10 +1,9 @@
+from mmdet2trt.models.builder import register_wrapper
 from torch import nn
 
-from mmdet2trt.models.builder import register_wraper
 
-
-@register_wraper('mmdet.models.roi_heads.roi_extractors'
-                 '.generic_roi_extractor.GenericRoIExtractor')
+@register_wrapper('mmdet.models.roi_heads.roi_extractors'
+                  '.generic_roi_extractor.GenericRoIExtractor')
 class GenericRoIExtractorWraper(nn.Module):
 
     def __init__(self, module):

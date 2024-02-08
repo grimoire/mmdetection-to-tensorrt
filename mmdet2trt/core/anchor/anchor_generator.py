@@ -1,6 +1,5 @@
+from mmdet2trt.models.builder import register_wrapper
 from torch import nn
-
-from mmdet2trt.models.builder import register_wraper
 
 
 class AnchorGeneratorSingle(nn.Module):
@@ -32,8 +31,8 @@ class AnchorGeneratorSingle(nn.Module):
             device=device)
 
 
-@register_wraper('mmdet.core.anchor.anchor_generator.YOLOAnchorGenerator')
-@register_wraper('mmdet.core.AnchorGenerator')
+@register_wrapper('mmdet.core.anchor.anchor_generator.YOLOAnchorGenerator')
+@register_wrapper('mmdet.core.AnchorGenerator')
 class AnchorGeneratorWraper(nn.Module):
 
     def __init__(self, module):
@@ -65,7 +64,7 @@ class AnchorGeneratorWraper(nn.Module):
         return multi_level_anchors
 
 
-@register_wraper('mmdet.core.anchor.anchor_generator.SSDAnchorGenerator')
+@register_wrapper('mmdet.core.anchor.anchor_generator.SSDAnchorGenerator')
 class SSDAnchorGeneratorWraper(nn.Module):
 
     def __init__(self, module):

@@ -1,15 +1,14 @@
+import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
 import torch.nn.functional as F
-
-import mmdet2trt.ops.util_ops as mm2trt_util
 from mmdet2trt.core.bbox.transforms import batched_distance2bbox
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
-from mmdet2trt.models.builder import register_wraper
+from mmdet2trt.models.builder import register_wrapper
 
 from .anchor_head import AnchorHeadWraper
 
 
-@register_wraper('mmdet.models.GFLHead')
+@register_wrapper('mmdet.models.GFLHead')
 class GFLHeadWraper(AnchorHeadWraper):
 
     def __init__(self, module):

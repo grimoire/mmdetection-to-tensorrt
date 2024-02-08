@@ -1,16 +1,15 @@
 import torch
 import torch.nn.functional as F
+from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from mmdet2trt.models.builder import build_wrapper, register_wrapper
 from torch import nn
 
-from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
-from mmdet2trt.models.builder import build_wraper, register_wraper
 
-
-@register_wraper(
+@register_wrapper(
     'mmdet.models.roi_heads.bbox_heads.convfc_bbox_head.ConvFCBBoxHead')
-@register_wraper(
+@register_wrapper(
     'mmdet.models.roi_heads.bbox_heads.convfc_bbox_head.Shared2FCBBoxHead')
-@register_wraper(
+@register_wrapper(
     'mmdet.models.roi_heads.bbox_heads.convfc_bbox_head.Shared4Conv1FCBBoxHead'
 )
 class BBoxHeadWraper(nn.Module):
@@ -19,7 +18,7 @@ class BBoxHeadWraper(nn.Module):
         super(BBoxHeadWraper, self).__init__()
 
         self.module = module
-        self.bbox_coder = build_wraper(self.module.bbox_coder)
+        self.bbox_coder = build_wrapper(self.module.bbox_coder)
         self.test_cfg = test_cfg
         self.num_classes = module.num_classes
         self.rcnn_nms = BatchedNMS(

@@ -1,12 +1,11 @@
 import torch
 import torch.nn.functional as F
+from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from mmdet2trt.models.builder import register_wrapper
 from torch import nn
 
-from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
-from mmdet2trt.models.builder import register_wraper
 
-
-@register_wraper('mmdet.models.CornerHead')
+@register_wrapper('mmdet.models.CornerHead')
 class CornerHeadWraper(nn.Module):
 
     def __init__(self, module):

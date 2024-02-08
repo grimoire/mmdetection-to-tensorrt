@@ -1,15 +1,16 @@
 import logging
 
-import mmcv.ops  # noqa: F401,F403
 import mmdet  # noqa: F401,F403
 from mmdet import models  # noqa: F401,F403
+
+import mmcv.ops  # noqa: F401,F403
 
 WRAPER_DICT = {}
 
 logger = logging.getLogger('mmdet2trt')
 
 
-def register_wraper(module_name):
+def register_wrapper(module_name):
     try:
         mmdet_module = eval(module_name)
 
@@ -32,7 +33,7 @@ def register_wraper(module_name):
         return register_func
 
 
-def build_wraper(module, default_wraper=None, **kwargs):
+def build_wrapper(module, default_wraper=None, **kwargs):
     model_type = module.__class__
 
     wrap_model = None

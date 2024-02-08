@@ -1,6 +1,5 @@
 import logging
 
-import mmcv
 import numpy as np
 import torch
 from addict import Addict
@@ -9,6 +8,8 @@ from mmdet.datasets.pipelines import Compose
 from mmdet.models import BaseDetector
 from mmdet.models.roi_heads.mask_heads import FCNMaskHead
 from torch2trt_dynamic import TRTModule
+
+import mmcv
 
 logger = logging.getLogger('mmdet2trt')
 
@@ -183,7 +184,7 @@ class TRTDetector(BaseDetector):
                 num_classes = len(self.CLASSES)
                 class_agnostic = True
                 segms_results = [[] for _ in range(num_classes)]
-                if num_dets>0:
+                if num_dets > 0:
                     for i in range(batch_size):
                         segms_results = FCNMaskHead.get_seg_masks(
                             Addict(

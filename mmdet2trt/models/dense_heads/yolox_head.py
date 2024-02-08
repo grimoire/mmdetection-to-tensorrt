@@ -1,17 +1,16 @@
 import torch
+from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from mmdet2trt.models.builder import build_wrapper, register_wrapper
 from torch import nn
 
-from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
-from mmdet2trt.models.builder import build_wraper, register_wraper
 
-
-@register_wraper('mmdet.models.dense_heads.YOLOXHead')
+@register_wrapper('mmdet.models.dense_heads.YOLOXHead')
 class YOLOXHeadWraper(nn.Module):
 
     def __init__(self, module):
         super(YOLOXHeadWraper, self).__init__()
         self.module = module
-        self.prior_generator = build_wraper(self.module.prior_generator)
+        self.prior_generator = build_wrapper(self.module.prior_generator)
         self.cls_out_channels = self.module.cls_out_channels
         iou_thr = 0.7
         if 'iou_thr' in module.test_cfg.nms:

@@ -1,9 +1,9 @@
-from .backbones import *  # noqa: F401,F403
-from .builder import build_wraper, register_wraper
-from .dense_heads import *  # noqa: F401,F403
-from .detectors import *  # noqa: F401,F403
-from .necks import *  # noqa: F401,F403
-from .roi_heads import *  # noqa: F401,F403
-from .utils import *  # noqa: F401,F403
+from . import backbones  # noqa: F401,F403
+from . import dense_heads  # noqa: F401,F403
+from . import detectors  # noqa: F401,F403
+from . import necks  # noqa: F401,F403
+from . import roi_heads  # noqa: F401,F403
+from . import utils  # noqa: F401,F403
+from .builder import build_wrapper, register_wrapper
 
-__all__ = ['build_wraper', 'register_wraper']
+__all__ = ['build_wrapper', 'register_wrapper']

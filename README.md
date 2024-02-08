@@ -2,7 +2,7 @@
 
 ## News
 
-OpenMMLab has release [MMDeploy](https://github.com/open-mmlab/mmdeploy) which support more inference engine and repos. PRs and advices are welcome !
+This Repo now support MMDetection>=3.0
 
 ## Introduction
 
@@ -10,29 +10,25 @@ This project aims to convert the mmdetection model to TensorRT model end2end.
 Focus on object detection for now.
 Mask support is **experiment**.
 
-support:
+Features:
 
 - fp16
 - int8(experiment)
 - batched input
 - dynamic input shape
 - combination of different modules
-- deepstream support
+- deepstream
 
 Any advices, bug reports and stars are welcome.
 
-## License
-
-This project is released under the [Apache 2.0 license](LICENSE).
-
 ## Requirement
 
-- install mmdetection:
+- install MMDetection:
 
     ```bash
     # mim is so cool!
     pip install openmim
-    mim install mmdet==2.14.0
+    mim install mmdet==3.3.0
     ```
 
 - install [torch2trt_dynamic](https://github.com/grimoire/torch2trt_dynamic):
@@ -141,10 +137,11 @@ with open(save_engine_path, mode='wb') as f:
     f.write(trt_model.state_dict()['engine'])
 ```
 
-**Note**:
-- The input of the engine is the tensor **after preprocess**.
-- The output of the engine is `num_dets, bboxes, scores, class_ids`. if you enable the `enable_mask` flag, there will be another output `mask`.
-- The bboxes output of the engine did not divided by `scale factor`.
+> \[!NOTE\]
+>
+> The input of the engine is the tensor **after preprocess**.
+> The output of the engine is `num_dets, bboxes, scores, class_ids`. if you enable the `enable_mask` flag, there will be another output `mask`.
+> The bboxes output of the engine did not divided by `scale factor`.
 
 how to use the converted model
 
@@ -218,19 +215,15 @@ Read [how-does-it-work](https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-w
 
 Tested on:
 
-- torch=1.8.1
-- tensorrt=8.0.1.6
-- mmdetection=2.18.0
-- cuda=11.1
-
-If you find any error, please report it in the issue.
+- torch=2.2.0
+- tensorrt=8.6.1
+- mmdetection=3.3.0
+- cuda=11.7
 
 ## FAQ
 
 read [this page](./docs/FAQ.md) if you meet any problem.
 
-## Contact
+## License
 
-This repo is maintained by [@grimoire](https://github.com/grimoire)
-
-And send your resume to my e-mail if you want to join @OpenMMLab. Please read the JD for detail: [link](https://mp.weixin.qq.com/s/CzrOqITFZX-T_Kcor0hs2g)
+This project is released under the [Apache 2.0 license](LICENSE).

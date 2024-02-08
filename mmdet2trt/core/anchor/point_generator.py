@@ -1,11 +1,10 @@
+import mmdet2trt
 import torch
+from mmdet2trt.models.builder import register_wrapper
 from torch import nn
 
-import mmdet2trt
-from mmdet2trt.models.builder import register_wraper
 
-
-@register_wraper('mmdet.core.anchor.point_generator.PointGenerator')
+@register_wrapper('mmdet.core.anchor.point_generator.PointGenerator')
 class PointGeneratorWraper(nn.Module):
 
     def __init__(self, module):
@@ -22,7 +21,7 @@ class PointGeneratorWraper(nn.Module):
         return shifts
 
 
-@register_wraper('mmdet.core.anchor.point_generator.MlvlPointGenerator')
+@register_wrapper('mmdet.core.anchor.point_generator.MlvlPointGenerator')
 class MlvlPointGeneratorWraper(nn.Module):
 
     def __init__(self, module):

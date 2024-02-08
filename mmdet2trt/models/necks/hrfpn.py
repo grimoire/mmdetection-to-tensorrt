@@ -1,7 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
-
-from mmdet2trt.models.builder import register_wraper
+from mmdet2trt.models.builder import register_wrapper
 
 
 def pooling_wrap(pooling):
@@ -20,7 +19,7 @@ def pooling_wrap(pooling):
     return None
 
 
-@register_wraper('mmdet.models.necks.HRFPN')
+@register_wrapper('mmdet.models.necks.HRFPN')
 class HRFPNWraper(nn.Module):
 
     def __init__(self, module):

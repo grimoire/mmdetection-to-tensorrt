@@ -1,12 +1,11 @@
-import torch
-
 import mmdet2trt.ops.util_ops as mm2trt_util
-from mmdet2trt.models.builder import register_wraper
+import torch
+from mmdet2trt.models.builder import register_wrapper
 
 from .anchor_head import AnchorHeadWraper
 
 
-@register_wraper('mmdet.models.dense_heads.ATSSHead')
+@register_wrapper('mmdet.models.dense_heads.ATSSHead')
 class ATSSHeadWraper(AnchorHeadWraper):
 
     def __init__(self, module):

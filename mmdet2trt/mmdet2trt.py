@@ -3,17 +3,16 @@ import logging
 import time
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import Any, Dict
 
-import mmcv
 import tensorrt as trt
 import torch
-from mmdet.apis import init_detector
-from mmdet.apis.inference import LoadImage
-from mmdet.datasets.pipelines import Compose
-from torch2trt_dynamic import torch2trt_dynamic
-
-from mmdet2trt.models.builder import build_wraper
+from mmdet2trt.models.builder import build_wrapper
 from mmdet2trt.models.detectors import TwoStageDetectorWraper
+from mmdet.apis import init_detector
+from torch2trt_dynamic import BuildEngineConfig, module2trt
+
+import mmcv
 
 logger = logging.getLogger('mmdet2trt')
 
@@ -33,6 +32,8 @@ class Int8CalibDataset():
             config (str|dict): config of mmdetection model
             opt_shape_param: same as mmdet2trt
         """
+        from mmdet.apis.inference import LoadImage
+        from mmdet.datasets.pipelines import Compose
         if isinstance(config, str):
             config = mmcv.Config.fromfile(config)
 
@@ -59,18 +60,48 @@ class Int8CalibDataset():
         return [tensor]
 
 
+def _get_shape_ranges(config):
+    img_scale = config.test_pipeline[1]['img_scale']
+    min_scale = min(img_scale)
+    max_scale = max(img_scale) + 32
+    opt_shape_param = dict(
+        x=dict(
+            min=[1, 3, min_scale, min_scale],
+            opt=[1, 3, img_scale[1], img_scale[0]],
+            max=[1, 3, max_scale, max_scale],
+        ))
+    return opt_shape_param
+
+
+def _make_dummy_input(shape_ranges, device):
+    dummy_shape = shape_ranges['x']['opt']
+    dummy_input = torch.rand(dummy_shape).to(device)
+    dummy_input = (dummy_input - 0.45) / 0.27
+    dummy_input = dummy_input.contiguous()
+
+
+def _get_trt_calib_algorithm(int8_calib_alg):
+    int8_calib_algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
+    if int8_calib_alg == 'minmax':
+        int8_calib_algorithm = trt.CalibrationAlgoType.MINMAX_CALIBRATION
+    elif int8_calib_alg == 'entropy':
+        int8_calib_algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
+    else:
+        raise ValueError('int8_calib_alg should be "minmax" or "entropy"')
+    return int8_calib_algorithm
+
+
 def mmdet2trt(config,
-              checkpoint,
-              device='cuda:0',
-              fp16_mode=False,
-              int8_mode=False,
-              int8_calib_dataset=None,
-              int8_calib_alg='entropy',
-              max_workspace_size=0.5e9,
-              opt_shape_param=None,
-              trt_log_level='INFO',
-              return_wrap_model=False,
-              output_names=['num_detections', 'boxes', 'scores', 'classes'],
+              checkpoint: str,
+              device: str = 'cuda:0',
+              fp16_mode: bool = False,
+              int8_mode: bool = False,
+              int8_calib_dataset: Any = None,
+              int8_calib_alg: str = 'entropy',
+              max_workspace_size: int = None,
+              shape_ranges: Dict[str, Dict] = None,
+              trt_log_level: str = 'INFO',
+              return_wrap_model: bool = False,
               enable_mask=False):
     r"""
     create tensorrt model from mmdetection.
@@ -84,15 +115,27 @@ def mmdet2trt(config,
         int8_calib_alg (str): how to calibrate int8, ["minmax", "entropy"]
         max_workspace_size (int): tensorrt workspace size.
             some tactic might need large workspace.
-        opt_shape_param (list[list[list[int]]]): the min/optimize/max shape of
+        shape_ranges (Dict[str, Dict]): the min/optimize/max shape of
             input tensor
         trt_log_level (str): tensorrt log level,
             options: ["VERBOSE", "INFO", "WARNING", "ERROR"]
         return_wrap_model (bool): return pytorch wrap model, used for debug
-        output_names (str): the output names of tensorrt engine
         enable_mask (bool): weither output the instance segmentation result
             (w/o postprocess)
     """
+
+    def _make_build_engine_config(shape_ranges, max_workspace_size,
+                                  int8_calib_dataset):
+        int8_calib_algorithm = _get_trt_calib_algorithm(int8_calib_alg)
+        build_engine_config = BuildEngineConfig(
+            shape_ranges=shape_ranges,
+            pool_size=max_workspace_size,
+            fp16=fp16_mode,
+            int8=int8_mode,
+            int8_calib_dataset=int8_calib_dataset,
+            int8_calib_algorithm=int8_calib_algorithm,
+            int8_batch_size=1)
+        return build_engine_config
 
     device = torch.device(device)
 
@@ -101,54 +144,31 @@ def mmdet2trt(config,
     cfg = torch_model.cfg
 
     logger.info('Wrapping model')
-    if enable_mask and output_names is not None and len(output_names) != 5:
-        logger.warning('mask mode require len(output_names)==5 ' +
-                       'but get output_names=' + str(output_names))
-        output_names = None
     wrap_config = {'enable_mask': enable_mask}
-    wrap_model = build_wraper(
+    wrap_model = build_wrapper(
         torch_model, TwoStageDetectorWraper, wrap_config=wrap_config)
 
-    if opt_shape_param is None:
-        img_scale = cfg.test_pipeline[1]['img_scale']
-        min_scale = min(img_scale)
-        max_scale = max(img_scale) + 32
-        opt_shape_param = [[
-            [1, 3, min_scale, min_scale],
-            [1, 3, img_scale[1], img_scale[0]],
-            [1, 3, max_scale, max_scale],
-        ]]
+    if shape_ranges is None:
+        shape_ranges = _get_shape_ranges(cfg)
 
-    dummy_shape = opt_shape_param[0][1]
-    dummy_input = torch.rand(dummy_shape).to(device)
-    dummy_input = (dummy_input - 0.45) / 0.27
-    dummy_input = dummy_input.contiguous()
+    dummy_input = _make_dummy_input(shape_ranges, device)
 
-    logger.info('Model warmup')
+    logger.info('Model warmup.')
     with torch.no_grad():
         wrap_model(dummy_input)
 
     logger.info('Converting model')
     start = time.time()
     with torch.cuda.device(device), torch.no_grad():
-        int8_calib_algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
-        if int8_calib_alg == 'minmax':
-            int8_calib_algorithm = trt.CalibrationAlgoType.MINMAX_CALIBRATION
-        elif int8_calib_alg == 'entropy':
-            int8_calib_algorithm = \
-                trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
-        trt_model = torch2trt_dynamic(
+        trt_log_level = getattr(trt.Logger, trt_log_level)
+        build_engine_config = _make_build_engine_config(
+            shape_ranges=shape_ranges,
+            max_workspace_size=max_workspace_size,
+            int8_calib_dataset=int8_calib_dataset)
+        trt_model = module2trt(
             wrap_model, [dummy_input],
-            log_level=getattr(trt.Logger, trt_log_level),
-            fp16_mode=fp16_mode,
-            opt_shape_param=opt_shape_param,
-            max_workspace_size=int(max_workspace_size),
-            keep_network=False,
-            strict_type_constraints=True,
-            output_names=output_names,
-            int8_mode=int8_mode,
-            int8_calib_dataset=int8_calib_dataset,
-            int8_calib_algorithm=int8_calib_algorithm)
+            config=build_engine_config,
+            log_level=trt_log_level)
 
     duration = time.time() - start
     logger.info('Conversion took {} s'.format(duration))
@@ -166,10 +186,9 @@ def mask_processor2trt(max_width,
                        mask_size=[28, 28],
                        device='cuda:0',
                        fp16_mode=False,
-                       max_workspace_size=0.5e9,
+                       max_workspace_size=None,
                        trt_log_level='INFO',
-                       return_wrap_model=False,
-                       output_names=None):
+                       return_wrap_model=False):
 
     from mmdet2trt.models.roi_heads.mask_heads.fcn_mask_head import \
         MaskProcessor
@@ -205,15 +224,15 @@ def mask_processor2trt(max_width,
     logger.info('Converting MaskProcessor')
     start = time.time()
     with torch.cuda.device(device), torch.no_grad():
-        trt_model = torch2trt_dynamic(
+        trt_log_level = getattr(trt.Logger, trt_log_level)
+        build_engine_config = BuildEngineConfig(
+            shape_ranges=opt_shape_param,
+            pool_size=max_workspace_size,
+            fp16=fp16_mode)
+        trt_model = module2trt(
             wrap_model, [dummy_mask, dummy_box],
-            log_level=getattr(trt.Logger, trt_log_level),
-            fp16_mode=fp16_mode,
-            opt_shape_param=opt_shape_param,
-            max_workspace_size=int(max_workspace_size),
-            keep_network=False,
-            strict_type_constraints=True,
-            output_names=output_names)
+            config=build_engine_config,
+            log_level=trt_log_level)
 
     duration = time.time() - start
     logger.info('Conversion took {} s'.format(duration))
@@ -242,16 +261,12 @@ def main():
     parser.add_argument(
         'output', help='Path where tensorrt model will be saved')
     parser.add_argument(
-        '--fp16', type=str2bool, default=False, help='Enable fp16 inference')
+        '--fp16', action='store_true', help='Enable fp16 inference')
     parser.add_argument(
-        '--enable-mask',
-        type=str2bool,
-        default=False,
-        help='Enable mask output')
+        '--enable-mask', action='store_true', help='Enable mask output')
     parser.add_argument(
         '--save-engine',
-        type=str2bool,
-        default=False,
+        action='store_true',
         help='Enable saving TensorRT engine. '
         '(will be saved at Path(output).with_suffix(\'.engine\')).',
     )
@@ -263,7 +278,7 @@ def main():
     parser.add_argument(
         '--max-workspace-gb',
         type=float,
-        default=0.5,
+        default=None,
         help='The maximum `device` (GPU) temporary memory in GB (gigabytes)'
         ' which TensorRT can use at execution time.',
     )
@@ -320,17 +335,21 @@ def main():
     if all(
             getattr(args, x) is not None
             for x in ['min_scale', 'opt_scale', 'max_scale']):
-        opt_shape_param = [[args.min_scale, args.opt_scale, args.max_scale]]
+        shape_range = dict(
+            x=dict(min=args.min_scale, opt=args.opt_scale, max=args.max_scale))
     else:
-        opt_shape_param = None
+        shape_range = None
 
+    work_space_size = None
+    if args.max_workspace_gb is not None:
+        work_space_size = int(args.max_workspace_gb * 1e9)
     trt_model = mmdet2trt(
         args.config,
         args.checkpoint,
         device=args.device,
         fp16_mode=args.fp16,
-        max_workspace_size=int(args.max_workspace_gb * 1e9),
-        opt_shape_param=opt_shape_param,
+        max_workspace_size=work_space_size,
+        shape_ranges=shape_range,
         trt_log_level=args.trt_log_level,
         output_names=args.output_names,
         enable_mask=args.enable_mask)
