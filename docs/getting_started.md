@@ -46,27 +46,25 @@ trt_model = mmdet2trt(  ...,
 
 ## int8 support
 
-**int8 mode** needs more configs.
-
 - set `input8_mode=True`.
-- provide calibrate dataset, the `__getitem__()` method of dataset should return a list of tensor with shape (C,H,W), the shape **must** be the same as `opt_shape_param[0][1][1:]` (optimize shape). The tensor should do the same preprocess as the model. There is a default dataset, you can also set your custom one.
+- provide calibrate dataset, the `__getitem__()` method of dataset should return a list of tensor with shape (C,H,W), the shape **must** be the same as `shape_range['x']['opt'][1:]` (optimize shape). The tensor should do the same preprocess as the model. There is a default dataset, you can also set your custom one.
 - set the calibrate algorithm, support `entropy` and `minmax`.
 
 ```python
 from mmdet2trt import mmdet2trt, Int8CalibDataset
-cfg_path="..."  # mmdetection config path
-model_path="..." # mmdetection checkpoint path
-image_path_list = [...] # lists of image pathes
-opt_shape_param=[
-    [
-        [...],
-        [...],
-        [...],
-    ]
-]
-calib_dataset = Int8CalibDataset(image_path_list, cfg_path, opt_shape_param)
+cfg_path="..."  # MMDetection config path
+model_path="..." # MMDetection checkpoint path
+image_path_list = [...] # lists of image paths
+shape_ranges=dict(
+    x=dict(
+        min=[...],
+        opt=[...],
+        max=[...],
+    )
+)
+calib_dataset = Int8CalibDataset(image_path_list, cfg_path, shape_ranges)
 trt_model = mmdet2trt(cfg_path, model_path,
-                    opt_shape_param=opt_shape_param,
+                    shape_ranges=shape_ranges,
                     int8_mode=True,
                     int8_calib_dataset=calib_dataset,
                     int8_calib_alg="entropy")

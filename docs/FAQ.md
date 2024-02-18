@@ -6,9 +6,9 @@
   - [Model Inference](#model-inference)
     - [**Q: Inference take a long time on a single image.**](#q-inference-take-a-long-time-on-a-single-image)
     - [**Q: Memory leak when inference.**](#q-memory-leak-when-inference)
-    - [**Q: error: parameter check failed at: engine.cpp::setBindingDimensions::1046, condition: profileMinDims.d[i] <= dimensions.d[i]**](#q-error-parameter-check-failed-at-enginecppsetbindingdimensions1046-condition-profilemindimsdi--dimensionsdi)
+    - [**Q: error: parameter check failed at: engine.cpp::setBindingDimensions::1046, condition: profileMinDims.d\[i\] \<= dimensions.d\[i\]**](#q-error-parameter-check-failed-at-enginecppsetbindingdimensions1046-condition-profilemindimsdi--dimensionsdi)
     - [**Q: FP16 model is slower than FP32 model**](#q-fp16-model-is-slower-than-fp32-model)
-    - [**Q: error: [TensorRT] INTERNAL ERROR: Assertion failed: cublasStatus == CUBLAS_STATUS_SUCCESS**](#q-error-tensorrt-internal-error-assertion-failed-cublasstatus--cublas_status_success)
+    - [**Q: error: \[TensorRT\] INTERNAL ERROR: Assertion failed: cublasStatus == CUBLAS\_STATUS\_SUCCESS**](#q-error-tensorrt-internal-error-assertion-failed-cublasstatus--cublas_status_success)
 
 This page provides some frequently asked questions and their solutions.
 
@@ -33,13 +33,13 @@ This is a bug of on old version TensorRT, read [this](https://forums.developer.n
 The input tensor shape is out of the range. Please enlarge the `opt_shape_param` when converting the model.
 
 ```python
-    opt_shape_param=[
-        [
-            [1,3,224,224],    # min tensor shape
-            [1,3,800,1312],  # shape used to do int8 calib
-            [1,3,1344,1344], # max tensor shape
-        ]
-    ]
+shape_ranges=dict(
+    x=dict(
+        min=[1,3,320,320],
+        opt=[1,3,800,1344],
+        max=[1,3,1344,1344],
+    )
+)
 ```
 
 ### **Q: FP16 model is slower than FP32 model**

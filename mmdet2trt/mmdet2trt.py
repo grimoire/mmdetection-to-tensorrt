@@ -2,14 +2,13 @@ import logging
 import time
 from typing import Any, Dict
 
+import mmengine
 import tensorrt as trt
 import torch
 from mmdet2trt.models.builder import build_wrapper
 from mmdet2trt.models.detectors import TwoStageDetectorWraper
 from mmdet.apis import init_detector
 from torch2trt_dynamic import BuildEngineConfig, module2trt
-
-import mmcv
 
 logger = logging.getLogger('mmdet2trt')
 
@@ -20,25 +19,26 @@ class Int8CalibDataset():
     feed to int8_calib_dataset
     """
 
-    def __init__(self, image_paths, config, opt_shape_param):
+    def __init__(self, image_paths, config, shape_ranges):
         r"""
         datas used to calibrate int8 model
         feed to int8_calib_dataset
         Args:
             image_paths (list[str]): image paths to calib
             config (str|dict): config of mmdetection model
-            opt_shape_param: same as mmdet2trt
+            shape_ranges: same as mmdet2trt
         """
-        from mmdet.apis.inference import LoadImage
-        from mmdet.datasets.pipelines import Compose
+        from mmcv.transforms import Compose
+        from mmengine.registry import init_default_scope
         if isinstance(config, str):
-            config = mmcv.Config.fromfile(config)
+            config = mmengine.Config.fromfile(config)
 
+        init_default_scope(config.get('default_scope', 'mmdet'))
         self.cfg = config
         self.image_paths = image_paths
-        self.opt_shape = opt_shape_param[0][1]
+        self.opt_shape = shape_ranges['x']['opt']
 
-        test_pipeline = [LoadImage()] + config.data.test.pipeline[1:]
+        test_pipeline = config.val_dataloader.dataset.pipeline
         self.test_pipeline = Compose(test_pipeline)
 
     def __len__(self):
@@ -47,14 +47,14 @@ class Int8CalibDataset():
     def __getitem__(self, index):
         image_path = self.image_paths[index]
 
-        data = dict(img=image_path)
+        data = dict(img=image_path, img_path=image_path)
         data = self.test_pipeline(data)
 
-        tensor = data['img'][0].unsqueeze(0)
+        tensor = data['inputs'].unsqueeze(0)
         tensor = torch.nn.functional.interpolate(
             tensor, self.opt_shape[-2:]).squeeze(0)
 
-        return [tensor]
+        return dict(x=tensor.cuda())
 
 
 def _get_shape_ranges(config):
