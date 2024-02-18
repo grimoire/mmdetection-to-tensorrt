@@ -4,7 +4,9 @@ from typing import List, Tuple, Union
 import mmengine
 import numpy as np
 import torch
+from addict import Addict
 from mmdet.models import BaseDetector
+from mmdet.models.roi_heads.mask_heads import FCNMaskHead
 from mmdet.structures import DetDataSample, OptSampleList, SampleList
 from mmengine.registry import DATASETS, MODELS, init_default_scope
 from mmengine.structures import InstanceData
@@ -116,6 +118,7 @@ class TRTDetector(BaseDetector):
             batch_data_samples: OptSampleList = None) -> Tuple[List[Tensor]]:
         raise NotImplementedError('This method is not implemented.')
 
+    @torch.inference_mode()
     def predict(self,
                 batch_inputs: Tensor,
                 batch_data_samples: SampleList,
@@ -130,7 +133,7 @@ class TRTDetector(BaseDetector):
         outputs = self.forward_test(batch_inputs)
         batch_num_dets, batch_boxes, batch_scores, batch_labels = outputs[:4]
         batch_num_dets = batch_num_dets.cpu()
-        # batch_masks = None if len(outputs) < 5 else outputs[4]
+        batch_masks = None if len(outputs) < 5 else outputs[4]
         batch_size = batch_inputs.shape[0]
 
         results = []
@@ -143,6 +146,8 @@ class TRTDetector(BaseDetector):
             labels = batch_labels[i, :num_dets].int()
             scores = batch_scores[i, :num_dets]
 
+            old_bboxes = bboxes
+
             if rescale:
                 assert 'scale_factor' in metainfo
                 bboxes = __rescale_bboxes(bboxes, metainfo['scale_factor'])
@@ -151,9 +156,6 @@ class TRTDetector(BaseDetector):
             pred_instances.scores = scores
             pred_instances.bboxes = bboxes
             pred_instances.labels = labels
-            out_data_sample = DetDataSample(
-                metainfo=metainfo, pred_instances=pred_instances)
-            results.append(out_data_sample)
 
             # if 'border' in img_metas[i]:
             #     # offset pixel of the top-left corners between original image
@@ -165,30 +167,24 @@ class TRTDetector(BaseDetector):
             #     dets[:, [1, 3]] -= y_off
             #     dets[:, :4] *= (dets[:, :4] > 0).astype(dets.dtype)
 
-            # dets_results = bbox2result(dets, labels, len(self.CLASSES))
+            if batch_masks is not None:
+                masks = batch_masks[i, :num_dets].unsqueeze(1)
+                class_agnostic = True
+                if num_dets > 0:
+                    masks = FCNMaskHead._predict_by_feat_single(
+                        Addict(class_agnostic=class_agnostic),
+                        masks,
+                        old_bboxes,
+                        labels,
+                        img_meta=metainfo,
+                        rcnn_test_cfg=self.cfg.model.test_cfg.rcnn,
+                        rescale=rescale,
+                        activate_map=True)
+                pred_instances.masks = masks
 
-            # if batch_masks is not None:
-            #     masks = batch_masks[i][:num_dets].unsqueeze(1)
-            #     masks = masks.detach().cpu().numpy()
-            #     num_classes = len(self.CLASSES)
-            #     class_agnostic = True
-            #     segms_results = [[] for _ in range(num_classes)]
-            #     if num_dets > 0:
-            #         for i in range(batch_size):
-            #             segms_results = FCNMaskHead.get_seg_masks(
-            #                 Addict(
-            #                     num_classes=num_classes,
-            #                     class_agnostic=class_agnostic),
-            #                 masks,
-            #                 old_dets,
-            #                 labels,
-            #                 rcnn_test_cfg=Addict(mask_thr_binary=0.5),
-            #                 ori_shape=img_metas[i]['ori_shape'],
-            #                 scale_factor=scale_factor,
-            #                 rescale=rescale)
-            #     results.append((dets_results, segms_results))
-            # else:
-            #     results.append(dets_results)
+            out_data_sample = DetDataSample(
+                metainfo=metainfo, pred_instances=pred_instances)
+            results.append(out_data_sample)
         return results
 
     def forward_test(self, imgs):
