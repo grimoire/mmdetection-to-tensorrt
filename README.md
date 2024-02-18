@@ -169,6 +169,11 @@ Read [how-does-it-work](https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-w
 
 ## Support Model/Module
 
+> [!NOTE]
+>
+> Some models have only been tested on MMDet<3.0. If you found any failed model,
+> Please report in the issue.
+
 - [x] Faster R-CNN
 - [x] Cascade R-CNN
 - [x] Double-Head R-CNN
