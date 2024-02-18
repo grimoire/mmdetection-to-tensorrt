@@ -4,6 +4,9 @@ import torch
 from mmdet2trt import mmdet2trt
 from mmdet2trt.apis import create_wrap_detector
 from mmdet.apis import inference_detector
+from mmdet.registry import VISUALIZERS
+
+import mmcv
 
 
 def main():
@@ -32,12 +35,19 @@ def main():
 
     result = inference_detector(trt_detector, image_path)
 
-    trt_detector.show_result(
-        image_path,
-        result,
-        score_thr=args.score_thr,
-        win_name='mmdet2trt_demo',
-        show=True)
+    # visualize
+    visualizer_cfg = dict(type='DetLocalVisualizer', name='visualizer')
+    visualizer = VISUALIZERS.build(visualizer_cfg)
+    visualizer.dataset_meta = trt_detector.dataset_meta
+
+    image = mmcv.imread(image_path)
+    visualizer.add_datasample(
+        'result',
+        mmcv.imconvert(image, 'bgr', 'rgb'),
+        data_sample=result,
+        draw_gt=False,
+        show=True,
+        pred_score_thr=args.score_thr)
 
 
 if __name__ == '__main__':

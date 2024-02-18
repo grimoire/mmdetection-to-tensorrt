@@ -48,7 +48,7 @@ class GFLHeadWraper(AnchorHeadWraper):
         cls_scores, bbox_preds = module(feat)
 
         num_levels = len(cls_scores)
-        mlvl_anchors = self.anchor_generator(
+        mlvl_anchors = self.prior_generator(
             cls_scores, device=cls_scores[0].device)
 
         mlvl_scores = []
@@ -58,7 +58,7 @@ class GFLHeadWraper(AnchorHeadWraper):
             rpn_cls_score = cls_scores[idx]
             rpn_bbox_pred = bbox_preds[idx]
             anchors = mlvl_anchors[idx]
-            stride = module.anchor_generator.strides[idx]
+            stride = module.prior_generator.strides[idx]
             scores = rpn_cls_score.permute(0, 2, 3, 1).reshape(
                 rpn_cls_score.shape[0], -1, module.cls_out_channels).sigmoid()
             bbox_pred = rpn_bbox_pred.permute(0, 2, 3, 1)

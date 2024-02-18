@@ -25,7 +25,7 @@ class StageCascadeRPNHeadWraper(RPNHeadWraper):
         return self.module(x, offset_list)
 
     def get_anchors(self, featmaps, device='cuda'):
-        return self.anchor_generator(featmaps, device=device)
+        return self.prior_generator(featmaps, device=device)
 
     def anchor_offset(self, anchor_list, anchor_strides, featmap_sizes):
 

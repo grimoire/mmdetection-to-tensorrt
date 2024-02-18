@@ -17,7 +17,7 @@ class PPAHeadWraper(AnchorHeadWraper):
 
         cls_scores, bbox_preds, iou_preds = module(feat)
 
-        mlvl_anchors = self.anchor_generator(
+        mlvl_anchors = self.prior_generator(
             cls_scores, device=cls_scores[0].device)
 
         mlvl_scores = []
