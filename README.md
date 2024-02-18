@@ -128,7 +128,7 @@ shape_ranges=dict(
 )
 trt_model = mmdet2trt(cfg_path,
                       weight_path,
-                      shape_ranges=shape_ranges, 
+                      shape_ranges=shape_ranges,
                       fp16_mode=True)
 
 # save converted model
