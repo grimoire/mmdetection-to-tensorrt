@@ -13,26 +13,26 @@ This page provides details about mmdet2trt.
 
 ## dynamic shape/batched input
 
-`opt_shape_param` is used to set the min/optimize/max shape of the input tensor. For each dimension in it, min<=optimize<=max. For example:
+`shape_ranges` is used to set the min/optimize/max shape of the input tensor. For each dimension in it, min<=optimize<=max. For example:
 
 ```python
-opt_shape_param=[
-    [
-        [1,3,320,320],      # min shape
-        [2,3,800,1312],     # opt shape
-        [4,3,1344,1344],    # max shape
-    ]
-]
+shape_ranges=dict(
+    x=dict(
+        min=[1,3,320,320],
+        opt=[1,3,800,1344],
+        max=[1,3,1344,1344],
+    )
+)
 trt_model = mmdet2trt(  ...,
-                        opt_shape_param=opt_shape_param, # set the opt shape
+                        shape_ranges=shape_ranges, # set the opt shape
                         ...)
 ```
 
 This config will give you input tensor size between (320, 320) to (1344, 1344), max batch_size=4
 
-**Warning:**
-
-Dynamic input shape and batch support might need more memory. Use fixed shape to avoid unnecessary memory usage(min=optimize=max).
+> [!WARNING]
+>
+> Dynamic input shape and batch support might need more memory. Use fixed shape to avoid unnecessary memory usage(min=optimize=max).
 
 ## fp16 support
 
@@ -46,35 +46,33 @@ trt_model = mmdet2trt(  ...,
 
 ## int8 support
 
-**int8 mode** needs more configs.
-
 - set `input8_mode=True`.
-- provide calibrate dataset, the `__getitem__()` method of dataset should return a list of tensor with shape (C,H,W), the shape **must** be the same as `opt_shape_param[0][1][1:]` (optimize shape). The tensor should do the same preprocess as the model. There is a default dataset, you can also set your custom one.
+- provide calibrate dataset, the `__getitem__()` method of dataset should return a list of tensor with shape (C,H,W), the shape **must** be the same as `shape_range['x']['opt'][1:]` (optimize shape). The tensor should do the same preprocess as the model. There is a default dataset, you can also set your custom one.
 - set the calibrate algorithm, support `entropy` and `minmax`.
 
 ```python
 from mmdet2trt import mmdet2trt, Int8CalibDataset
-cfg_path="..."  # mmdetection config path
-model_path="..." # mmdetection checkpoint path
-image_path_list = [...] # lists of image pathes
-opt_shape_param=[
-    [
-        [...],
-        [...],
-        [...],
-    ]
-]
-calib_dataset = Int8CalibDataset(image_path_list, cfg_path, opt_shape_param)
+cfg_path="..."  # MMDetection config path
+model_path="..." # MMDetection checkpoint path
+image_path_list = [...] # lists of image paths
+shape_ranges=dict(
+    x=dict(
+        min=[...],
+        opt=[...],
+        max=[...],
+    )
+)
+calib_dataset = Int8CalibDataset(image_path_list, cfg_path, shape_ranges)
 trt_model = mmdet2trt(cfg_path, model_path,
-                    opt_shape_param=opt_shape_param,
+                    shape_ranges=shape_ranges,
                     int8_mode=True,
                     int8_calib_dataset=calib_dataset,
                     int8_calib_alg="entropy")
 ```
 
-**Warning:**
-
-Not all models support int8 mode.
+> [!WARNING]
+>
+> Not all models support int8 mode.
 
 ## max workspace size
 
@@ -92,9 +90,9 @@ with open(engine_path, mode='wb') as f:
 
 Link the `${AMIRSTAN_PLUGIN_DIR}/build/lib/libamirstan_plugin.so` in your project (or you can load it in runtime). Compile and load the engine.
 
-**Warning:**
-
-might need to invoke `initLibAmirstanInferPlugins()` in [amirInferPlugin.h](https://github.com/grimoire/amirstan_plugin/blob/master/include/plugin/amirInferPlugin.h) to load the plugins.
+> [!WARNING]
+>
+> might need to invoke `initLibAmirstanInferPlugins()` in [amirInferPlugin.h](https://github.com/grimoire/amirstan_plugin/blob/master/include/plugin/amirInferPlugin.h) to load the plugins.
 
 The engine only contains inference forward. Preprocess(resize, normalize) and postprocess (divide scale factor) should be done in your project.
 
@@ -162,4 +160,6 @@ set flag `enable_mask` to True
 trt_model = mmdet2trt(... , enable_mask = True)
 ```
 
-**Note**: the mask output is of shape `[batch_size, num_boxes, 28, 28]`, the post-process of masks have not been included in the model. Please implement it by yourself if you want to integrate the converted engine into your own project.
+> [!NOTE]
+>
+> The mask output is of shape `[batch_size, num_boxes, 28, 28]`, the post-process of masks have not been included in the model. Please implement it by yourself if you want to integrate the converted engine into your own project.

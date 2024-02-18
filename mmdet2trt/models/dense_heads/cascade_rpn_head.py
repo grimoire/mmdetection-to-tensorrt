@@ -1,13 +1,12 @@
-import torch
-from torch import nn
-
 import mmdet2trt.ops.util_ops as mm2trt_util
-from mmdet2trt.models.builder import build_wraper, register_wraper
+import torch
+from mmdet2trt.models.builder import build_wrapper, register_wrapper
+from torch import nn
 
 from .rpn_head import RPNHeadWraper
 
 
-@register_wraper('mmdet.models.dense_heads.StageCascadeRPNHead')
+@register_wrapper('mmdet.models.dense_heads.StageCascadeRPNHead')
 class StageCascadeRPNHeadWraper(RPNHeadWraper):
 
     def __init__(self, module):
@@ -26,7 +25,7 @@ class StageCascadeRPNHeadWraper(RPNHeadWraper):
         return self.module(x, offset_list)
 
     def get_anchors(self, featmaps, device='cuda'):
-        return self.anchor_generator(featmaps, device=device)
+        return self.prior_generator(featmaps, device=device)
 
     def anchor_offset(self, anchor_list, anchor_strides, featmap_sizes):
 
@@ -137,13 +136,13 @@ class StageCascadeRPNHeadWraper(RPNHeadWraper):
         return proposals
 
 
-@register_wraper('mmdet.models.dense_heads.CascadeRPNHead')
+@register_wrapper('mmdet.models.dense_heads.CascadeRPNHead')
 class CascadeRPNHeadWraper(nn.Module):
 
     def __init__(self, module):
         super(CascadeRPNHeadWraper, self).__init__()
         self.module = module
-        self.stages = [build_wraper(stage) for stage in self.module.stages]
+        self.stages = [build_wrapper(stage) for stage in self.module.stages]
         self.test_cfg = module.test_cfg
 
     def forward(self, feat, x):

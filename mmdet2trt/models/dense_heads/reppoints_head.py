@@ -1,11 +1,10 @@
-import torch
-
 import mmdet2trt.ops.util_ops as mm2trt_util
-from mmdet2trt.models.builder import build_wraper, register_wraper
+import torch
+from mmdet2trt.models.builder import build_wrapper, register_wrapper
 from mmdet2trt.models.dense_heads.anchor_free_head import AnchorFreeHeadWraper
 
 
-@register_wraper('mmdet.models.RepPointsHead')
+@register_wrapper('mmdet.models.RepPointsHead')
 class RepPointsHeadWraper(AnchorFreeHeadWraper):
 
     def __init__(self, module):
@@ -13,15 +12,15 @@ class RepPointsHeadWraper(AnchorFreeHeadWraper):
 
         if hasattr(self.module, 'prior_generator'):
             # mmdet 2.18
-            self.prior_generator = build_wraper(self.module.prior_generator)
+            self.prior_generator = build_wrapper(self.module.prior_generator)
         elif hasattr(self.module, 'point_generators'):
             # mmdet 2.10
             self.point_generators = [
-                build_wraper(generator)
+                build_wrapper(generator)
                 for generator in self.module.point_generators
             ]
         else:
-            self.point_generator = build_wraper(self.module.point_generator)
+            self.point_generator = build_wrapper(self.module.point_generator)
 
     def forward(self, feat, x):
         img_shape = x.shape[2:]

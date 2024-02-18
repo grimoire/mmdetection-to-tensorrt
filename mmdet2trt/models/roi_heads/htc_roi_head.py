@@ -1,15 +1,14 @@
+import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
 import torch.nn.functional as F
-from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
-
-import mmdet2trt.ops.util_ops as mm2trt_util
 from mmdet2trt.core.post_processing import merge_aug_masks
-from mmdet2trt.models.builder import build_wraper, register_wraper
+from mmdet2trt.models.builder import build_wrapper, register_wrapper
+from mmdet.models.task_modules.coders.delta_xywh_bbox_coder import delta2bbox
 
 from .cascade_roi_head import CascadeRoIHeadWraper
 
 
-@register_wraper('mmdet.models.roi_heads.HybridTaskCascadeRoIHead')
+@register_wrapper('mmdet.models.roi_heads.HybridTaskCascadeRoIHead')
 class HybridTaskCascadeRoIHeadWraper(CascadeRoIHeadWraper):
 
     def __init__(self, module, wrap_config):
@@ -19,7 +18,7 @@ class HybridTaskCascadeRoIHeadWraper(CascadeRoIHeadWraper):
         module = self.module
         self.semantic_head = None
         if module.semantic_head is not None:
-            self.semantic_roi_extractor = build_wraper(
+            self.semantic_roi_extractor = build_wrapper(
                 module.semantic_roi_extractor)
             self.semantic_head = module.semantic_head
 

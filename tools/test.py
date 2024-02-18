@@ -1,11 +1,11 @@
 import argparse
 
-import mmcv
-from mmcv.parallel import MMDataParallel
+from mmdet2trt.apis import create_wrap_detector
 from mmdet.apis import single_gpu_test
 from mmdet.datasets import build_dataloader, build_dataset
 
-from mmdet2trt.apis import create_wrap_detector
+import mmcv
+from mmcv.parallel import MMDataParallel
 
 
 def parse_args():

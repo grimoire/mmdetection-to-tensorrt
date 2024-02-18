@@ -1,15 +1,14 @@
+import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
 import torch.nn.functional as F
-
-import mmdet2trt.ops.util_ops as mm2trt_util
-from mmdet2trt.core.bbox.transforms import batched_distance2bbox
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
-from mmdet2trt.models.builder import register_wraper
+from mmdet2trt.models.builder import register_wrapper
+from mmdet2trt.structures.bbox.transforms import batched_distance2bbox
 
 from .anchor_head import AnchorHeadWraper
 
 
-@register_wraper('mmdet.models.GFLHead')
+@register_wrapper('mmdet.models.GFLHead')
 class GFLHeadWraper(AnchorHeadWraper):
 
     def __init__(self, module):
@@ -49,7 +48,7 @@ class GFLHeadWraper(AnchorHeadWraper):
         cls_scores, bbox_preds = module(feat)
 
         num_levels = len(cls_scores)
-        mlvl_anchors = self.anchor_generator(
+        mlvl_anchors = self.prior_generator(
             cls_scores, device=cls_scores[0].device)
 
         mlvl_scores = []
@@ -59,7 +58,7 @@ class GFLHeadWraper(AnchorHeadWraper):
             rpn_cls_score = cls_scores[idx]
             rpn_bbox_pred = bbox_preds[idx]
             anchors = mlvl_anchors[idx]
-            stride = module.anchor_generator.strides[idx]
+            stride = module.prior_generator.strides[idx]
             scores = rpn_cls_score.permute(0, 2, 3, 1).reshape(
                 rpn_cls_score.shape[0], -1, module.cls_out_channels).sigmoid()
             bbox_pred = rpn_bbox_pred.permute(0, 2, 3, 1)

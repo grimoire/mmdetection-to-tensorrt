@@ -1,11 +1,10 @@
-import torch
-
 import mmdet2trt.ops.util_ops as mm2trt_util
-from mmdet2trt.models.builder import register_wraper
+import torch
+from mmdet2trt.models.builder import register_wrapper
 from mmdet2trt.models.dense_heads.anchor_free_head import AnchorFreeHeadWraper
 
 
-@register_wraper('mmdet.models.FoveaHead')
+@register_wrapper('mmdet.models.FoveaHead')
 class FoveaHeadWraper(AnchorFreeHeadWraper):
 
     def __init__(self, module):

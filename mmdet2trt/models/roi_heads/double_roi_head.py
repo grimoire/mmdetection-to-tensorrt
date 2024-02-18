@@ -1,9 +1,9 @@
-from mmdet2trt.models.builder import register_wraper
+from mmdet2trt.models.builder import register_wrapper
 
 from .standard_roi_head import StandardRoIHeadWraper
 
 
-@register_wraper('mmdet.models.roi_heads.double_roi_head.DoubleHeadRoIHead')
+@register_wrapper('mmdet.models.roi_heads.double_roi_head.DoubleHeadRoIHead')
 class DoubleHeadRoIHeadWraper(StandardRoIHeadWraper):
 
     def __init__(self, module, wrap_config):

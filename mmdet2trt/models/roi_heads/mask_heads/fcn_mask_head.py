@@ -1,11 +1,11 @@
 import torch
 import torch.nn.functional as F
+from mmdet2trt.models.builder import register_wrapper
 from torch import nn
 
-from mmdet2trt.models.builder import register_wraper
 
-
-@register_wraper('mmdet.models.roi_heads.mask_heads.fcn_mask_head.FCNMaskHead')
+@register_wrapper('mmdet.models.roi_heads.mask_heads.fcn_mask_head.FCNMaskHead'
+                  )
 class FCNMaskHeadWraper(nn.Module):
 
     def __init__(self, module, test_cfg):

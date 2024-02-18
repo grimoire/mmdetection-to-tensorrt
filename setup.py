@@ -122,7 +122,7 @@ class CleanCommand(Command):
 
 setup(
     name='mmdet2trt',
-    version='0.5.0',
+    version='0.6.0',
     author='q.yao',
     author_email='streetyao@live.com',
     description='mmdetection to tensorrt converter',

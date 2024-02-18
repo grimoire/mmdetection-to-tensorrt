@@ -1,8 +1,8 @@
-FROM nvcr.io/nvidia/tensorrt:20.12-py3
+FROM nvcr.io/nvidia/tensorrt:24.01-py3
 
-ARG CUDA=11.1
-ARG TORCH_VERSION=1.8.0
-ARG TORCHVISION_VERSION=0.9.0
+ARG CUDA=12.1
+ARG TORCH_VERSION=2.2.0
+ARG TORCHVISION_VERSION=0.17.0
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -22,16 +22,8 @@ RUN pip3 install torch==${TORCH_VERSION}+cu${CUDA//./} torchvision==${TORCHVISIO
 
 
 ### install mmcv
-RUN pip3 install pytest-runner
-RUN pip3 install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu${CUDA//./}/torch${TORCH_VERSION}/index.html
-
-### git mmdetection
-RUN git clone --depth=1 https://github.com/open-mmlab/mmdetection.git /root/space/mmdetection
-
-### install mmdetection
-RUN cd /root/space/mmdetection &&\
-    pip3 install -r requirements.txt &&\
-    python3 setup.py develop
+RUN pip3 install openmim &&\
+    mim install mmdet==3.3.0
 
 ### git amirstan plugin
 RUN git clone --depth=1 https://github.com/grimoire/amirstan_plugin.git /root/space/amirstan_plugin &&\

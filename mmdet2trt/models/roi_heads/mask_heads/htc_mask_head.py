@@ -1,9 +1,9 @@
+from mmdet2trt.models.builder import register_wrapper
 from torch import nn
 
-from mmdet2trt.models.builder import register_wraper
 
-
-@register_wraper('mmdet.models.roi_heads.mask_heads.htc_mask_head.HTCMaskHead')
+@register_wrapper('mmdet.models.roi_heads.mask_heads.htc_mask_head.HTCMaskHead'
+                  )
 class HTCMaskHeadWraper(nn.Module):
 
     def __init__(self, module, test_cfg):

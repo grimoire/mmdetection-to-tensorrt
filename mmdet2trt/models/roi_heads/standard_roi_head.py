@@ -1,14 +1,13 @@
+import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
+from mmdet2trt.models.builder import build_wrapper, register_wrapper
 from torch import nn
 
-import mmdet2trt.ops.util_ops as mm2trt_util
-from mmdet2trt.models.builder import build_wraper, register_wraper
 
-
-@register_wraper(
+@register_wrapper(
     'mmdet.models.roi_heads.mask_scoring_roi_head.MaskScoringRoIHead')
-@register_wraper('mmdet.models.roi_heads.dynamic_roi_head.DynamicRoIHead')
-@register_wraper('mmdet.models.roi_heads.standard_roi_head.StandardRoIHead')
+@register_wrapper('mmdet.models.roi_heads.dynamic_roi_head.DynamicRoIHead')
+@register_wrapper('mmdet.models.roi_heads.standard_roi_head.StandardRoIHead')
 class StandardRoIHeadWraper(nn.Module):
 
     def __init__(self, module, wrap_config={}):
@@ -16,9 +15,9 @@ class StandardRoIHeadWraper(nn.Module):
         self.module = module
         self.wrap_config = wrap_config
 
-        self.bbox_roi_extractor = build_wraper(module.bbox_roi_extractor)
+        self.bbox_roi_extractor = build_wrapper(module.bbox_roi_extractor)
 
-        self.bbox_head = build_wraper(
+        self.bbox_head = build_wrapper(
             module.bbox_head, test_cfg=module.test_cfg)
         if module.with_shared_head:
             self.shared_head = module.shared_head
@@ -35,8 +34,9 @@ class StandardRoIHeadWraper(nn.Module):
         self.test_cfg = module.test_cfg
 
     def init_mask_head(self, mask_roi_extractor, mask_head):
-        self.mask_roi_extractor = build_wraper(mask_roi_extractor)
-        self.mask_head = build_wraper(mask_head, test_cfg=self.module.test_cfg)
+        self.mask_roi_extractor = build_wrapper(mask_roi_extractor)
+        self.mask_head = build_wrapper(
+            mask_head, test_cfg=self.module.test_cfg)
 
     def _bbox_forward(self, x, rois):
         bbox_feats = self.bbox_roi_extractor(

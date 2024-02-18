@@ -1,19 +1,18 @@
+import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
+from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from mmdet2trt.models.builder import build_wrapper, register_wrapper
 from torch import nn
 
-import mmdet2trt.ops.util_ops as mm2trt_util
-from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
-from mmdet2trt.models.builder import build_wraper, register_wraper
 
-
-@register_wraper('mmdet.models.RPNHead')
+@register_wrapper('mmdet.models.RPNHead')
 class RPNHeadWraper(nn.Module):
 
     def __init__(self, module):
         super(RPNHeadWraper, self).__init__()
         self.module = module
-        self.anchor_generator = build_wraper(self.module.anchor_generator)
-        self.bbox_coder = build_wraper(self.module.bbox_coder)
+        self.prior_generator = build_wrapper(self.module.prior_generator)
+        self.bbox_coder = build_wrapper(self.module.bbox_coder)
 
         self.test_cfg = module.test_cfg
         if 'nms' in self.test_cfg:
@@ -30,7 +29,7 @@ class RPNHeadWraper(nn.Module):
 
         cls_scores, bbox_preds = module(feat)
 
-        mlvl_anchors = self.anchor_generator(
+        mlvl_anchors = self.prior_generator(
             cls_scores, device=cls_scores[0].device)
 
         mlvl_scores = []

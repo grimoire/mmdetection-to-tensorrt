@@ -1,7 +1,6 @@
-from torch import nn
-
 import mmdet2trt.ops as mm2trt_ops
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
+from torch import nn
 
 
 class AnchorFreeHeadWraper(nn.Module):

@@ -5,8 +5,8 @@ from torch2trt_dynamic.torch2trt_dynamic import (get_arg, tensorrt_converter,
 from .plugins import create_delta2bbox_custom_plugin
 
 
-@tensorrt_converter(
-    'mmdet2trt.core.bbox.coder.delta_xywh_bbox_coder.delta2bbox_custom_func')
+@tensorrt_converter('mmdet2trt.models.task_modules.coders'
+                    '.delta_xywh_bbox_coder.delta2bbox_custom_func')
 def convert_delta2bbox(ctx):
     cls_scores = get_arg(ctx, 'cls_scores', pos=0, default=None)
     bbox_preds = get_arg(ctx, 'bbox_preds', pos=1, default=None)

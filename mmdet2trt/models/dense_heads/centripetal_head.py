@@ -1,11 +1,10 @@
 import torch
-
-from mmdet2trt.models.builder import register_wraper
+from mmdet2trt.models.builder import register_wrapper
 
 from .corner_head import CornerHeadWraper
 
 
-@register_wraper('mmdet.models.dense_heads.CentripetalHead')
+@register_wrapper('mmdet.models.dense_heads.CentripetalHead')
 class CentripetalHeadWraper(CornerHeadWraper):
 
     def __init__(self, module):

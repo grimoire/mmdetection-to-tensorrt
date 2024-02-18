@@ -1,9 +1,9 @@
-from mmdet2trt.models.builder import register_wraper
+from mmdet2trt.models.builder import register_wrapper
 
 from .bbox_head import BBoxHeadWraper
 
 
-@register_wraper(
+@register_wrapper(
     'mmdet.models.roi_heads.bbox_heads.double_bbox_head.DoubleConvFCBBoxHead')
 class DoubleConvFCBBoxHeadWraper(BBoxHeadWraper):
 

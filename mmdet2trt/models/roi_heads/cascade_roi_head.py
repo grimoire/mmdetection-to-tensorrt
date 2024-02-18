@@ -1,13 +1,12 @@
+import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
-from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
+from mmdet2trt.core.post_processing import merge_aug_masks
+from mmdet2trt.models.builder import build_wrapper, register_wrapper
+from mmdet.models.task_modules.coders.delta_xywh_bbox_coder import delta2bbox
 from torch import nn
 
-import mmdet2trt.ops.util_ops as mm2trt_util
-from mmdet2trt.core.post_processing import merge_aug_masks
-from mmdet2trt.models.builder import build_wraper, register_wraper
 
-
-@register_wraper('mmdet.models.roi_heads.CascadeRoIHead')
+@register_wrapper('mmdet.models.roi_heads.CascadeRoIHead')
 class CascadeRoIHeadWraper(nn.Module):
 
     def __init__(self, module, wrap_config):
@@ -16,10 +15,10 @@ class CascadeRoIHeadWraper(nn.Module):
         self.wrap_config = wrap_config
 
         self.bbox_roi_extractor = [
-            build_wraper(extractor) for extractor in module.bbox_roi_extractor
+            build_wrapper(extractor) for extractor in module.bbox_roi_extractor
         ]
         self.bbox_head = [
-            build_wraper(bb_head, test_cfg=module.test_cfg)
+            build_wrapper(bb_head, test_cfg=module.test_cfg)
             for bb_head in module.bbox_head
         ]
         if module.with_shared_head:
@@ -40,10 +39,11 @@ class CascadeRoIHeadWraper(nn.Module):
 
     def init_mask_head(self, mask_roi_extractor, mask_head):
         self.mask_roi_extractor = [
-            build_wraper(mre) for mre in mask_roi_extractor
+            build_wrapper(mre) for mre in mask_roi_extractor
         ]
         self.mask_head = [
-            build_wraper(mh, test_cfg=self.module.test_cfg) for mh in mask_head
+            build_wrapper(mh, test_cfg=self.module.test_cfg)
+            for mh in mask_head
         ]
 
     def _bbox_forward(self, stage, x, rois):

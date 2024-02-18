@@ -1,19 +1,18 @@
 import torch
+from mmdet2trt.models.builder import build_wrapper, register_wrapper
+from mmdet2trt.structures.bbox.transforms import batched_bbox_cxcywh_to_xyxy
 from torch import nn
 from torch.nn import functional as F
 
-from mmdet2trt.core.bbox.transforms import batched_bbox_cxcywh_to_xyxy
-from mmdet2trt.models.builder import build_wraper, register_wraper
 
-
-@register_wraper('mmdet.models.dense_heads.DETRHead')
+@register_wrapper('mmdet.models.dense_heads.DETRHead')
 class DETRHeadWraper(nn.Module):
 
     def __init__(self, module):
         super(DETRHeadWraper, self).__init__()
         self.module = module
         self.test_cfg = module.test_cfg
-        self.positional_encoding = build_wraper(module.positional_encoding)
+        self.positional_encoding = build_wrapper(module.positional_encoding)
 
     def module_forward(self, feats, x):
         module = self.module

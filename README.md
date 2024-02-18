@@ -1,38 +1,39 @@
 # MMDet to TensorRT
 
+> [!NOTE]
+>
+> The main branch is used to support model conversion of MMDetection>=3.0.
+> If you want to convert model on older MMDetection, Please switch to branch:
+> - [mmdet2trt=v0.5.0](https://github.com/grimoire/mmdetection-to-tensorrt/tree/v0.5.0)
+> - [torch2trt_dynamic=v0.5.0](https://github.com/grimoire/torch2trt_dynamic/tree/v0.5.0)
+> - [amirstan_plugin=v0.5.0](https://github.com/grimoire/amirstan_plugin/tree/v0.5.0).
+
 ## News
 
-OpenMMLab has release [MMDeploy](https://github.com/open-mmlab/mmdeploy) which support more inference engine and repos. PRs and advices are welcome !
+- 2024.02: Support MMDetection>=3.0
 
 ## Introduction
 
-This project aims to convert the mmdetection model to TensorRT model end2end.
-Focus on object detection for now.
+This project aims to support End2End deployment of models in MMDetection with TensorRT.
+
 Mask support is **experiment**.
 
-support:
+Features:
 
 - fp16
 - int8(experiment)
 - batched input
 - dynamic input shape
 - combination of different modules
-- deepstream support
-
-Any advices, bug reports and stars are welcome.
-
-## License
-
-This project is released under the [Apache 2.0 license](LICENSE).
+- DeepStream
 
 ## Requirement
 
-- install mmdetection:
+- install MMDetection:
 
     ```bash
-    # mim is so cool!
     pip install openmim
-    mim install mmdet==2.14.0
+    mim install mmdet==3.3.0
     ```
 
 - install [torch2trt_dynamic](https://github.com/grimoire/torch2trt_dynamic):
@@ -40,7 +41,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
     ```bash
     git clone https://github.com/grimoire/torch2trt_dynamic.git torch2trt_dynamic
     cd torch2trt_dynamic
-    python setup.py develop
+    pip install -e .
     ```
 
 - install [amirstan_plugin](https://github.com/grimoire/amirstan_plugin):
@@ -57,11 +58,13 @@ This project is released under the [Apache 2.0 license](LICENSE).
     make -j10
     ```
 
-  - **DON'T FORGET** setting the envoirment variable(in `~/.bashrc`):
-
-    ```bash
-    export AMIRSTAN_LIBRARY_PATH=${amirstan_plugin_root}/build/lib
-    ```
+    > [!NOTE]
+    >
+    >   **DON'T FORGET** setting the environment variable(in `~/.bashrc`):
+    >
+    > ```bash
+    > export AMIRSTAN_LIBRARY_PATH=${amirstan_plugin_root}/build/lib
+    > ```
 
 ## Installation
 
@@ -70,7 +73,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
 ```bash
 git clone https://github.com/grimoire/mmdetection-to-tensorrt.git
 cd mmdetection-to-tensorrt
-python setup.py develop
+pip install -e .
 ```
 
 ### Docker
@@ -78,15 +81,7 @@ python setup.py develop
 Build docker image
 
 ```bash
-# cuda11.1 TensorRT7.2.2 pytorch1.8 cuda11.1
 sudo docker build -t mmdet2trt_docker:v1.0 docker/
-```
-
-You can also specify CUDA, Pytorch and Torchvision versions with docker build args by:
-
-```bash
-# cuda11.1 tensorrt7.2.2 pytorch1.6 cuda10.2
-sudo docker build -t mmdet2trt_docker:v1.0 --build-arg TORCH_VERSION=1.6.0 --build-arg TORCHVISION_VERSION=0.7.0 --build-arg CUDA=10.2 --docker/
 ```
 
 Run (will show the help for the CLI entrypoint)
@@ -109,12 +104,13 @@ sudo docker run --gpus all -it --rm -v ${your_data_path}:${bind_path} mmdet2trt_
 
 ## Usage
 
-how to create a TensorRT model from mmdet model (converting might take few minutes)(Might have some warning when converting.)
+Create a TensorRT model from mmdet model.
 detail can be found in [getting_started.md](./docs/getting_started.md)
 
 ### CLI
 
 ```bash
+# conversion might take few minutes.
 mmdet2trt ${CONFIG_PATH} ${CHECKPOINT_PATH} ${OUTPUT_PATH}
 ```
 
@@ -123,15 +119,17 @@ Run mmdet2trt -h for help on optional arguments.
 ### Python
 
 ```python
-opt_shape_param=[
-    [
-        [1,3,320,320],      # min shape
-        [1,3,800,1344],     # optimize shape
-        [1,3,1344,1344],    # max shape
-    ]
-]
-max_workspace_size=1<<30    # some module and tactic need large workspace.
-trt_model = mmdet2trt(cfg_path, weight_path, opt_shape_param=opt_shape_param, fp16_mode=True, max_workspace_size=max_workspace_size)
+shape_ranges=dict(
+    x=dict(
+        min=[1,3,320,320],
+        opt=[1,3,800,1344],
+        max=[1,3,1344,1344],
+    )
+)
+trt_model = mmdet2trt(cfg_path,
+                      weight_path,
+                      shape_ranges=shape_ranges,
+                      fp16_mode=True)
 
 # save converted model
 torch.save(trt_model.state_dict(), save_model_path)
@@ -141,12 +139,13 @@ with open(save_engine_path, mode='wb') as f:
     f.write(trt_model.state_dict()['engine'])
 ```
 
-**Note**:
-- The input of the engine is the tensor **after preprocess**.
-- The output of the engine is `num_dets, bboxes, scores, class_ids`. if you enable the `enable_mask` flag, there will be another output `mask`.
-- The bboxes output of the engine did not divided by `scale factor`.
+> [!NOTE]
+>
+> The input of the engine is the tensor **after preprocess**.
+> The output of the engine is `num_dets, bboxes, scores, class_ids`. if you enable the `enable_mask` flag, there will be another output `mask`.
+> The bboxes output of the engine did not divided by `scale_factor`.
 
-how to use the converted model
+how to perform inference with the converted model.
 
 ```python
 from mmdet.apis import inference_detector
@@ -157,14 +156,6 @@ trt_detector = create_wrap_detector(trt_model, cfg_path, device_id)
 
 # result share same format as mmdetection
 result = inference_detector(trt_detector, image_path)
-
-# visualize
-trt_detector.show_result(
-    image_path,
-    result,
-    score_thr=score_thr,
-    win_name='mmdet2trt',
-    show=True)
 ```
 
 Try demo in `demo/inference.py`, or `demo/cpp` if you want to do inference with c++ api.
@@ -177,6 +168,11 @@ Most other project use pytorch=>ONNX=>tensorRT route, This repo convert pytorch=
 Read [how-does-it-work](https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-work) for detail.
 
 ## Support Model/Module
+
+> [!NOTE]
+>
+> Some models have only been tested on MMDet<3.0. If you found any failed model,
+> Please report in the issue.
 
 - [x] Faster R-CNN
 - [x] Cascade R-CNN
@@ -218,19 +214,15 @@ Read [how-does-it-work](https://github.com/NVIDIA-AI-IOT/torch2trt#how-does-it-w
 
 Tested on:
 
-- torch=1.8.1
-- tensorrt=8.0.1.6
-- mmdetection=2.18.0
-- cuda=11.1
-
-If you find any error, please report it in the issue.
+- torch=2.2.0
+- tensorrt=8.6.1
+- mmdetection=3.3.0
+- cuda=11.7
 
 ## FAQ
 
 read [this page](./docs/FAQ.md) if you meet any problem.
 
-## Contact
+## License
 
-This repo is maintained by [@grimoire](https://github.com/grimoire)
-
-And send your resume to my e-mail if you want to join @OpenMMLab. Please read the JD for detail: [link](https://mp.weixin.qq.com/s/CzrOqITFZX-T_Kcor0hs2g)
+This project is released under the [Apache 2.0 license](LICENSE).

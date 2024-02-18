@@ -1,13 +1,12 @@
-import torch
-
 import mmdet2trt.ops.util_ops as mm2trt_util
-from mmdet2trt.core.bbox.iou_calculators import bbox_overlaps_batched
-from mmdet2trt.models.builder import register_wraper
+import torch
+from mmdet2trt.models.builder import register_wrapper
+from mmdet2trt.structures.bbox import bbox_overlaps_batched
 
 from .anchor_head import AnchorHeadWraper
 
 
-@register_wraper('mmdet.models.dense_heads.paa_head.PAAHead')
+@register_wrapper('mmdet.models.dense_heads.paa_head.PAAHead')
 class PPAHeadWraper(AnchorHeadWraper):
 
     def __init__(self, module):
@@ -18,7 +17,7 @@ class PPAHeadWraper(AnchorHeadWraper):
 
         cls_scores, bbox_preds, iou_preds = module(feat)
 
-        mlvl_anchors = self.anchor_generator(
+        mlvl_anchors = self.prior_generator(
             cls_scores, device=cls_scores[0].device)
 
         mlvl_scores = []
