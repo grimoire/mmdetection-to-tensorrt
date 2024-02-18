@@ -63,13 +63,12 @@ def inference_test(trt_model,
 
         image_path = osp.join(test_folder, file_name)
         image = mmcv.imread(image_path)
-        image = mmcv.imconvert(image, 'bgr', 'rgb')
 
         result = inference_detector(wrap_model, image)
 
         visualizer.add_datasample(
             'result',
-            image,
+            mmcv.imconvert(image, 'bgr', 'rgb'),
             data_sample=result,
             draw_gt=False,
             show=False,

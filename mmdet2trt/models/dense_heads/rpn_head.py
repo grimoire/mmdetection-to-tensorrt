@@ -11,7 +11,7 @@ class RPNHeadWraper(nn.Module):
     def __init__(self, module):
         super(RPNHeadWraper, self).__init__()
         self.module = module
-        self.anchor_generator = build_wrapper(self.module.anchor_generator)
+        self.prior_generator = build_wrapper(self.module.prior_generator)
         self.bbox_coder = build_wrapper(self.module.bbox_coder)
 
         self.test_cfg = module.test_cfg
@@ -29,7 +29,7 @@ class RPNHeadWraper(nn.Module):
 
         cls_scores, bbox_preds = module(feat)
 
-        mlvl_anchors = self.anchor_generator(
+        mlvl_anchors = self.prior_generator(
             cls_scores, device=cls_scores[0].device)
 
         mlvl_scores = []

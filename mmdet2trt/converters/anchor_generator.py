@@ -25,26 +25,6 @@ def convert_AnchorGeneratorDynamic(ctx):
             'ag_' + str(id(module)), stride=stride)
     else:
         print('no base_anchors in {}'.format(ag.generator))
-        # scales = ag.scales.detach().cpu().numpy().astype(np.float32)
-        # ratios = ag.ratios.detach().cpu().numpy().astype(np.float32)
-        # scale_major = ag.scale_major
-        # ctr = ag.ctr
-        # if ctr is None:
-        #     # center_x = -1
-        #     # center_y = -1
-        #     center_x = 0
-        #     center_y = 0
-        # else:
-        #     center_x, center_y = ag.ctr
-
-        # plugin = create_gridanchordynamic_plugin("ag_" + str(id(module)),
-        #                                          base_size=base_size,
-        #                                          stride=stride,
-        #                                          scales=scales,
-        #                                          ratios=ratios,
-        #                                          scale_major=scale_major,
-        #                                          center_x=center_x,
-        #                                          center_y=center_y)
 
     custom_layer = ctx.network.add_plugin_v2(
         inputs=[input_trt, base_anchors_trt], plugin=plugin)

@@ -11,7 +11,7 @@ class YOLOV3HeadWraper(nn.Module):
     def __init__(self, module):
         super(YOLOV3HeadWraper, self).__init__()
         self.module = module
-        self.anchor_generator = build_wrapper(self.module.anchor_generator)
+        self.prior_generator = build_wrapper(self.module.prior_generator)
         self.bbox_coder = build_wrapper(self.module.bbox_coder)
         self.featmap_strides = module.featmap_strides
         self.num_attrib = module.num_attrib
@@ -34,7 +34,7 @@ class YOLOV3HeadWraper(nn.Module):
 
         pred_maps_list = module(feats)[0]
 
-        multi_lvl_anchors = self.anchor_generator(
+        multi_lvl_anchors = self.prior_generator(
             pred_maps_list, device=pred_maps_list[0].device)
 
         multi_lvl_bboxes = []

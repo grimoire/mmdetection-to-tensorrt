@@ -1,6 +1,7 @@
+import logging
 from argparse import ArgumentParser
 from pathlib import Path
-import logging
+
 import torch
 
 from .mmdet2trt import mmdet2trt
@@ -18,7 +19,8 @@ def _parse_args():
     parser.add_argument('config', help='Path to a mmdet Config file')
     parser.add_argument('checkpoint', help='Path to a mmdet Checkpoint file')
     parser.add_argument(
-        '--output', default=None,
+        '--output',
+        default=None,
         help='Path where tensorrt model will be saved')
     parser.add_argument(
         '--fp16', action='store_true', help='Enable fp16 inference')
@@ -80,13 +82,6 @@ def _parse_args():
         default='INFO',
         choices=['VERBOSE', 'INFO', 'WARNING', 'ERROR'],
         help='TensorRT logging level.',
-    )
-    parser.add_argument(
-        '--output-names',
-        nargs=4,
-        type=str,
-        default=['num_detections', 'boxes', 'scores', 'classes'],
-        help='Names for the output nodes of the created TRTModule',
     )
     args = parser.parse_args()
     return args
