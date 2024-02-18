@@ -1,15 +1,18 @@
 import logging
+from typing import List, Tuple, Union
 
+import mmengine
 import numpy as np
 import torch
-from addict import Addict
-from mmdet.core import bbox2result
-from mmdet.datasets.pipelines import Compose
 from mmdet.models import BaseDetector
-from mmdet.models.roi_heads.mask_heads import FCNMaskHead
+from mmdet.structures import DetDataSample, OptSampleList, SampleList
+from mmengine.registry import DATASETS, MODELS, init_default_scope
+from mmengine.structures import InstanceData
+from torch import Tensor
 from torch2trt_dynamic import TRTModule
 
 import mmcv
+from mmcv.transforms import Compose
 
 logger = logging.getLogger('mmdet2trt')
 
@@ -23,7 +26,7 @@ def init_trt_model(trt_model_path):
 
 def inference_trt_model(model, img, cfg, device):
     if isinstance(cfg, str):
-        cfg = mmcv.Config.fromfile(cfg)
+        cfg = mmengine.Config.fromfile(cfg)
 
     device = torch.device(device)
 
@@ -52,7 +55,7 @@ def inference_trt_model(model, img, cfg, device):
     scale_factor = torch.tensor(
         scale_factor, dtype=torch.float32, device=device)
 
-    with torch.no_grad():
+    with torch.inference_mode():
         result = model(tensor)
         result = list(result)
         result[1] = result[1] / scale_factor
@@ -60,43 +63,20 @@ def inference_trt_model(model, img, cfg, device):
     return result
 
 
+def get_dataset_meta(model_cfg):
+    init_default_scope(model_cfg.get('default_scope', 'mmdet'))
+    dataset = model_cfg.val_dataloader.dataset
+    dataset.lazy_init = True
+    dataset = DATASETS.build(model_cfg.val_dataloader.dataset)
+    return dataset.metainfo
+
+
 def get_classes_from_config(model_cfg):
-    model_cfg_str = model_cfg
-    if isinstance(model_cfg, str):
-        model_cfg = mmcv.Config.fromfile(model_cfg)
-
-    from mmdet.datasets import DATASETS, build_dataset
-
     try:
-        dataset = build_dataset(model_cfg)
-        return dataset.CLASSES
-    except Exception:
-        logger.warning(
-            'Can not load dataset from config. Use default CLASSES instead.')
-
-    module_dict = DATASETS.module_dict
-    data_cfg = model_cfg.data
-
-    def get_module_from_train_val(train_val_cfg):
-        while train_val_cfg.type == 'RepeatDataset' or \
-         train_val_cfg.type == 'MultiImageMixDataset':
-            train_val_cfg = train_val_cfg.dataset
-        return module_dict[train_val_cfg.type]
-
-    data_cfg_type_list = ['train', 'val', 'test']
-
-    MODULE = None
-    for data_cfg_type in data_cfg_type_list:
-        if data_cfg_type in data_cfg:
-            tmp_data_cfg = data_cfg.get(data_cfg_type)
-            MODULE = get_module_from_train_val(tmp_data_cfg)
-            if 'classes' in tmp_data_cfg:
-                return MODULE.get_classes(tmp_data_cfg.classes)
-            break
-
-    assert MODULE is not None, f'No dataset config found in: {model_cfg_str}'
-
-    return MODULE.CLASSES
+        return get_dataset_meta(model_cfg)['classes']
+    except Exception as e:
+        logger.warning('Load class names from dataset failed. with error:')
+        raise e
 
 
 class TRTDetector(BaseDetector):
@@ -104,11 +84,11 @@ class TRTDetector(BaseDetector):
 
     def __init__(self, trt_module, model_cfg, device_id=0):
         super().__init__()
-
-        self._dummy_param = torch.nn.Parameter(torch.tensor(0.0))
         if isinstance(model_cfg, str):
-            model_cfg = mmcv.Config.fromfile(model_cfg)
-        self.CLASSES = get_classes_from_config(model_cfg)
+            model_cfg = mmengine.Config.fromfile(model_cfg)
+        init_default_scope(model_cfg.get('default_scope', 'mmdet'))
+        # self.CLASSES = get_classes_from_config(model_cfg)
+        self.dataset_meta = get_dataset_meta(model_cfg)
         self.cfg = model_cfg
         self.device_id = device_id
 
@@ -118,93 +98,102 @@ class TRTDetector(BaseDetector):
             model.load_state_dict(torch.load(trt_module))
         self.model = model
 
-    def simple_test(self, img, img_metas, **kwargs):
-        raise NotImplementedError('This method is not implemented.')
+        self.data_preprocessor = self._build_data_preprocessor(model_cfg)
 
-    def aug_test(self, imgs, img_metas, **kwargs):
-        raise NotImplementedError('This method is not implemented.')
+    def _build_data_preprocessor(self, cfg):
+        return MODELS.build(cfg.model.data_preprocessor)
 
     def extract_feat(self, imgs):
         raise NotImplementedError('This method is not implemented.')
 
-    def forward_train(self, imgs, img_metas, **kwargs):
+    def loss(self, batch_inputs: Tensor,
+             batch_data_samples: SampleList) -> Union[dict, list]:
         raise NotImplementedError('This method is not implemented.')
 
-    def val_step(self, data, optimizer):
+    def _forward(
+            self,
+            batch_inputs: Tensor,
+            batch_data_samples: OptSampleList = None) -> Tuple[List[Tensor]]:
         raise NotImplementedError('This method is not implemented.')
 
-    def train_step(self, data, optimizer):
-        raise NotImplementedError('This method is not implemented.')
+    def predict(self,
+                batch_inputs: Tensor,
+                batch_data_samples: SampleList,
+                rescale: bool = True) -> SampleList:
 
-    def aforward_test(self, *, img, img_metas, **kwargs):
-        raise NotImplementedError('This method is not implemented.')
+        def __rescale_bboxes(bboxes, scale_factor):
+            scale_factor = bboxes.new_tensor(scale_factor)[None, :]
+            if scale_factor.size(-1) == 2:
+                scale_factor = scale_factor.repeat(1, 2)
+            return bboxes / scale_factor
 
-    def async_simple_test(self, img, img_metas, **kwargs):
-        raise NotImplementedError('This method is not implemented.')
-
-    def forward(self, img, img_metas, *args, **kwargs):
-        outputs = self.forward_test(img, img_metas, *args, **kwargs)
+        outputs = self.forward_test(batch_inputs)
         batch_num_dets, batch_boxes, batch_scores, batch_labels = outputs[:4]
-        batch_dets = torch.cat(
-            [batch_boxes, batch_scores.unsqueeze(-1)], dim=-1)
-        batch_masks = None if len(outputs) < 5 else outputs[4]
-        batch_size = img[0].shape[0]
-        img_metas = img_metas[0]
+        batch_num_dets = batch_num_dets.cpu()
+        # batch_masks = None if len(outputs) < 5 else outputs[4]
+        batch_size = batch_inputs.shape[0]
+
         results = []
-        rescale = kwargs.get('rescale', True)
         for i in range(batch_size):
+            in_data_sample = batch_data_samples[i]
+            metainfo = in_data_sample.metainfo
+
             num_dets = batch_num_dets[i]
-            dets, labels = batch_dets[i][:num_dets], batch_labels[i][:num_dets]
-            old_dets = dets.clone()
-            labels = labels.int()
+            bboxes = batch_boxes[i, :num_dets]
+            labels = batch_labels[i, :num_dets].int()
+            scores = batch_scores[i, :num_dets]
+
             if rescale:
-                scale_factor = img_metas[i]['scale_factor']
+                assert 'scale_factor' in metainfo
+                bboxes = __rescale_bboxes(bboxes, metainfo['scale_factor'])
 
-                if isinstance(scale_factor, (list, tuple, np.ndarray)):
-                    assert len(scale_factor) == 4
-                    scale_factor = dets.new_tensor(scale_factor)[
-                        None, :]  # [1,4]
-                dets[:, :4] /= scale_factor
+            pred_instances = InstanceData(metainfo=metainfo)
+            pred_instances.scores = scores
+            pred_instances.bboxes = bboxes
+            pred_instances.labels = labels
+            out_data_sample = DetDataSample(
+                metainfo=metainfo, pred_instances=pred_instances)
+            results.append(out_data_sample)
 
-            if 'border' in img_metas[i]:
-                # offset pixel of the top-left corners between original image
-                # and padded/enlarged image, 'border' is used when exporting
-                # CornerNet and CentripetalNet to onnx
-                x_off = img_metas[i]['border'][2]
-                y_off = img_metas[i]['border'][0]
-                dets[:, [0, 2]] -= x_off
-                dets[:, [1, 3]] -= y_off
-                dets[:, :4] *= (dets[:, :4] > 0).astype(dets.dtype)
+            # if 'border' in img_metas[i]:
+            #     # offset pixel of the top-left corners between original image
+            #     # and padded/enlarged image, 'border' is used when exporting
+            #     # CornerNet and CentripetalNet to onnx
+            #     x_off = img_metas[i]['border'][2]
+            #     y_off = img_metas[i]['border'][0]
+            #     dets[:, [0, 2]] -= x_off
+            #     dets[:, [1, 3]] -= y_off
+            #     dets[:, :4] *= (dets[:, :4] > 0).astype(dets.dtype)
 
-            dets_results = bbox2result(dets, labels, len(self.CLASSES))
+            # dets_results = bbox2result(dets, labels, len(self.CLASSES))
 
-            if batch_masks is not None:
-                masks = batch_masks[i][:num_dets].unsqueeze(1)
-                masks = masks.detach().cpu().numpy()
-                num_classes = len(self.CLASSES)
-                class_agnostic = True
-                segms_results = [[] for _ in range(num_classes)]
-                if num_dets > 0:
-                    for i in range(batch_size):
-                        segms_results = FCNMaskHead.get_seg_masks(
-                            Addict(
-                                num_classes=num_classes,
-                                class_agnostic=class_agnostic),
-                            masks,
-                            old_dets,
-                            labels,
-                            rcnn_test_cfg=Addict(mask_thr_binary=0.5),
-                            ori_shape=img_metas[i]['ori_shape'],
-                            scale_factor=scale_factor,
-                            rescale=rescale)
-                results.append((dets_results, segms_results))
-            else:
-                results.append(dets_results)
+            # if batch_masks is not None:
+            #     masks = batch_masks[i][:num_dets].unsqueeze(1)
+            #     masks = masks.detach().cpu().numpy()
+            #     num_classes = len(self.CLASSES)
+            #     class_agnostic = True
+            #     segms_results = [[] for _ in range(num_classes)]
+            #     if num_dets > 0:
+            #         for i in range(batch_size):
+            #             segms_results = FCNMaskHead.get_seg_masks(
+            #                 Addict(
+            #                     num_classes=num_classes,
+            #                     class_agnostic=class_agnostic),
+            #                 masks,
+            #                 old_dets,
+            #                 labels,
+            #                 rcnn_test_cfg=Addict(mask_thr_binary=0.5),
+            #                 ori_shape=img_metas[i]['ori_shape'],
+            #                 scale_factor=scale_factor,
+            #                 rescale=rescale)
+            #     results.append((dets_results, segms_results))
+            # else:
+            #     results.append(dets_results)
         return results
 
-    def forward_test(self, imgs, *args, **kwargs):
-        input_data = imgs[0].contiguous()
-        with torch.cuda.device(self.device_id), torch.no_grad():
+    def forward_test(self, imgs):
+        input_data = imgs.contiguous()
+        with torch.cuda.device(self.device_id), torch.inference_mode():
             outputs = self.model(input_data)
         return outputs
 

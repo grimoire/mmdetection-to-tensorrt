@@ -1,9 +1,9 @@
 import mmdet2trt.core.post_processing.batched_nms as batched_nms
 import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
-from mmdet2trt.core.bbox import batched_distance2bbox
 from mmdet2trt.models.builder import register_wrapper
 from mmdet2trt.models.dense_heads.anchor_free_head import AnchorFreeHeadWraper
+from mmdet2trt.structures.bbox import batched_distance2bbox
 
 
 @register_wrapper('mmdet.models.VFNetHead')

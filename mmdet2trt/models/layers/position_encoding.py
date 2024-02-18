@@ -3,7 +3,7 @@ from mmdet2trt.models.builder import register_wrapper
 from torch import nn
 
 
-@register_wrapper('mmdet.models.utils.SinePositionalEncoding')
+@register_wrapper('mmdet.models.layers.SinePositionalEncoding')
 class SinePositionalEncodingWraper(nn.Module):
 
     def __init__(self, module):

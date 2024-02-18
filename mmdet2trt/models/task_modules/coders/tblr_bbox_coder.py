@@ -34,7 +34,7 @@ def batched_blr2bboxes(priors,
     return boxes
 
 
-@register_wrapper('mmdet.core.bbox.coder.TBLRBBoxCoder')
+@register_wrapper('mmdet.models.task_modules.coders.TBLRBBoxCoder')
 class TBLRBBoxCoderWraper(nn.Module):
 
     def __init__(self, module):

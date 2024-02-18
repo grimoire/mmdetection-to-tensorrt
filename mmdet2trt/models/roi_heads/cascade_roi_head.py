@@ -2,7 +2,7 @@ import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
 from mmdet2trt.core.post_processing import merge_aug_masks
 from mmdet2trt.models.builder import build_wrapper, register_wrapper
-from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
+from mmdet.models.task_modules.coders.delta_xywh_bbox_coder import delta2bbox
 from torch import nn
 
 

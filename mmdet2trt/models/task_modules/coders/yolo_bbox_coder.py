@@ -22,7 +22,7 @@ def yolodecoder_batched(bboxes, pred_bboxes, stride):
     return decoded_bboxes
 
 
-@register_wrapper('mmdet.core.bbox.coder.YOLOBBoxCoder')
+@register_wrapper('mmdet.models.task_modules.coders.YOLOBBoxCoder')
 class YOLOBBoxCoderWraper(nn.Module):
 
     def __init__(self, module):

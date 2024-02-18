@@ -1,28 +1,20 @@
-from .anchor_generator import convert_AnchorGeneratorDynamic
-from .batched_nms import convert_batchednms
-from .bfp_forward import convert_BFP
-from .carafe import (convert_carafe_feature_reassemble,
-                     convert_carafe_kernel_normalizer,
-                     convert_carafe_tensor_add)
-from .ConvAWS2d import convert_ConvAWS2d
-from .ConvWS2d import convert_ConvWS2d
-from .DeformConv import convert_DeformConv, convert_ModulatedDeformConv
-from .DeformPool import convert_DeformPool
-from .delta2bbox_custom import convert_delta2bbox
-from .generalized_attention import convert_GeneralizeAttention
-from .MaskedConv import convert_MaskedConv
-from .mmcv_roi_aligin import convert_mmcv_RoIAlign
-from .mmdet2trtOps import convert_adaptive_max_pool2d_by_input
-from .RoiExtractor import convert_roiextractor
-from .SAConv2d import convert_SAConv2d
-from .vfnet import convert_vfnet_star_dcn_offset
+import torch  # noqa: F401
 
-__all__ = [
-    'convert_AnchorGeneratorDynamic', 'convert_batchednms', 'convert_BFP',
-    'convert_carafe_feature_reassemble', 'convert_carafe_kernel_normalizer',
-    'convert_carafe_tensor_add', 'convert_ConvAWS2d', 'convert_ConvWS2d',
-    'convert_DeformConv', 'convert_ModulatedDeformConv', 'convert_DeformPool',
-    'convert_delta2bbox', 'convert_GeneralizeAttention', 'convert_MaskedConv',
-    'convert_mmcv_RoIAlign', 'convert_adaptive_max_pool2d_by_input',
-    'convert_roiextractor', 'convert_SAConv2d', 'convert_vfnet_star_dcn_offset'
-]
+from . import ConvAWS2d  # noqa: F401
+from . import ConvWS2d  # noqa: F401
+from . import DeformConv  # noqa: F401
+from . import DeformPool  # noqa: F401
+from . import MaskedConv  # noqa: F401
+from . import RoiExtractor  # noqa: F401
+from . import SAConv2d  # noqa: F401
+from . import anchor_generator  # noqa: F401
+from . import batched_nms  # noqa: F401
+from . import bfp_forward  # noqa: F401
+from . import carafe  # noqa: F401
+from . import delta2bbox_custom  # noqa: F401
+from . import generalized_attention  # noqa: F401
+from . import mmcv_roi_aligin  # noqa: F401
+from . import vfnet  # noqa: F401
+from .mmdet2trtOps import convert_adaptive_max_pool2d_by_input
+
+__all__ = ['convert_adaptive_max_pool2d_by_input']

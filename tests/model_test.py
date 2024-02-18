@@ -3,12 +3,15 @@ import os
 import os.path as osp
 from argparse import ArgumentParser
 
-import cv2
+import mmengine
 import torch
 import tqdm
 from mmdet2trt import mmdet2trt
 from mmdet2trt.apis import create_wrap_detector
 from mmdet.apis import inference_detector
+from mmengine.registry import init_default_scope
+
+import mmcv
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('mmdet2trt')
@@ -43,8 +46,15 @@ def inference_test(trt_model,
                    save_folder,
                    score_thr=0.3):
     file_list = os.listdir(test_folder)
+    model_cfg = mmengine.Config.fromfile(cfg_path)
+    init_default_scope(model_cfg.get('default_scope', 'mmdet'))
 
     wrap_model = create_wrap_detector(trt_model, cfg_path, device)
+
+    from mmdet.registry import VISUALIZERS
+    visualizer_cfg = dict(type='DetLocalVisualizer', name='visualizer')
+    visualizer = VISUALIZERS.build(visualizer_cfg)
+    visualizer.dataset_meta = wrap_model.dataset_meta
 
     for file_name in tqdm.tqdm(file_list):
         if not (file_name.lower().endswith('.jpg')
@@ -52,16 +62,19 @@ def inference_test(trt_model,
             continue
 
         image_path = osp.join(test_folder, file_name)
-        image = cv2.imread(image_path)
+        image = mmcv.imread(image_path)
+        image = mmcv.imconvert(image, 'bgr', 'rgb')
 
         result = inference_detector(wrap_model, image)
 
-        wrap_model.show_result(
+        visualizer.add_datasample(
+            'result',
             image,
-            result,
-            score_thr=score_thr,
+            data_sample=result,
+            draw_gt=False,
             show=False,
-            out_file=osp.join(save_folder, file_name))
+            out_file=osp.join(save_folder, file_name),
+            pred_score_thr=score_thr)
 
 
 TEST_MODE_DICT = {'convert': 1, 'inference': 1 << 1, 'all': 0b11}

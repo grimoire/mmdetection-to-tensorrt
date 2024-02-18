@@ -69,7 +69,7 @@ def bucket2bbox_batched(proposals,
     return bboxes, loc_confidence
 
 
-@register_wrapper('mmdet.core.bbox.coder.BucketingBBoxCoder')
+@register_wrapper('mmdet.models.task_modules.coders.BucketingBBoxCoder')
 class BucketingBBoxCoderWraper(nn.Module):
 
     def __init__(self, module):

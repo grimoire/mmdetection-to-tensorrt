@@ -2,11 +2,11 @@
 
 ## News
 
-This Repo now support MMDetection>=3.0
+- 24.02 Support MMDetection>=3.0
 
 ## Introduction
 
-This project aims to convert the mmdetection model to TensorRT model end2end.
+This project aims to convert the Model from MMDetection to TensorRT model end2end.
 Focus on object detection for now.
 Mask support is **experiment**.
 
@@ -26,7 +26,6 @@ Any advices, bug reports and stars are welcome.
 - install MMDetection:
 
     ```bash
-    # mim is so cool!
     pip install openmim
     mim install mmdet==3.3.0
     ```
@@ -36,7 +35,7 @@ Any advices, bug reports and stars are welcome.
     ```bash
     git clone https://github.com/grimoire/torch2trt_dynamic.git torch2trt_dynamic
     cd torch2trt_dynamic
-    python setup.py develop
+    pip install -e .
     ```
 
 - install [amirstan_plugin](https://github.com/grimoire/amirstan_plugin):
@@ -66,7 +65,7 @@ Any advices, bug reports and stars are welcome.
 ```bash
 git clone https://github.com/grimoire/mmdetection-to-tensorrt.git
 cd mmdetection-to-tensorrt
-python setup.py develop
+pip install -e .
 ```
 
 ### Docker

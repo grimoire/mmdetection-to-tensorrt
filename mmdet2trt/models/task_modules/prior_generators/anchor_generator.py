@@ -31,8 +31,10 @@ class AnchorGeneratorSingle(nn.Module):
             device=device)
 
 
-@register_wrapper('mmdet.core.anchor.anchor_generator.YOLOAnchorGenerator')
-@register_wrapper('mmdet.core.AnchorGenerator')
+@register_wrapper('mmdet.models.task_modules.prior_generators'
+                  '.YOLOAnchorGenerator')
+@register_wrapper('mmdet.models.task_modules.prior_generators'
+                  '.AnchorGenerator')
 class AnchorGeneratorWraper(nn.Module):
 
     def __init__(self, module):
@@ -64,7 +66,8 @@ class AnchorGeneratorWraper(nn.Module):
         return multi_level_anchors
 
 
-@register_wrapper('mmdet.core.anchor.anchor_generator.SSDAnchorGenerator')
+@register_wrapper('mmdet.models.task_modules.prior_generators'
+                  '.SSDAnchorGenerator')
 class SSDAnchorGeneratorWraper(nn.Module):
 
     def __init__(self, module):

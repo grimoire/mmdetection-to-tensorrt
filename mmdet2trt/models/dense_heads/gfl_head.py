@@ -1,9 +1,9 @@
 import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
 import torch.nn.functional as F
-from mmdet2trt.core.bbox.transforms import batched_distance2bbox
 from mmdet2trt.core.post_processing.batched_nms import BatchedNMS
 from mmdet2trt.models.builder import register_wrapper
+from mmdet2trt.structures.bbox.transforms import batched_distance2bbox
 
 from .anchor_head import AnchorHeadWraper
 

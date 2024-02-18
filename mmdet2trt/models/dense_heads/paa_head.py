@@ -1,7 +1,7 @@
 import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
-from mmdet2trt.core.bbox.iou_calculators import bbox_overlaps_batched
 from mmdet2trt.models.builder import register_wrapper
+from mmdet2trt.structures.bbox import bbox_overlaps_batched
 
 from .anchor_head import AnchorHeadWraper
 

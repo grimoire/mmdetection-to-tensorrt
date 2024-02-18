@@ -1,7 +1,7 @@
 import mmdet2trt.ops.util_ops as mm2trt_util
 import torch
-from mmdet2trt.core.bbox.transforms import bbox2roi
 from mmdet2trt.models.builder import build_wrapper, register_wrapper
+from mmdet2trt.structures.bbox.transforms import bbox2roi
 
 from .standard_roi_head import StandardRoIHeadWraper
 

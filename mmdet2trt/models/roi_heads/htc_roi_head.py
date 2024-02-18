@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 from mmdet2trt.core.post_processing import merge_aug_masks
 from mmdet2trt.models.builder import build_wrapper, register_wrapper
-from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
+from mmdet.models.task_modules.coders.delta_xywh_bbox_coder import delta2bbox
 
 from .cascade_roi_head import CascadeRoIHeadWraper
 

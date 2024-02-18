@@ -82,7 +82,7 @@ def delta2bbox_batched(rois,
     return bboxes
 
 
-@register_wrapper('mmdet.core.bbox.coder.DeltaXYWHBBoxCoder')
+@register_wrapper('mmdet.models.task_modules.coders.DeltaXYWHBBoxCoder')
 class DeltaXYWHBBoxCoderWraper(nn.Module):
 
     def __init__(self, module):
